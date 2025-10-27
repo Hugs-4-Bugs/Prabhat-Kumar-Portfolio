@@ -1,12 +1,18 @@
+
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Balancer from "react-wrap-balancer";
-import { Sparkles, Loader2, X, Search, Mic, Keyboard } from "lucide-react";
+import { Sparkles, Loader2, X, Search, Mic, MicOff, Keyboard } from "lucide-react";
+import Lottie from "lottie-react";
+
 import { getAISearchResponse, getAIAudio } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import listeningAnimation from "@/lib/listening-animation.json";
+import { cn } from "@/lib/utils";
+
 
 export function AISearch() {
   const { toast } = useToast();
@@ -14,16 +20,25 @@ export function AISearch() {
   const [result, setResult] = useState<{ answer: string } | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isVisible, setIsVisible] = useState(true);
-  
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
-  
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+
+  const stopAudio = useCallback(() => {
+    if (audio) {
+      audio.pause();
+      setAudio(null);
+    }
+  }, [audio]);
+  
+  const handleSubmit = useCallback(async (currentQuery: string) => {
+    if (!currentQuery.trim()) return;
+
+    stopAudio();
     startTransition(async () => {
       setResult(null);
-      const response = await getAISearchResponse(query);
+      const response = await getAISearchResponse(currentQuery);
 
       if (response.success && response.answer) {
         setResult({ answer: response.answer });
@@ -44,12 +59,58 @@ export function AISearch() {
         });
       }
     });
+  }, [stopAudio, toast]);
+
+  // Speech-to-text handling
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn("Speech Recognition not supported by this browser.");
+      toast({ title: "Compatibility Error", description: "Voice input is not supported by your browser.", variant: "destructive" });
+      return;
+    }
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = 'en-US';
+
+    recognitionRef.current.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setQuery(transcript);
+      handleSubmit(transcript);
+      setIsListening(false);
+    };
+    recognitionRef.current.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      toast({ title: 'Voice Error', description: `Could not recognize speech: ${event.error}`, variant: 'destructive'});
+      setIsListening(false);
+    };
+     recognitionRef.current.onstart = () => {
+      setIsListening(true);
+    };
+    recognitionRef.current.onend = () => {
+      setIsListening(false);
+    };
+  }, [toast, handleSubmit]);
+  
+  const toggleListening = () => {
+    if (!recognitionRef.current) return;
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      stopAudio();
+      recognitionRef.current.start();
+    }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleSubmit(query);
   };
 
   const handleClose = () => {
-    if (audio) {
-        audio.pause();
-    }
+    stopAudio();
     setIsVisible(false);
   }
 
@@ -85,51 +146,69 @@ export function AISearch() {
                         </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="relative mb-8">
+                    <form onSubmit={handleFormSubmit} className="relative mb-8">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <input
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Ask anything about Prabhat's skills, projects, or experience..."
-                            className="w-full h-14 pl-12 pr-24 rounded-full border bg-secondary/50 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                            className="w-full h-14 pl-12 pr-32 rounded-full border bg-secondary/50 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                            disabled={isPending || isListening}
                             data-cursor-hover
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                            <Button type="submit" size="icon" variant="ghost" disabled={isPending}>
+                            <Button type="button" size="icon" variant={isListening ? "destructive" : "ghost"} onClick={toggleListening} disabled={isPending || !recognitionRef.current}>
+                                {isListening ? <MicOff /> : <Mic />}
+                            </Button>
+                             <Button type="submit" size="icon" variant="ghost" disabled={isPending || isListening || !query.trim()}>
                                 <Keyboard />
                             </Button>
                         </div>
                     </form>
-
-                    <AnimatePresence>
-                    {isPending && (
-                        <motion.div 
+                    
+                    <div className="min-h-[100px]">
+                      <AnimatePresence>
+                      {isListening && (
+                         <motion.div 
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="flex flex-col items-center justify-center text-center p-8 space-y-4"
+                            className="flex flex-col items-center justify-center text-center p-8 space-y-2"
                         >
-                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                            <p className="text-muted-foreground">Sharma AI is thinking...</p>
+                            <Lottie animationData={listeningAnimation} loop={true} style={{width: 80, height: 80}}/>
+                            <p className="text-muted-foreground">Listening...</p>
                         </motion.div>
-                    )}
-                    {result && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="prose prose-lg dark:prose-invert max-w-none mx-auto p-6 bg-secondary/30 rounded-lg border"
-                        >
-                            <div className="flex items-start gap-4">
-                                <Sparkles className="w-6 h-6 text-primary shrink-0 mt-1" />
-                                <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: result.answer.replace(/\n/g, '<br />') }} />
-                            </div>
-                        </motion.div>
-                    )}
-                    </AnimatePresence>
+                      )}
+                      {isPending && (
+                          <motion.div 
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="flex flex-col items-center justify-center text-center p-8 space-y-4"
+                          >
+                              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                              <p className="text-muted-foreground">Sharma AI is thinking...</p>
+                          </motion.div>
+                      )}
+                      {result && !isPending && !isListening && (
+                          <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="prose prose-lg dark:prose-invert max-w-none mx-auto p-6 bg-secondary/30 rounded-lg border"
+                          >
+                              <div className="flex items-start gap-4">
+                                  <Sparkles className="w-6 h-6 text-primary shrink-0 mt-1" />
+                                  <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: result.answer.replace(/\n/g, '<br />') }} />
+                              </div>
+                          </motion.div>
+                      )}
+                      </AnimatePresence>
+                    </div>
                 </div>
             </div>
         </motion.div>
     </AnimatePresence>
   );
 }
+
