@@ -106,158 +106,180 @@ export const siteConfig = {
 
   projects: [
     {
-      title: 'Cryptocurrency Price Prediction',
+      name: 'Cryptocurrency Price Prediction',
       description: 'A machine learning-based app that predicts Bitcoin prices using historical data. Demonstrates data preprocessing, model training, and performance evaluation in a real-world finance use case.',
       tags: ['Python', 'Machine Learning', 'Pandas', 'Matplotlib'],
       link: 'https://github.com/Hugs-4-Bugs/Cryptocurrency-Price-prediction-using-ML',
-      image: 'project-crypto-prediction',
+      image: '/images/cryptoprice.png',
+      imageAiHint: 'cryptocurrency prediction graph'
     },
     {
-      title: 'QuantumFusion Solutions',
+      name: 'QuantumFusion Solutions',
       description: 'Official website of QuantumFusion Solutions — an innovative tech company shaping the future through AI, cloud computing, automation, and open-source development. Showcases services, projects, and the company’s mission to empower digital transformation.',
       tags: ['Next.js', 'Vercel', 'Tailwind CSS', 'Company Portfolio'],
       link: 'https://quantumfusion-solutions.vercel.app/',
-      image: 'project-quantumfusion',
+      image: '/images/quantumfusionsolution.png',
+      imageAiHint: 'modern tech company website with futuristic UI'
     },
     {
-      title: 'PrabhatVerse',
+      name: 'PrabhatVerse',
       description: 'A visionary personal universe crafted by Prabhat Kumar, featuring his projects, innovations, blogs, and creative works. PrabhatVerse acts as a digital portfolio, connecting all ventures from AI to cloud computing under a unified identity.',
       tags: ['Next.js', 'Portfolio', 'Creative Hub', 'Tailwind CSS'],
       link: 'https://prabhatverse.vercel.app/',
-      image: 'project-prabhatverse',
+      image: '/images/prabhatverse.png',
+      imageAiHint: 'personal portfolio website with futuristic and minimal UI'
     },    
     {
-      title: 'ArticleHub Application',
+      name: 'ArticleHub Application',
       description: 'A full-stack content management platform where users can create, manage, and explore articles. Features include admin control, category management, user roles, and a clean, responsive UI. Built with Angular and integrated with a Node.js backend.',
       tags: ['Angular', 'Node.js', 'REST API', 'JWT Auth', 'Material UI'],
       link: 'https://github.com/Hugs-4-Bugs/ArticleHub-Application',
-      image: 'project-articlehub',
+      image: '/images/articlehub.png',
+      imageAiHint: 'dashboard view of article management application'
     },    
     {
-      title: 'REST API CRUD Operation',
+      name: 'REST API CRUD Operation',
       description: 'A Spring Boot application implementing full CRUD functionality using RESTful APIs. Features Hibernate, JSP, and MySQL integration for robust backend operations.',
       tags: ['Spring Boot', 'Hibernate', 'MySQL', 'JSP'],
       link: 'https://github.com/Hugs-4-Bugs/REST-API-CRUD-Operation',
-      image: 'project-rest-api',
+      image: '/images/RestAPI.png',
+      imageAiHint: 'rest api crud operation backend'
     },
     {
-      title: 'Flight Reservation System',
+      name: 'Flight Reservation System',
       description: 'A full-featured airline booking platform using Spring Boot and AngularJS. Supports flight search, booking, and check-in with secure authentication and role-based access.',
       tags: ['Spring Boot', 'AngularJS', 'Thymeleaf', 'MySQL'],
-      link: 'https://github.com/Hugs-4-Bugs/Flight-Reservation-Project',
-      image: 'project-flight-reservation',
+      link: 'https://github.com/Hugs-4-Bugs/Flight_Reservation_Project',
+      image: '/images/flight.png',
+      imageAiHint: 'flight booking interface'
     },
     {
-      title: 'Blog Application (Spring Boot)',
+      name: 'Blog Application (Spring Boot)',
       description: 'A secure blog platform supporting JWT authentication, CRUD operations, and Postman testing. Built with Spring Boot and MySQL for backend robustness.',
       tags: ['Spring Boot', 'JWT', 'MySQL', 'Postman'],
       link: 'https://github.com/Hugs-4-Bugs/Blog_Application-SpringBoot-Project',
-      image: 'project-blog-app',
+      image: '/images/blogapp.png',
+      imageAiHint: 'developer blog interface'
     },
     {
-      title: 'Hospital Management System',
+      name: 'Hospital Management System',
       description: 'A full-stack hospital management app with admin panels, report downloads, and service tracking. Uses Spring Boot, Thymeleaf, and Bootstrap for a responsive UI.',
       tags: ['Spring Boot', 'Thymeleaf', 'Bootstrap', 'MySQL'],
-      link: 'https://github.com/Hugs-4-Bugs/Hospital-Management-Application',
-      image: 'project-hospital-management',
+      link: 'https://github.com/Hugs-4-Bugs/Hospital-Managment-Application',
+      image: '/images/hospital.png',
+      imageAiHint: 'hospital dashboard interface'
     },
     {
-      title: 'Bitcoin Mining Application',
+      name: 'Bitcoin Mining Application',
       description: 'Spring Boot project simulating Bitcoin mining operations with account management, transactions, and audit logging. Integrates BitcoinJ and REST APIs.',
       tags: ['Spring Boot', 'BitcoinJ', 'MySQL', 'REST API'],
-      link: 'https://github.com/Hugs-4-Bugs/Bitcoin-Mining-Application',
-      image: 'project-bitcoin-mining',
+      link: 'https://github.com/Hugs-4-Bugs/Bitcoin-Mining-App',
+      image: '/images/bitcoinmining.png',
+      imageAiHint: 'bitcoin mining dashboard'
     },
     {
-      title: 'Multi File Upload System',
+      name: 'Multi File Upload System',
       description: 'Spring Boot REST API for uploading multiple files to the database using Spring Data JPA. Supports multipart handling and easy integration.',
       tags: ['Spring Boot', 'REST API', 'File Upload'],
       link: 'https://github.com/Hugs-4-Bugs/MultiFileUpload-Using-Spring-Boot-Application',
-      image: 'project-file-upload',
+      image: '/images/multifileupload.png',
+      imageAiHint: 'file upload ui'
     },
     {
-      title: 'QR Code Generator',
+      name: 'QR Code Generator',
       description: 'Java-based QR code generator that accepts text input and outputs custom QR codes. Includes REST endpoints and Postman test support.',
       tags: ['Java', 'QR Code', 'Spring Boot'],
       link: 'https://github.com/Hugs-4-Bugs/QR-code-Generator',
-      image: 'project-qr-generator',
+      image: '/images/qrcode.png',
+      imageAiHint: 'qr code generator'
     },
     {
-      title: 'Awesome Portfolio Collection',
+      name: 'Awesome Portfolio Collection',
       description: 'A curated collection of 100+ portfolio templates built using HTML, CSS, and JavaScript. Ideal for design inspiration and development practice.',
       tags: ['HTML', 'CSS', 'JavaScript', 'UI Design'],
       link: 'https://github.com/Hugs-4-Bugs/Awesome-Portfolio-Collection',
-      image: 'project-portfolio-collection',
+      image: '/images/awesomeportfolio.png',
+      imageAiHint: 'web developer portfolio gallery'
     },
     {
-      title: 'GitHub Streak Back',
+      name: 'GitHub Streak Back',
       description: 'Automates contributions to restore broken GitHub streaks using Node.js and Git. Ideal for devs who missed a commit.',
       tags: ['Node.js', 'Automation', 'Git'],
-      link: 'https://github.com/Hugs-4-Bugs/GitHub-Streak-Back',
-      image: 'project-github-streak',
+      link: 'https://github.com/Hugs-4-Bugs/github-streak-back.git',
+      image: '/images/githubstreakback.png',
+      imageAiHint: 'github contribution graph automation'
     },
     {
-      title: 'AlgoByPrabhat',
+      name: 'AlgoByPrabhat',
       description: 'A learning platform for DSA concepts with visualizations. Helps learners understand algorithms via interactive examples.',
       tags: ['JavaScript', 'Algorithms', 'Data Structures'],
-      link: 'https://github.com/Hugs-4-Bugs/AlgoByPrabhat',
-      image: 'project-algobyprabhat',
+      link: 'https://github.com/Hugs-4-Bugs/AlgoByPrabhat.git',
+      image: '/images/algobyprabhat.png',
+      imageAiHint: 'algorithm visualizer interface'
     },
     {
-      title: 'Sharma AI Assistant',
+      name: 'Sharma AI Assistant',
       description: 'Voice-activated desktop assistant built with JavaScript and Node.js. Uses AppleScript to automate OS-level tasks.',
       tags: ['JavaScript', 'Voice Control', 'Node.js'],
-      link: 'https://github.com/Hugs-4-Bugs/Sharma-AI',
-      image: 'project-sharma-ai',
+      link: 'https://github.com/Hugs-4-Bugs/Sharma-AI.git',
+      image: '/images/sharmaAI.png',
+      imageAiHint: 'voice assistant interface'
     },
     {
-      title: 'User Details App',
+      name: 'User Details App',
       description: 'Spring Boot app for managing user data with REST API. Supports CRUD operations and MySQL integration.',
       tags: ['Spring Boot', 'MySQL', 'REST API'],
-      link: 'https://github.com/Hugs-4-Bugs/User-Details-App',
-      image: 'project-user-details',
+      link: 'https://github.com/Hugs-4-Bugs/user-details-app.git',
+      image: '/images/userdetailapp.png',
+      imageAiHint: 'user profile management'
     },
     {
-      title: 'SpringBoot OpenAI Integration',
+      name: 'SpringBoot OpenAI Integration',
       description: 'Integrates OpenAI into a Spring Boot backend to enable AI-powered text generation, response crafting, and content creation.',
       tags: ['Spring Boot', 'OpenAI', 'REST API'],
       link: 'https://github.com/Hugs-4-Bugs/SpringBoot-OpenAI',
-      image: 'project-springboot-openai',
+      image: '/images/springopenai.png',
+      imageAiHint: 'ai integration spring boot'
     },
     {
-      title: 'Mobile Banking App',
+      name: 'Mobile Banking App',
       description: 'Spring Boot application providing mobile banking services like transactions, fund transfers, and account management.',
       tags: ['Spring Boot', 'Banking', 'MySQL'],
       link: 'https://github.com/Hugs-4-Bugs/Mobile-Banking',
-      image: 'project-mobile-banking',
+      image: '/images/mobilebanking.png',
+      imageAiHint: 'mobile banking interface'
     },
     {
-      title: 'Uber Application',
+      name: 'Uber Application',
       description: 'A ride-hailing platform with real-time ride tracking, driver management, and fare estimation. Built with Spring Boot.',
       tags: ['Spring Boot', 'Maps API', 'E-commerce'],
-      link: 'https://github.com/Hugs-4-Bugs/Uber-Application',
-      image: 'project-uber-app',
+      link: 'https://github.com/Hugs-4-Bugs/Uber-Application.git',
+      image: '/images/uberapp.png',
+      imageAiHint: 'uber clone interface'
     },
     {
-      title: 'Cafe Management System',
+      name: 'Cafe Management System',
       description: 'Spring Boot-based system for handling cafe operations like order processing, billing, and menu updates.',
       tags: ['Spring Boot', 'Cafe App', 'MySQL'],
-      link: 'https://github.com/Hugs-4-Bugs/Cafe-Management-System',
-      image: 'project-cafe-management',
+      link: 'https://github.com/Hugs-4-Bugs/Cafe-Management-System.git',
+      image: '/images/cafemanagement.png',
+      imageAiHint: 'cafe billing interface'
     },
     {
-      title: 'Ollama AI + Spring Boot',
+      name: 'Ollama AI + Spring Boot',
       description: 'Spring Boot integration with Ollama AI using Spring AI and Flux to deliver both synchronous and streaming AI responses.',
       tags: ['Spring Boot', 'Ollama', 'Spring AI', 'LLMs'],
-      link: 'https://github.com/Hugs-4-Bugs/Ollama-Spring-Boot-AI-Implementation',
-      image: 'project-ollama-springboot',
+      link: 'https://github.com/Hugs-4-Bugs/Ollama-Spring-Boot-AI-Implementation.git',
+      image: '/images/ollamaspring.png',
+      imageAiHint: 'spring ai ollama chatbot'
     },
     {
-      title: 'LinkedIn Clone Application',
+      name: 'LinkedIn Clone Application',
       description: 'A microservice-based LinkedIn clone with features like connections, posts, notifications, and user profiles.',
       tags: ['Spring Boot', 'Microservices', 'API Gateway', 'Eureka'],
-      link: 'https://github.com/Hugs-4-Bugs/LinkedIn-Application',
-      image: 'project-linkedin-app',
+      link: 'https://github.com/Hugs-4-Bugs/LinkedIn-Application.git',
+      image: '/images/linkedinapp.png',
+      imageAiHint: 'linkedin clone ui'
     }
   ] as Project[],
 

@@ -35,11 +35,12 @@ export type Education = {
 }
 
 export type Project = {
-  title: string;
+  name: string;
   description: string;
   link: string;
   tags: string[];
   image: string;
+  imageAiHint: string;
 };
 
 export type ProjectFilter = {
