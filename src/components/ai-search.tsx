@@ -22,6 +22,7 @@ export function AISearch() {
   const [isVisible, setIsVisible] = useState(true);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
 
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
@@ -114,6 +115,17 @@ export function AISearch() {
     setIsVisible(false);
   }
 
+  useEffect(() => {
+    const overlay = overlayRef.current;
+    if (overlay) {
+      const stopPropagation = (e: WheelEvent) => e.stopPropagation();
+      overlay.addEventListener('wheel', stopPropagation);
+      return () => {
+        overlay.removeEventListener('wheel', stopPropagation);
+      };
+    }
+  }, []);
+
   if (!isVisible) {
     return null;
   }
@@ -121,12 +133,19 @@ export function AISearch() {
   return (
     <AnimatePresence>
         <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="fixed inset-x-0 top-0 z-[1000] p-4 bg-background/80 backdrop-blur-lg"
+            ref={overlayRef}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1000] p-4 bg-background/80 backdrop-blur-lg overflow-y-auto"
         >
-            <div className="container max-w-4xl mx-auto">
+            <motion.div 
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -50, opacity: 0 }}
+                transition={{ ease: "easeOut" }}
+                className="container max-w-4xl mx-auto"
+            >
                 <div className="relative">
                     <div className="absolute top-2 right-2">
                         <Button variant="ghost" size="icon" onClick={handleClose} data-cursor-hover>
@@ -167,7 +186,7 @@ export function AISearch() {
                         </div>
                     </form>
                     
-                    <div className="min-h-[100px]">
+                    <div className="min-h-[100px] pb-8">
                       <AnimatePresence>
                       {isListening && (
                          <motion.div 
@@ -199,16 +218,15 @@ export function AISearch() {
                           >
                               <div className="flex items-start gap-4">
                                   <Sparkles className="w-6 h-6 text-primary shrink-0 mt-1" />
-                                  <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: result.answer.replace(/\n/g, '<br />') }} />
+                                  <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: result.answer.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br />') }} />
                               </div>
                           </motion.div>
                       )}
                       </AnimatePresence>
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </motion.div>
     </AnimatePresence>
   );
 }
-
