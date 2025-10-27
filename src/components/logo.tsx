@@ -8,7 +8,7 @@ export function Logo() {
       className="font-headline text-xl font-bold tracking-tighter"
       data-cursor-hover
     >
-      PK<span className="text-primary">.</span>
+      PK<span className="text-primary">_</span>
     </Link>
   );
 }

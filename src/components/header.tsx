@@ -3,8 +3,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { Menu, X, Github, Linkedin, Twitter } from "lucide-react";
+import { motion, useScroll } from "framer-motion";
+import { Menu, X, Github, Linkedin, Instagram } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/data";
 import { Button } from "./ui/button";
@@ -12,19 +12,9 @@ import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
 export function Header() {
-  const { scrollY, scrollYProgress } = useScroll();
-  const [hidden, setHidden] = useState(false);
+  const { scrollYProgress } = useScroll();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious() ?? 0;
-    if (latest > previous && latest > 150) {
-      setHidden(true);
-    } else {
-      setHidden(false);
-    }
-  });
 
   useEffect(() => {
     const sections = siteConfig.navLinks.map((link) => document.getElementById(link.href.substring(1))).filter(Boolean);
@@ -57,13 +47,7 @@ export function Header() {
 
   return (
     <>
-      <motion.header
-        variants={{
-          visible: { y: 0 },
-          hidden: { y: "-100%" },
-        }}
-        animate={hidden ? "hidden" : "visible"}
-        transition={{ duration: 0.35, ease: "easeInOut" }}
+      <header
         className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b"
       >
         <div className="container flex items-center justify-between h-16">
@@ -92,13 +76,13 @@ export function Header() {
           <div className="flex items-center space-x-2">
              <div className="hidden md:flex items-center space-x-1">
                <Button variant="ghost" size="icon" asChild>
+                 <a href={siteConfig.socials.instagram} target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
+               </Button>
+               <Button variant="ghost" size="icon" asChild>
                  <a href={siteConfig.socials.github} target="_blank" rel="noreferrer" aria-label="Github"><Github size={18} /></a>
                </Button>
                <Button variant="ghost" size="icon" asChild>
                  <a href={siteConfig.socials.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin size={18} /></a>
-               </Button>
-               <Button variant="ghost" size="icon" asChild>
-                 <a href={siteConfig.socials.twitter} target="_blank" rel="noreferrer" aria-label="Twitter"><Twitter size={18} /></a>
                </Button>
             </div>
             <ThemeToggle />
@@ -117,7 +101,7 @@ export function Header() {
           className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary origin-left"
           style={{ scaleX: scrollYProgress }}
         />
-      </motion.header>
+      </header>
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (

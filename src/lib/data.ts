@@ -52,7 +52,7 @@ export const siteConfig = {
   socials: {
     github: "https://github.com/Hugs-4-Bugs",
     linkedin: "https://www.linkedin.com/in/prabhat-kumar-6963661a4/",
-    twitter: "https://x.com/kattyPrabhat",
+    instagram: "https://www.instagram.com/_s_4_sharma/?utm_source=qr&igshid=MzNlNGNkZWQ4Mg%3D%3D",
   },
   
   allSocials: [
