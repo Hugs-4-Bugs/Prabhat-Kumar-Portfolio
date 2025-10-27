@@ -11,8 +11,6 @@ import { getAISearchResponse, getAIAudio } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import listeningAnimation from "@/lib/listening-animation.json";
-import { cn } from "@/lib/utils";
-
 
 export function AISearch() {
   const { toast } = useToast();
@@ -62,13 +60,11 @@ export function AISearch() {
     });
   }, [stopAudio, toast]);
 
-  // Use a ref to hold the latest `handleSubmit` function
   const handleSubmitRef = useRef(handleSubmit);
   useEffect(() => {
     handleSubmitRef.current = handleSubmit;
   }, [handleSubmit]);
 
-  // Speech-to-text handling
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -87,7 +83,6 @@ export function AISearch() {
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
             setQuery(transcript);
-            // Call the latest handleSubmit from the ref
             handleSubmitRef.current(transcript); 
             setIsListening(false);
         };
@@ -156,6 +151,12 @@ export function AISearch() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[1000] p-4 bg-background/80 backdrop-blur-lg overflow-y-auto"
         >
+            <div className="absolute top-4 right-4">
+                <Button variant="ghost" size="icon" onClick={handleClose} data-cursor-hover>
+                    <X className="h-5 w-5" />
+                    <span className="sr-only">Close AI Search</span>
+                </Button>
+            </div>
             <motion.div 
                 initial={{ y: -50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -163,88 +164,78 @@ export function AISearch() {
                 transition={{ ease: "easeOut" }}
                 className="container max-w-4xl mx-auto"
             >
-                <div className="relative">
-                    <div className="absolute top-2 right-2">
-                        <Button variant="ghost" size="icon" onClick={handleClose} data-cursor-hover>
-                            <X className="h-5 w-5" />
-                            <span className="sr-only">Close AI Search</span>
+                <div className="text-center mb-8 pt-8">
+                    <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
+                        <Balancer>
+                            Ask <span className="text-primary">Sharma</span> AI
+                        </Balancer>
+                    </h1>
+                    <p className="text-muted-foreground mt-2">
+                        Your personal guide to Prabhat Kumar's portfolio.
+                    </p>
+                </div>
+
+                <form onSubmit={handleFormSubmit} className="relative mb-8">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Ask anything about Prabhat's skills, projects, or experience..."
+                        className="w-full h-14 pl-12 pr-32 rounded-full border bg-secondary/50 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                        disabled={isPending || isListening}
+                        data-cursor-hover
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <Button type="button" size="icon" variant={isListening ? "destructive" : "ghost"} onClick={toggleListening} disabled={isPending || !recognitionRef.current}>
+                            {isListening ? <MicOff /> : <Mic />}
+                        </Button>
+                         <Button type="submit" size="icon" variant="ghost" disabled={isPending || isListening || !query.trim()}>
+                            <Keyboard />
                         </Button>
                     </div>
-
-                    <div className="text-center mb-8 pt-8">
-                        <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
-                            <Balancer>
-                                Ask <span className="text-primary">Sharma</span> AI
-                            </Balancer>
-                        </h1>
-                        <p className="text-muted-foreground mt-2">
-                            Your personal guide to Prabhat Kumar's portfolio.
-                        </p>
-                    </div>
-
-                    <form onSubmit={handleFormSubmit} className="relative mb-8">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                        <input
-                            type="text"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Ask anything about Prabhat's skills, projects, or experience..."
-                            className="w-full h-14 pl-12 pr-32 rounded-full border bg-secondary/50 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
-                            disabled={isPending || isListening}
-                            data-cursor-hover
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                            <Button type="button" size="icon" variant={isListening ? "destructive" : "ghost"} onClick={toggleListening} disabled={isPending || !recognitionRef.current}>
-                                {isListening ? <MicOff /> : <Mic />}
-                            </Button>
-                             <Button type="submit" size="icon" variant="ghost" disabled={isPending || isListening || !query.trim()}>
-                                <Keyboard />
-                            </Button>
-                        </div>
-                    </form>
-                    
-                    <div className="min-h-[100px] pb-8">
-                      <AnimatePresence>
-                      {isListening && (
-                         <motion.div 
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="flex flex-col items-center justify-center text-center p-8 space-y-2"
-                        >
-                            <Lottie animationData={listeningAnimation} loop={true} style={{width: 80, height: 80}}/>
-                            <p className="text-muted-foreground">Listening...</p>
-                        </motion.div>
-                      )}
-                      {isPending && (
-                          <motion.div 
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="flex flex-col items-center justify-center text-center p-8 space-y-4"
-                          >
-                              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                              <p className="text-muted-foreground">Sharma AI is thinking...</p>
-                          </motion.div>
-                      )}
-                      {result && !isPending && !isListening && (
-                          <motion.div
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="prose prose-lg dark:prose-invert max-w-none mx-auto p-6 bg-secondary/30 rounded-lg border"
-                          >
-                              <div className="flex items-start gap-4">
-                                  <Sparkles className="w-6 h-6 text-primary shrink-0 mt-1" />
-                                  <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: result.answer.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br />') }} />
-                              </div>
-                          </motion.div>
-                      )}
-                      </AnimatePresence>
-                    </div>
+                </form>
+                
+                <div className="min-h-[100px] pb-8">
+                  <AnimatePresence>
+                  {isListening && (
+                     <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex flex-col items-center justify-center text-center p-8 space-y-2"
+                    >
+                        <Lottie animationData={listeningAnimation} loop={true} style={{width: 80, height: 80}}/>
+                        <p className="text-muted-foreground">Listening...</p>
+                    </motion.div>
+                  )}
+                  {isPending && (
+                      <motion.div 
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="flex flex-col items-center justify-center text-center p-8 space-y-4"
+                      >
+                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                          <p className="text-muted-foreground">Sharma AI is thinking...</p>
+                      </motion.div>
+                  )}
+                  {result && !isPending && !isListening && (
+                      <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="prose prose-lg dark:prose-invert max-w-none mx-auto p-6 bg-secondary/30 rounded-lg border"
+                      >
+                          <div className="flex items-start gap-4">
+                              <Sparkles className="w-6 h-6 text-primary shrink-0 mt-1" />
+                              <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: result.answer.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br />') }} />
+                          </div>
+                      </motion.div>
+                  )}
+                  </AnimatePresence>
                 </div>
             </motion.div>
         </motion.div>
     </AnimatePresence>
   );
 }
-
