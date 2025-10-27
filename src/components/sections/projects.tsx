@@ -61,7 +61,7 @@ export function Projects() {
         <AnimatePresence>
           {filteredProjects.slice(0, visibleCount).map((project, index) => (
             <motion.div
-              key={`${activeFilter}-${project.title}`}
+              key={`${activeFilter}-${project.name}`}
               layout
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
