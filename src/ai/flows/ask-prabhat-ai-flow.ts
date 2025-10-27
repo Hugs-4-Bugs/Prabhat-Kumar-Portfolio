@@ -25,19 +25,8 @@ export async function askPrabhatAI(input: AskPrabhatAIInput): Promise<AskPrabhat
   return askPrabhatAIFlow(input);
 }
 
-// Convert siteConfig to a stringified JSON for the prompt
-const portfolioData = JSON.stringify({
-  name: siteConfig.name,
-  title: siteConfig.title,
-  description: siteConfig.description,
-  email: siteConfig.email,
-  location: siteConfig.location,
-  about: siteConfig.about,
-  skills: siteConfig.skills.map(s => ({ category: s.category, skills: s.skills })),
-  experience: siteConfig.workExperience.map(e => ({ title: e.title, company: e.company, date: e.date, description: e.description })),
-  projects: siteConfig.projects.map(p => ({ title: p.title, description: p.description, link: p.link })),
-  education: siteConfig.education.map(e => ({ degree: e.title, university: e.company, date: e.date })),
-});
+// Convert the entire siteConfig to a stringified JSON for the prompt
+const portfolioData = JSON.stringify(siteConfig);
 
 const prompt = ai.definePrompt({
   name: 'askPrabhatAIPrompt',
