@@ -1,4 +1,3 @@
-// src/app/actions.ts
 "use server";
 
 import { z } from "zod";
@@ -145,4 +144,18 @@ export async function getAIAudio(text: string) {
         console.error('Error generating TTS audio:', error);
         return { success: false, message: 'Sorry, I was unable to generate audio for that response.' };
     }
+}
+
+// AI Search Action
+export async function getAISearchResponse(question: string) {
+  if (!question.trim()) {
+    return { success: false, message: "Please enter a question." };
+  }
+  try {
+    const response = await askPrabhatAI({ question });
+    return { success: true, answer: response.answer };
+  } catch (error) {
+    console.error("Error getting AI search response:", error);
+    return { success: false, message: "Sorry, I couldn't get a response from the AI." };
+  }
 }
