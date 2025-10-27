@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -5,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from "lottie-react";
 import { Mic, MicOff, Send, Bot, User, X } from 'lucide-react';
 import { useAudio, useToggle } from 'react-use';
+import Lenis from '@studio-freight/lenis';
+
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,6 +34,8 @@ export function AIAssistant() {
   const [isListening, setIsListening] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
 
   const [isMounted, setIsMounted] = useState(false);
   
@@ -44,6 +49,24 @@ export function AIAssistant() {
   useEffect(() => {
     setIsAudioPlaying(audioState.playing);
   }, [audioState.playing]);
+  
+  useEffect(() => {
+    const lenis = new Lenis();
+
+    const chatContainer = chatContainerRef.current;
+    if (chatContainer) {
+      const handleMouseEnter = () => lenis.stop();
+      const handleMouseLeave = () => lenis.start();
+      
+      chatContainer.addEventListener('mouseenter', handleMouseEnter);
+      chatContainer.addEventListener('mouseleave', handleMouseLeave);
+
+      return () => {
+        chatContainer.removeEventListener('mouseenter', handleMouseEnter);
+        chatContainer.removeEventListener('mouseleave', handleMouseLeave);
+      };
+    }
+  }, [isOpen]);
 
 
   // Speech-to-text handling
@@ -135,6 +158,7 @@ export function AIAssistant() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={chatContainerRef}
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -240,3 +264,5 @@ export function AIAssistant() {
     </>
   );
 }
+
+    
