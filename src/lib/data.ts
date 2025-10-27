@@ -81,10 +81,10 @@ export const siteConfig = {
   ] as SocialLink[],
 
   about: {
-    p1: "Hi! I'm Prabhat Kumar, a passionate developer fascinated by AI, web technologies, and building software that solves real-world problems. I love working with Java, Spring Boot, React, and machine learning.",
+    p1: "Hi! I'm Prabhat Kumar, a passionate Java Software Developer driven by a vision to merge intelligence with innovation. I dive deep into AI, web technologies, and system design - crafting software that solves real-world problems. With love for Java, Spring Boot, React, and Machine Learning, I thrive on crafting scalable, high-performance apps.",
     p2: "With 4+ years of trading experience across Stocks, Crypto, Forex & Derivatives, I specialize in combining algorithmic precision with market psychology.",
     p3: "I am always exploring new technologies and creating innovative solutions to solve complex problems in a range of fields.",
-    interests: ["AI", "Full Stack Development", "Open Source", "System Design", "Trading", "Writing", "Innovation", "Automation"],
+    interests: ["AI", "Full Stack Development", "Open Source", "System Design", "Trading", "Writing", "Innovation"],
   },
 
   services: [
@@ -294,9 +294,8 @@ export const siteConfig = {
     { label: 'All', value: 'All' },
     { label: 'AI', value: 'AI' },
     { label: 'Finance', value: 'Finance' },
-    { label: 'Web Development', value: 'Web Development' },
+    { label: 'Web Development', value: 'Web' },
     { label: 'E-commerce', value: 'E-commerce' },
-    { label: 'Web', value: 'Web' },
     { label: 'Utility', value: 'Utility' },
     { label: 'Resources', value: 'Resources' },
     { label: 'API', value: 'API' },
@@ -410,5 +409,3 @@ export const siteConfig = {
     },
   ] as TechCategory[],
 };
-
-    
