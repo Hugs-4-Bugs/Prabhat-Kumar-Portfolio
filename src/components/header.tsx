@@ -1,10 +1,12 @@
 // src/components/header.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion, useScroll } from "framer-motion";
 import { Menu, X, Github, Linkedin, Instagram, Search } from "lucide-react";
+import { gsap } from "gsap";
+
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/data";
 import { Button } from "./ui/button";
@@ -19,6 +21,21 @@ export function Header({ onSearchClick }: HeaderProps) {
   const { scrollYProgress } = useScroll();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from(headerRef.current, {
+        y: -100,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        delay: 0.2
+      });
+    }, headerRef);
+    return () => ctx.revert();
+  }, []);
+
 
   useEffect(() => {
     const sections = siteConfig.navLinks.map((link) => document.getElementById(link.href.substring(1))).filter(Boolean);
@@ -52,6 +69,7 @@ export function Header({ onSearchClick }: HeaderProps) {
   return (
     <>
       <header
+        ref={headerRef}
         className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b"
       >
         <div className="container flex items-center justify-between h-16">

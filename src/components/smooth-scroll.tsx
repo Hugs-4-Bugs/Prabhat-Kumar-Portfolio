@@ -3,6 +3,10 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import Lenis from '@studio-freight/lenis';
 import { usePathname } from 'next/navigation';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
   const lenis = useRef<Lenis | null>(null);
@@ -21,26 +25,28 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       smoothWheel: true,
     });
 
-    // Attach the instance to the window object so other components can access it.
-    (window as any).lenisInstance = lenisInstance;
-
     lenis.current = lenisInstance;
+
+    lenisInstance.on('scroll', ScrollTrigger.update);
 
     const raf = (time: number) => {
       lenisInstance.raf(time);
       requestAnimationFrame(raf);
     };
+    
+    gsap.ticker.add((time)=>{
+      lenisInstance.raf(time * 1000)
+    });
+    
+    gsap.ticker.lagSmoothing(0);
 
     requestAnimationFrame(raf);
 
     return () => {
       lenisInstance.destroy();
       lenis.current = null;
-      delete (window as any).lenisInstance;
     };
   }, []);
 
   return <>{children}</>;
 }
-
-    
