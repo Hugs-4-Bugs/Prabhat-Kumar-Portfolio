@@ -11,6 +11,7 @@ import { getAISearchResponse, getAIAudio } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import listeningAnimation from "@/lib/listening-animation.json";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function AISearch() {
   const { toast } = useToast();
@@ -149,92 +150,108 @@ export function AISearch() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[1000] p-4 bg-background/80 backdrop-blur-lg overflow-y-auto"
+            className="fixed inset-0 z-[1000] bg-background/80 backdrop-blur-lg flex flex-col"
         >
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 right-4 z-20">
                 <Button variant="ghost" size="icon" onClick={handleClose} data-cursor-hover>
                     <X className="h-5 w-5" />
                     <span className="sr-only">Close AI Search</span>
                 </Button>
             </div>
-            <motion.div 
-                initial={{ y: -50, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -50, opacity: 0 }}
-                transition={{ ease: "easeOut" }}
-                className="container max-w-4xl mx-auto"
-            >
-                <div className="text-center mb-8 pt-8">
-                    <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
-                        <Balancer>
-                            Ask <span className="text-primary">Sharma</span> AI
-                        </Balancer>
-                    </h1>
-                    <p className="text-muted-foreground mt-2">
-                        Your personal guide to Prabhat Kumar's portfolio.
-                    </p>
-                </div>
-
-                <form onSubmit={handleFormSubmit} className="relative mb-8">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Ask anything about Prabhat's skills, projects, or experience..."
-                        className="w-full h-14 pl-12 pr-32 rounded-full border bg-secondary/50 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
-                        disabled={isPending || isListening}
-                        data-cursor-hover
-                    />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                        <Button type="button" size="icon" variant={isListening ? "destructive" : "ghost"} onClick={toggleListening} disabled={isPending || !recognitionRef.current}>
-                            {isListening ? <MicOff /> : <Mic />}
-                        </Button>
-                         <Button type="submit" size="icon" variant="ghost" disabled={isPending || isListening || !query.trim()}>
-                            <Keyboard />
-                        </Button>
-                    </div>
-                </form>
-                
-                <div className="min-h-[100px] pb-8">
-                  <AnimatePresence>
-                  {isListening && (
-                     <motion.div 
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="flex flex-col items-center justify-center text-center p-8 space-y-2"
+            
+            <div className="container max-w-4xl mx-auto flex flex-col h-full">
+                <div className="flex-shrink-0">
+                    <motion.div 
+                        initial={{ y: -50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -50, opacity: 0 }}
+                        transition={{ ease: "easeOut" }}
+                        className="text-center pt-12 pb-8"
                     >
-                        <Lottie animationData={listeningAnimation} loop={true} style={{width: 80, height: 80}}/>
-                        <p className="text-muted-foreground">Listening...</p>
+                        <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
+                            <Balancer>
+                                Ask <span className="text-primary">Sharma</span> AI
+                            </Balancer>
+                        </h1>
+                        <p className="text-muted-foreground mt-2">
+                            Your personal guide to Prabhat Kumar's portfolio.
+                        </p>
                     </motion.div>
-                  )}
-                  {isPending && (
-                      <motion.div 
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="flex flex-col items-center justify-center text-center p-8 space-y-4"
-                      >
-                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                          <p className="text-muted-foreground">Sharma AI is thinking...</p>
-                      </motion.div>
-                  )}
-                  {result && !isPending && !isListening && (
-                      <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="prose prose-lg dark:prose-invert max-w-none mx-auto p-6 bg-secondary/30 rounded-lg border"
-                      >
-                          <div className="flex items-start gap-4">
-                              <Sparkles className="w-6 h-6 text-primary shrink-0 mt-1" />
-                              <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: result.answer.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br />') }} />
-                          </div>
-                      </motion.div>
-                  )}
-                  </AnimatePresence>
+
+                    <form onSubmit={handleFormSubmit} className="relative mb-8">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Ask anything about Prabhat's skills, projects, or experience..."
+                            className="w-full h-14 pl-12 pr-32 rounded-full border bg-secondary/50 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                            disabled={isPending || isListening}
+                            data-cursor-hover
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            <Button type="button" size="icon" variant={isListening ? "destructive" : "ghost"} onClick={toggleListening} disabled={isPending || !recognitionRef.current}>
+                                {isListening ? <MicOff /> : <Mic />}
+                            </Button>
+                             <Button type="submit" size="icon" variant="ghost" disabled={isPending || isListening || !query.trim()}>
+                                <Keyboard />
+                            </Button>
+                        </div>
+                    </form>
                 </div>
-            </motion.div>
+                
+                <ScrollArea className="flex-grow pb-8">
+                    <div className="min-h-[100px]">
+                      <AnimatePresence>
+                      {isListening && (
+                         <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="flex flex-col items-center justify-center text-center p-8 space-y-2"
+                        >
+                            <Lottie animationData={listeningAnimation} loop={true} style={{width: 80, height: 80}}/>
+                            <p className="text-muted-foreground">Listening...</p>
+                        </motion.div>
+                      )}
+                      {isPending && (
+                          <motion.div 
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="flex flex-col items-center justify-center text-center p-8 space-y-4"
+                          >
+                              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                              <p className="text-muted-foreground">Sharma AI is thinking...</p>
+                          </motion.div>
+                      )}
+                      {result && !isPending && !isListening && (
+                          <motion.div
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="prose prose-lg dark:prose-invert max-w-none mx-auto p-6 bg-secondary/30 rounded-lg border"
+                          >
+                              <div className="flex items-start gap-4">
+                                  <Sparkles className="w-6 h-6 text-primary shrink-0 mt-1" />
+                                  <div 
+                                      className="whitespace-pre-wrap" 
+                                      dangerouslySetInnerHTML={{ 
+                                          __html: result.answer
+                                            .replace(/###\s*(.*)/g, '<h3>$1</h3>')
+                                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                            .replace(/\*(.*)/g, '<li style="list-style-type: disc; margin-left: 20px;">$1</li>')
+                                            .replace(/\n/g, '<br />')
+                                            .replace(/<br \/>\s*<li/g, '<li') 
+                                            .replace(/<\/li><br \/>/g, '</li>')
+                                      }} 
+                                  />
+                              </div>
+                          </motion.div>
+                      )}
+                      </AnimatePresence>
+                    </div>
+                </ScrollArea>
+            </div>
         </motion.div>
     </AnimatePresence>
   );
