@@ -67,7 +67,7 @@ export function Hero() {
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="w-full sm:w-auto" data-cursor-hover>
-            <a href="/resume.pdf" target="_blank" rel="noopener noreferrer">
+            <a href="/Prabhat Experience Profile.pdf" target="_blank" rel="noopener noreferrer">
               Download CV <FileText className="ml-2" />
             </a>
           </Button>
