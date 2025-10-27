@@ -79,7 +79,7 @@ export function AISearch() {
     recognitionRef.current.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setQuery(transcript);
-      handleSubmit(transcript);
+      handleSubmit(transcript); // <-- This was the missing piece
       setIsListening(false);
     };
     recognitionRef.current.onerror = (event) => {
