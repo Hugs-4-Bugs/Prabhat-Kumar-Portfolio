@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -29,42 +30,36 @@ export function AIAssistant() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isAITyping, setIsAITyping] = useState(false);
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-
-
-  const [isMounted, setIsMounted] = useState(false);
   
-  // Audio response handling
-  const [audio, audioState, audioControls] = useAudio({ src: '' });
-  
+  const [audioComponent, setAudioComponent] = useState<React.ReactElement | null>(null);
+  const audioStateRef = useRef<any>(null);
+  const audioControlsRef = useRef<any>(null);
+
   useEffect(() => {
-    setIsMounted(true);
+    // This entire component only renders on the client, but `useAudio`
+    // can still cause issues if not handled carefully.
+    // We create a simple functional component here to encapsulate the hook
+    // and then render it dynamically.
+    const AudioPlayer = () => {
+      const [audio, state, controls] = useAudio({ src: '' });
+      audioStateRef.current = state;
+      audioControlsRef.current = controls;
+      return audio;
+    };
+    setAudioComponent(<AudioPlayer />);
   }, []);
-
-  useEffect(() => {
-    setIsAudioPlaying(audioState.playing);
-  }, [audioState.playing]);
-  
-  useEffect(() => {
-    const chatContainer = chatContainerRef.current;
-    if (chatContainer && isOpen) {
-      const stopPropagation = (e: WheelEvent) => e.stopPropagation();
-      chatContainer.addEventListener('wheel', stopPropagation);
-      return () => {
-        chatContainer.removeEventListener('wheel', stopPropagation);
-      };
-    }
-  }, [isOpen]);
 
   const handleSend = useCallback(async (text?: string) => {
     const query = text || userInput;
     if (!query.trim()) return;
 
-    audioControls.pause();
+    if (audioControlsRef.current) {
+        audioControlsRef.current.pause();
+    }
     
     setMessages(prev => [...prev, { sender: 'user', text: query }]);
     setUserInput('');
@@ -72,14 +67,15 @@ export function AIAssistant() {
 
     try {
       const response = await getAIResponse(query);
+      setIsAITyping(false);
 
       if (response.success && response.answer) {
         setMessages(prev => [...prev, { sender: 'ai', text: response.answer as string }]);
         const audioResponse = await getAIAudio(response.answer as string);
-        if(audioResponse.success && audioResponse.audio) {
-            audioControls.src(audioResponse.audio);
-            audioControls.play();
-        } else {
+        if(audioResponse.success && audioResponse.audio && audioControlsRef.current) {
+            audioControlsRef.current.src(audioResponse.audio);
+            audioControlsRef.current.play();
+        } else if (!audioResponse.success) {
            toast({ title: 'Audio Error', description: audioResponse.message, variant: 'destructive' });
         }
       } else {
@@ -87,15 +83,14 @@ export function AIAssistant() {
       }
     } catch (error) {
       console.error("Error in handleSend:", error);
+      setIsAITyping(false);
       setMessages(prev => [...prev, { sender: 'ai', text: 'Sorry, something went wrong.' }]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userInput, audioControls, toast]);
-
+  }, [userInput, toast]);
 
   // Speech-to-text handling
   useEffect(() => {
-    if (typeof window === 'undefined' || !isMounted) return;
+    if (typeof window === 'undefined') return;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       console.warn("Speech Recognition not supported by this browser.");
@@ -108,7 +103,6 @@ export function AIAssistant() {
 
     recognitionRef.current.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      setUserInput(transcript);
       handleSend(transcript);
       setIsListening(false);
     };
@@ -123,23 +117,22 @@ export function AIAssistant() {
     recognitionRef.current.onend = () => {
       setIsListening(false);
     };
-  }, [toast, isMounted, handleSend]);
-
+  }, [toast, handleSend]);
 
   const toggleListening = () => {
     if (isListening) {
       recognitionRef.current?.stop();
     } else {
+      audioControlsRef.current?.pause();
       recognitionRef.current?.start();
     }
   };
-
+  
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       handleSend("Hello");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, messages.length, handleSend]);
 
   useEffect(() => {
     const scrollViewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
@@ -147,6 +140,17 @@ export function AIAssistant() {
       scrollViewport.scrollTo({ top: scrollViewport.scrollHeight, behavior: 'smooth' });
     }
   }, [messages, isAITyping]);
+  
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+    if (chatContainer && isOpen) {
+      const stopPropagation = (e: WheelEvent) => e.stopPropagation();
+      chatContainer.addEventListener('wheel', stopPropagation);
+      return () => {
+        chatContainer.removeEventListener('wheel', stopPropagation);
+      };
+    }
+  }, [isOpen]);
 
   return (
     <>
@@ -208,7 +212,7 @@ export function AIAssistant() {
                     </div>
                 )}
                 <div className="p-4 border-t flex items-center gap-2">
-                  {isMounted && audio}
+                  <div style={{ display: 'none' }}>{audioComponent}</div>
                   <Textarea
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
