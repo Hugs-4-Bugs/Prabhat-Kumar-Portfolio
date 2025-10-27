@@ -33,13 +33,14 @@ export function AIAssistant() {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const [isMounted, setIsMounted] = useState(false);
+  
+  // Audio response handling
+  const [audio, audioState, audioControls] = useAudio({ src: '' });
+  
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Audio response handling
-  const [audio, audioState, audioControls] = useAudio({ src: '' });
-  
   useEffect(() => {
     setIsAudioPlaying(audioState.playing);
   }, [audioState.playing]);
@@ -47,7 +48,7 @@ export function AIAssistant() {
 
   // Speech-to-text handling
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !isMounted) return;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       console.warn("Speech Recognition not supported by this browser.");
@@ -75,7 +76,7 @@ export function AIAssistant() {
     recognitionRef.current.onend = () => {
       setIsListening(false);
     };
-  }, [toast]);
+  }, [toast, isMounted]);
 
 
   const toggleListening = () => {
@@ -94,8 +95,9 @@ export function AIAssistant() {
   }, [isOpen]);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+    const scrollViewport = scrollAreaRef.current?.querySelector('div[data-radix-scroll-area-viewport]');
+    if (scrollViewport) {
+      scrollViewport.scrollTo({ top: scrollViewport.scrollHeight, behavior: 'smooth' });
     }
   }, [messages, isAITyping]);
 
@@ -149,8 +151,8 @@ export function AIAssistant() {
                   <X size={20} />
                 </Button>
               </CardHeader>
-              <CardContent className="flex-grow p-0 flex flex-col">
-                <ScrollArea className="flex-grow h-0 p-4" ref={scrollAreaRef}>
+              <CardContent className="flex-grow p-0 flex flex-col overflow-hidden">
+                <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
                   <div className="space-y-6">
                     {messages.map((msg, i) => (
                       <div key={i} className={cn('flex items-end gap-2', msg.sender === 'user' ? 'justify-end' : '')}>
