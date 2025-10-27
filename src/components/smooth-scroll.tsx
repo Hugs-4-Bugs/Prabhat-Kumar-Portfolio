@@ -15,24 +15,32 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
-    lenis.current = new Lenis({
+    const lenisInstance = new Lenis({
       lerp: 0.1,
       duration: 1.2,
       smoothWheel: true,
     });
 
+    // Attach the instance to the window object so other components can access it.
+    (window as any).lenisInstance = lenisInstance;
+
+    lenis.current = lenisInstance;
+
     const raf = (time: number) => {
-      lenis.current?.raf(time);
+      lenisInstance.raf(time);
       requestAnimationFrame(raf);
     };
 
     requestAnimationFrame(raf);
 
     return () => {
-      lenis.current?.destroy();
+      lenisInstance.destroy();
       lenis.current = null;
+      delete (window as any).lenisInstance;
     };
   }, []);
 
   return <>{children}</>;
 }
+
+    

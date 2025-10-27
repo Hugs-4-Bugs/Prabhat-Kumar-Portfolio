@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from "lottie-react";
 import { Mic, MicOff, Send, Bot, User, X } from 'lucide-react';
@@ -51,10 +50,12 @@ export function AIAssistant() {
   }, [audioState.playing]);
   
   useEffect(() => {
-    const lenis = new Lenis();
-
+    // This is a bit of a hack to get the Lenis instance.
+    // In a real app, this might be better handled with context.
+    const lenis = (window as any).lenisInstance as Lenis | undefined;
+    
     const chatContainer = chatContainerRef.current;
-    if (chatContainer) {
+    if (chatContainer && isOpen && lenis) {
       const handleMouseEnter = () => lenis.stop();
       const handleMouseLeave = () => lenis.start();
       
@@ -64,9 +65,47 @@ export function AIAssistant() {
       return () => {
         chatContainer.removeEventListener('mouseenter', handleMouseEnter);
         chatContainer.removeEventListener('mouseleave', handleMouseLeave);
+        // Make sure to re-enable scrolling when the component unmounts or closes
+        if (lenis) lenis.start();
       };
+    } else if (lenis && !isOpen) {
+      lenis.start();
     }
   }, [isOpen]);
+
+  const handleSend = useCallback(async (text?: string) => {
+    const query = text || userInput;
+    if (!query.trim()) return;
+
+    audioControls.pause();
+    
+    setMessages(prev => [...prev, { sender: 'user', text: query }]);
+    setUserInput('');
+    setIsAITyping(true);
+
+    try {
+      const response = await getAIResponse(query);
+
+      if (response.success && response.answer) {
+        setMessages(prev => [...prev, { sender: 'ai', text: response.answer as string }]);
+        const audioResponse = await getAIAudio(response.answer as string);
+        if(audioResponse.success && audioResponse.audio) {
+            audioControls.src(audioResponse.audio);
+            audioControls.play();
+        } else {
+           toast({ title: 'Audio Error', description: audioResponse.message, variant: 'destructive' });
+        }
+      } else {
+        setMessages(prev => [...prev, { sender: 'ai', text: response.message || 'An error occurred.' }]);
+      }
+    } catch (error) {
+      console.error("Error in handleSend:", error);
+      setMessages(prev => [...prev, { sender: 'ai', text: 'Sorry, something went wrong.' }]);
+    } finally {
+      setIsAITyping(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userInput, audioControls, toast]);
 
 
   // Speech-to-text handling
@@ -99,7 +138,7 @@ export function AIAssistant() {
     recognitionRef.current.onend = () => {
       setIsListening(false);
     };
-  }, [toast, isMounted]);
+  }, [toast, isMounted, handleSend]);
 
 
   const toggleListening = () => {
@@ -124,35 +163,6 @@ export function AIAssistant() {
     }
   }, [messages, isAITyping]);
 
-  const handleSend = async (text?: string) => {
-    const query = text || userInput;
-    if (!query.trim()) return;
-
-    audioControls.pause();
-    
-    setMessages(prev => [...prev, { sender: 'user', text: query }]);
-    setUserInput('');
-    setIsAITyping(true);
-
-    const response = await getAIResponse(query);
-
-    setIsAITyping(false);
-
-    if (response.success && response.answer) {
-      setMessages(prev => [...prev, { sender: 'ai', text: response.answer as string }]);
-      const audioResponse = await getAIAudio(response.answer as string);
-      if(audioResponse.success && audioResponse.audio) {
-          audioControls.src(audioResponse.audio);
-          audioControls.play();
-      } else {
-         toast({ title: 'Audio Error', description: audioResponse.message, variant: 'destructive' });
-      }
-
-    } else {
-      setMessages(prev => [...prev, { sender: 'ai', text: response.message || 'An error occurred.' }]);
-    }
-  };
-  
   return (
     <>
       <AnimatePresence>
@@ -264,5 +274,3 @@ export function AIAssistant() {
     </>
   );
 }
-
-    
