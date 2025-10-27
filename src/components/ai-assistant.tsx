@@ -39,6 +39,20 @@ export function AIAssistant() {
   const audioStateRef = useRef<any>(null);
   const audioControlsRef = useRef<any>(null);
 
+  // Load conversation from localStorage on initial render
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('assistant-conversation');
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    }
+  }, []);
+
+  // Save conversation to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('assistant-conversation', JSON.stringify(messages));
+  }, [messages]);
+
+
   useEffect(() => {
     // This entire component only renders on the client, but `useAudio`
     // can still cause issues if not handled carefully.
@@ -61,11 +75,20 @@ export function AIAssistant() {
         audioControlsRef.current.pause();
     }
     
-    setMessages(prev => [...prev, { sender: 'user', text: query }]);
+    const newMessages: Message[] = [...messages, { sender: 'user', text: query }];
+    setMessages(newMessages);
     setUserInput('');
     setIsAITyping(true);
 
     try {
+      const history = newMessages.filter(m => m.sender === 'ai').map((m, i) => {
+          const userMessage = newMessages.find((um, umi) => um.sender === 'user' && umi > i*2);
+          return {
+            user: userMessage?.text || '',
+            model: m.text,
+          }
+      }).slice(-5); // Keep last 5 interactions for context
+
       const response = await getAIResponse(query);
       setIsAITyping(false);
 
@@ -86,7 +109,7 @@ export function AIAssistant() {
       setIsAITyping(false);
       setMessages(prev => [...prev, { sender: 'ai', text: 'Sorry, something went wrong.' }]);
     }
-  }, [userInput, toast]);
+  }, [userInput, toast, messages]);
 
   // Speech-to-text handling
   useEffect(() => {
@@ -263,3 +286,5 @@ export function AIAssistant() {
     </>
   );
 }
+
+    

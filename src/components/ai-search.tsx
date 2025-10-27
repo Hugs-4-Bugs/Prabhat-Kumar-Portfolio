@@ -36,6 +36,21 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
+  // Load conversation from localStorage on initial render
+  useEffect(() => {
+    if (isVisible) {
+      const savedConversation = localStorage.getItem('ai-search-conversation');
+      if (savedConversation) {
+        setConversation(JSON.parse(savedConversation));
+      }
+    }
+  }, [isVisible]);
+
+  // Save conversation to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('ai-search-conversation', JSON.stringify(conversation));
+  }, [conversation]);
+
   const stopAudio = useCallback(() => {
     if (audio) {
       audio.pause();
@@ -53,8 +68,8 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     setQuery("");
 
     startTransition(async () => {
-      const history = newConversation.filter(m => m.role !== 'user').map((m, i) => ({
-          user: newConversation[i * 2].content,
+      const history = newConversation.filter(m => m.role === 'model').map((m, i) => ({
+          user: newConversation[i * 2]?.content || '',
           model: m.content,
       }));
 
@@ -78,7 +93,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
           description: response.message || "An error occurred.",
           variant: "destructive",
         });
-        // Remove the user message if the API call failed
+        // Revert conversation state if API call fails
         setConversation(prev => prev.slice(0, -1));
       }
     });
@@ -146,8 +161,6 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
   const handleClose = () => {
     stopAudio();
-    setConversation([]);
-    setQuery("");
     onClose();
   }
 
@@ -300,3 +313,5 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     </AnimatePresence>
   );
 }
+
+    
