@@ -1,13 +1,14 @@
+
 "use client";
 
-import { useState, useRef, useTransition, useEffect, useActionState } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useRef, useEffect } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { submitContactForm, handleResumeUpload } from "@/app/actions";
-import type { ContactFormState, ResumeAnalysisState } from "@/app/actions";
+import { handleResumeUpload } from "@/app/actions";
+import type { ResumeAnalysisState } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
@@ -15,53 +16,45 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Upload, FileText, CheckCircle, AlertTriangle, Lightbulb, User, Mail, Phone, Briefcase, List, Sparkles } from "lucide-react";
+import { Loader2, Upload, Sparkles, Lightbulb, User, Mail, Phone, Briefcase, List } from "lucide-react";
+import { siteConfig } from "@/lib/data";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  email: z.string().email("Invalid email address."),
+  email: z.string().email("Invalid email address.").refine(email => {
+    const validDomains = ["gmail.com", "yahoo.com", "outlook.com", "icloud.com"];
+    const domain = email.split('@')[1];
+    return validDomains.includes(domain);
+  }, {
+    message: "Please use a valid email provider."
+  }),
   message: z.string().min(10, "Message must be at least 10 characters."),
 });
 
 type ContactFormData = z.infer<typeof contactFormSchema>;
 
-const initialFormState: ContactFormState = {
-  success: false,
-  message: "",
-};
-
 export function ContactFormHandler() {
   const { toast } = useToast();
-  const [formState, formAction, isPending] = useActionState(submitContactForm, initialFormState);
-  
   const [resumeState, setResumeState] = useState<ResumeAnalysisState | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const form = useForm<ContactFormData>({
+  const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
-    defaultValues: { name: "", email: "", message: "" },
   });
 
-  useEffect(() => {
-    if (formState.message) {
-      toast({
-        title: formState.success ? "Success" : "Error",
-        description: formState.message,
-        variant: formState.success ? "default" : "destructive",
-      });
-      if (formState.success) {
-        form.reset();
-      }
-    }
-  }, [formState, toast, form]);
+  const onSubmit: SubmitHandler<ContactFormData> = async (data) => {
+    // This is a client-side function now, but it's not actually submitting via JS
+    // The form action will handle the submission.
+    // We can use this for any pre-submission logic if needed.
+  };
 
   useEffect(() => {
     if (resumeState?.success && resumeState.data) {
-      form.setValue("name", resumeState.data.autofill.name);
-      form.setValue("email", resumeState.data.autofill.email);
+      setValue("name", resumeState.data.autofill.name);
+      setValue("email", resumeState.data.autofill.email);
     }
-  }, [resumeState, form]);
+  }, [resumeState, setValue]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -185,37 +178,37 @@ export function ContactFormHandler() {
       <div>
         <h3 className="text-2xl font-bold font-headline mb-4">Get in Touch</h3>
         <form
-          action={formAction}
+          action={`https://formsubmit.co/${siteConfig.email}`}
+          method="POST"
           className="space-y-4"
         >
+          {/* FormSubmit fields */}
+          <input type="hidden" name="_subject" value={`New Contact Form Submission from ${siteConfig.name} Portfolio!`} />
+          <input type="hidden" name="_captcha" value="false" />
+           <input type="hidden" name="_next" value="https://your-domain.co/thanks" />
+
+
           <div>
             <Label htmlFor="name">Name</Label>
-            <Input id="name" {...form.register("name")} placeholder="Your Name" data-cursor-hover/>
-            {form.formState.errors.name && <p className="text-destructive text-sm mt-1">{form.formState.errors.name.message}</p>}
-            {formState.errors?.name && <p className="text-destructive text-sm mt-1">{formState.errors.name[0]}</p>}
+            <Input id="name" {...register("name")} placeholder="Your Name" data-cursor-hover/>
+            {errors.name && <p className="text-destructive text-sm mt-1">{errors.name.message}</p>}
           </div>
           <div>
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" {...form.register("email")} placeholder="your.email@example.com" data-cursor-hover />
-            {form.formState.errors.email && <p className="text-destructive text-sm mt-1">{form.formState.errors.email.message}</p>}
-            {formState.errors?.email && <p className="text-destructive text-sm mt-1">{formState.errors.email[0]}</p>}
+            <Input id="email" type="email" {...register("email")} placeholder="your.email@example.com" data-cursor-hover />
+            {errors.email && <p className="text-destructive text-sm mt-1">{errors.email.message}</p>}
           </div>
           <div>
             <Label htmlFor="message">Message</Label>
-            <Textarea id="message" {...form.register("message")} placeholder="Let's build something amazing together!" rows={5} data-cursor-hover />
-            {form.formState.errors.message && <p className="text-destructive text-sm mt-1">{form.formState.errors.message.message}</p>}
-            {formState.errors?.message && <p className="text-destructive text-sm mt-1">{formState.errors.message[0]}</p>}
+            <Textarea id="message" {...register("message")} placeholder="Let's build something amazing together!" rows={5} data-cursor-hover />
+            {errors.message && <p className="text-destructive text-sm mt-1">{errors.message.message}</p>}
           </div>
-          <Button type="submit" disabled={isPending} className="w-full" data-cursor-hover>
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending...
-              </>
-            ) : "Send Message"}
+          <Button type="submit" className="w-full" data-cursor-hover>
+            Send Message
           </Button>
         </form>
       </div>
     </div>
   );
 }
+

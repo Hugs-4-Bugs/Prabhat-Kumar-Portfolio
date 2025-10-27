@@ -2,14 +2,11 @@
 "use server";
 
 import { z } from "zod";
-import { Resend } from "resend";
 import { detectSpam } from "@/ai/flows/detect-spam-contact-form";
 import { parseResumeAndAutofill } from "@/ai/flows/parse-resume-autofill-form";
 import { suggestResumeImprovements } from "@/ai/flows/suggest-resume-improvements";
 import { askPrabhatAI } from "@/ai/flows/ask-prabhat-ai-flow";
 import { textToSpeech } from "@/ai/flows/text-to-speech-flow";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -23,20 +20,10 @@ const contactFormSchema = z.object({
   message: z.string().min(10, "Message must be at least 10 characters."),
 });
 
-export type ContactFormState = {
-  success: boolean;
-  message: string;
-  errors?: {
-    name?: string[];
-    email?: string[];
-    message?: string[];
-  };
-};
-
-export async function submitContactForm(
-  prevState: ContactFormState,
-  formData: FormData
-): Promise<ContactFormState> {
+// This server action is no longer directly used by the form, 
+// but we keep it in case we need server-side logic in the future
+// and for the AI spam check, which could be triggered separately.
+export async function submitContactForm(formData: FormData) {
   const validatedFields = contactFormSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -51,7 +38,7 @@ export async function submitContactForm(
     };
   }
 
-  const { name, email, message } = validatedFields.data;
+  const { message } = validatedFields.data;
 
   try {
     const spamResult = await detectSpam({ message });
@@ -61,27 +48,19 @@ export async function submitContactForm(
         message: `Spam detected: ${spamResult.reason}. Please revise your message.`,
       };
     }
-
-    await resend.emails.send({
-      from: 'onboarding@resend.dev',
-      to: 'mailtoprabhat72@gmail.com',
-      subject: `New Contact Form Submission from ${name}`,
-      html: `<p>You have a new message from your portfolio contact form:</p>
-             <p><strong>Name:</strong> ${name}</p>
-             <p><strong>Email:</strong> ${email}</p>
-             <p><strong>Message:</strong></p>
-             <p>${message}</p>`
-    });
+    
+    // Email sending is now handled by formsubmit.co
+    // We can add other logic here if needed, like saving to a database.
 
     return {
       success: true,
-      message: "Thank you for your message! I will get back to you shortly.",
+      message: "Form data is valid.",
     };
   } catch (error) {
-    console.error("Error submitting form:", error);
+    console.error("Error in form processing:", error);
     return {
       success: false,
-      message: "An unexpected error occurred. Please try again later.",
+      message: "An unexpected error occurred.",
     };
   }
 }
@@ -175,3 +154,4 @@ export async function getAISearchResponse(question: string, history: Array<{ use
     return { success: false, message: "Sorry, I couldn't get a response from the AI." };
   }
 }
+
