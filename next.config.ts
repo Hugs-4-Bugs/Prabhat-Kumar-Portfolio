@@ -33,6 +33,12 @@ const nextConfig: NextConfig = {
         hostname: 'storage.googleapis.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'monorepo-prod.appspot.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
