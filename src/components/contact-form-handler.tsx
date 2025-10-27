@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useRef, useTransition, useEffect } from "react";
+import { useState, useRef, useTransition, useEffect, useActionState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useFormState } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { submitContactForm, handleResumeUpload } from "@/app/actions";
@@ -33,9 +32,8 @@ const initialFormState: ContactFormState = {
 
 export function ContactFormHandler() {
   const { toast } = useToast();
-  const [formState, formAction] = useFormState(submitContactForm, initialFormState);
-  const [isPending, startTransition] = useTransition();
-
+  const [formState, formAction, isPending] = useActionState(submitContactForm, initialFormState);
+  
   const [resumeState, setResumeState] = useState<ResumeAnalysisState | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -187,7 +185,7 @@ export function ContactFormHandler() {
       <div>
         <h3 className="text-2xl font-bold font-headline mb-4">Get in Touch</h3>
         <form
-          action={(formData) => startTransition(() => formAction(formData))}
+          action={formAction}
           className="space-y-4"
         >
           <div>
