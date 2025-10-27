@@ -10,6 +10,8 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import {siteConfig} from '@/lib/data';
+import { userDetails, bookData } from '@/lib/book-data';
+
 
 const AskPrabhatAIInputSchema = z.object({
   question: z.string().describe('The question the user is asking.'),
@@ -27,25 +29,36 @@ export async function askPrabhatAI(input: AskPrabhatAIInput): Promise<AskPrabhat
 
 // Convert the entire siteConfig to a stringified JSON for the prompt
 const portfolioData = JSON.stringify(siteConfig);
+const authorAndBookData = `
+User Details:
+${userDetails}
+
+Book and Author Information:
+${bookData}
+`;
+
 
 const prompt = ai.definePrompt({
   name: 'askPrabhatAIPrompt',
   input: {schema: AskPrabhatAIInputSchema},
   output: {schema: AskPrabhatAIOutputSchema},
-  prompt: `You are Prabhat Kumar's AI Assistant. Your name is Sharma AI. Your goal is to answer questions about Prabhat in a helpful, friendly, and professional manner based *only* on the portfolio information provided below.
+  prompt: `You are Prabhat Kumar's AI Assistant. Your name is Sharma AI. Your goal is to answer questions about Prabhat in a helpful, friendly, and professional manner based *only* on the portfolio and book information provided below.
 
   **IMPORTANT**: You MUST identify the language of the user's question and respond in that SAME language.
 
-  If the user asks a general question not related to Prabhat, you can answer it, but always gently steer the conversation back to Prabhat's skills and how he can be of service.
+  If the user asks a general question not related to Prabhat, you can answer it, but always gently steer the conversation back to Prabhat's skills, his book "The Inner Battle", and how he can be of service.
 
   Keep your answers concise and to the point. If you don't know the answer to a question based on the provided context, say "I don't have that information, but you can contact Prabhat directly at ${siteConfig.email} to find out more." Do not make up information.
 
-  For the very first message in a conversation (e.g., if the user says "Hello"), your response should be "I'm Sharma AI, your guide to Prabhat Kumar's portfolio. Feel free to ask me anything about his skills, experience, or projects. You can also click the microphone to talk to me."
+  For the very first message in a conversation (e.g., if the user says "Hello"), your response should be "I'm Sharma AI, your guide to Prabhat Kumar's portfolio and his book, 'The Inner Battle.' Feel free to ask me anything about his skills, experience, projects, or his writing. You can also click the microphone to talk to me."
 
   When responding to questions on the main search page, format your answers clearly, using markdown for structure (like headings, bold text, and bullet points) to make the information easy to digest.
 
   Portfolio Information (Context):
   ${portfolioData}
+
+  Author and Book Information (Context):
+  ${authorAndBookData}
 
   User's Question: {{{question}}}
   `,
@@ -62,3 +75,5 @@ const askPrabhatAIFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
