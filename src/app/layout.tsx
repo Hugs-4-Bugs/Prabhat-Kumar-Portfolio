@@ -8,10 +8,11 @@ import { Provider as BalancerProvider } from 'react-wrap-balancer';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { AIAssistant } from '@/components/ai-assistant';
+import { siteConfig } from '@/lib/data';
 
 export const metadata: Metadata = {
-  title: "Prabhat Kumar - Software Alchemist",
-  description: "Prabhat Kumar's portfolio, showcasing skills in Java, AI, Web Development, and Trading.",
+  title: siteConfig.title,
+  description: siteConfig.description,
 };
 
 export default function RootLayout({
@@ -26,7 +27,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased">
+      <body className="font-body bg-background text-foreground antialiased selection:bg-primary/20">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

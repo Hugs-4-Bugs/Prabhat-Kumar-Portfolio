@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useTransition } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from "lottie-react";
-import { Mic, MicOff, Send, Bot, User, X, Volume2, Loader2, Sparkles } from 'lucide-react';
-import { useReactMediaRecorder } from 'react-media-recorder';
+import { Mic, MicOff, Send, Bot, User, X } from 'lucide-react';
 import { useAudio, useToggle } from 'react-use';
 
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { getAIResponse, getAIAudio } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 import listeningAnimation from '@/lib/listening-animation.json';
 
@@ -32,12 +32,16 @@ export function AIAssistant() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Audio response handling
   const [audio, audioState, audioControls] = useAudio({ src: '' });
   
   useEffect(() => {
-    if (audioState.playing) setIsAudioPlaying(true);
-    else setIsAudioPlaying(false);
+    setIsAudioPlaying(audioState.playing);
   }, [audioState.playing]);
 
 
@@ -86,13 +90,14 @@ export function AIAssistant() {
     if (isOpen && messages.length === 0) {
       handleSend("Hello");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight });
+      scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, isAITyping]);
 
   const handleSend = async (text?: string) => {
     const query = text || userInput;
@@ -105,6 +110,8 @@ export function AIAssistant() {
     setIsAITyping(true);
 
     const response = await getAIResponse(query);
+
+    setIsAITyping(false);
 
     if (response.success && response.answer) {
       setMessages(prev => [...prev, { sender: 'ai', text: response.answer as string }]);
@@ -119,7 +126,6 @@ export function AIAssistant() {
     } else {
       setMessages(prev => [...prev, { sender: 'ai', text: response.message || 'An error occurred.' }]);
     }
-    setIsAITyping(false);
   };
   
   return (
@@ -151,7 +157,7 @@ export function AIAssistant() {
                         {msg.sender === 'ai' && <Bot size={24} className="text-primary shrink-0" />}
                         <div
                           className={cn(
-                            'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm',
+                            'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm shadow-sm',
                             msg.sender === 'user'
                               ? 'bg-primary text-primary-foreground rounded-br-none'
                               : 'bg-secondary rounded-bl-none'
@@ -181,7 +187,7 @@ export function AIAssistant() {
                     </div>
                 )}
                 <div className="p-4 border-t flex items-center gap-2">
-                  {audio}
+                  {isMounted && audio}
                   <Textarea
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
