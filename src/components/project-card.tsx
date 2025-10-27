@@ -18,33 +18,33 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const placeholder = PlaceHolderImages.find(p => p.id === project.image);
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-      <CardHeader>
-        {placeholder && (
-            <div className="aspect-[3/2] w-full overflow-hidden rounded-md mb-4">
+    <Card className="group flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-primary/20 hover:-translate-y-2 dark:hover:shadow-primary/10">
+       <CardHeader className="p-4">
+         {placeholder && (
+            <div className="aspect-video w-full overflow-hidden rounded-md mb-4 border">
                 <Image
                     src={placeholder.imageUrl}
                     alt={project.title}
                     width={600}
                     height={400}
-                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-105"
                     data-ai-hint={placeholder.imageHint}
                 />
             </div>
         )}
         <CardTitle className="text-xl font-headline">{project.title}</CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col">
-        <ScrollArea className="h-28 pr-4 mb-4">
+      <CardContent className="flex-grow flex flex-col p-4 pt-0">
+        <ScrollArea className="h-24 pr-4 mb-4">
           <CardDescription className="text-sm">{project.description}</CardDescription>
         </ScrollArea>
-        <div className="flex flex-wrap gap-2">
-          {project.tags.map((tag) => (
+        <div className="flex flex-wrap gap-2 mt-auto">
+          {project.tags.slice(0, 4).map((tag) => (
             <Badge key={tag} variant="secondary" className="font-normal">{tag}</Badge>
           ))}
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="p-4">
         <Button asChild variant="outline" className="w-full" data-cursor-hover>
           <a href={project.link} target="_blank" rel="noopener noreferrer">
             Project Link

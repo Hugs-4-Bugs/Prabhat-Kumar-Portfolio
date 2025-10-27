@@ -16,15 +16,16 @@ export function Hero() {
   };
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-background" />
-        <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[length:20px_20px] dark:bg-grid-slate-400/[0.05] dark:bg-[length:20px_20px]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+    <section id="home" className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
+       {/* Grid Background */}
+      <div className="absolute inset-0 z-0 bg-background">
+        <div className="absolute inset-0 bg-grid-slate-900/[0.04] bg-[length:20px_20px] dark:bg-grid-slate-400/[0.05] dark:bg-[length:20px_20px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_20%,transparent_75%)]" />
       </div>
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-background via-background/80 to-transparent" />
 
       <motion.div
-        className="container text-center relative z-10"
+        className="container text-center relative z-20"
         initial="hidden"
         animate="show"
         viewport={{ once: true }}
@@ -39,17 +40,17 @@ export function Hero() {
       >
         <motion.div
           variants={FADE_DOWN_ANIMATION_VARIANTS}
-          className="font-bold text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-headline tracking-tighter"
+          className="font-bold text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-headline tracking-tighter"
         >
           <Balancer>
             Prabhat Kumar
-            <span className="text-primary">,</span> Software Alchemist
+            <span className="text-primary">.</span>
           </Balancer>
         </motion.div>
         
         <motion.p
           variants={FADE_DOWN_ANIMATION_VARIANTS}
-          className="mt-6 max-w-2xl mx-auto text-base md:text-lg lg:text-xl text-muted-foreground"
+          className="mt-6 max-w-3xl mx-auto text-base md:text-lg lg:text-xl text-muted-foreground"
         >
           <Balancer>
             {siteConfig.description} I blend the art of code with the science of AI to build innovative, high-performance software solutions.
@@ -73,7 +74,7 @@ export function Hero() {
         </motion.div>
       </motion.div>
       
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20">
         <div className="w-6 h-10 border-2 border-foreground/50 rounded-full flex justify-center p-1">
           <motion.div 
             className="w-1 h-2 bg-primary rounded-full"
