@@ -2,25 +2,18 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export function CustomCursor() {
   const [isHovering, setIsHovering] = useState(false);
   const [isClient, setIsClient] = useState(false);
-
-  const cursorX = useMotionValue(-100);
-  const cursorY = useMotionValue(-100);
-
-  const springConfig = { damping: 25, stiffness: 700, mass: 0.5 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
+  const [mousePosition, setMousePosition] = useState({ x: -100, y: -100 });
 
   useEffect(() => {
     setIsClient(true);
     const moveCursor = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
+      setMousePosition({ x: e.clientX, y: e.clientY });
     };
     
     const handleMouseOver = (e: MouseEvent) => {
@@ -46,33 +39,45 @@ export function CustomCursor() {
       document.removeEventListener('mouseover', handleMouseOver);
       document.removeEventListener('mouseout', handleMouseOut);
     };
-  }, [cursorX, cursorY]);
+  }, []);
 
   if (!isClient) {
     return null;
   }
+  
+  const variants = {
+    default: {
+      x: mousePosition.x - 8,
+      y: mousePosition.y - 8,
+      height: 16,
+      width: 16,
+      backgroundColor: "hsl(var(--primary))",
+      mixBlendMode: 'difference' as const,
+    },
+    hover: {
+      x: mousePosition.x - 24,
+      y: mousePosition.y - 24,
+      height: 48,
+      width: 48,
+      backgroundColor: "hsl(var(--accent))",
+      mixBlendMode: 'difference' as const,
+    },
+  };
+
+  const spring = {
+    type: "spring",
+    stiffness: 500,
+    damping: 28,
+  };
 
   return (
     <motion.div
-      className="hidden lg:block fixed top-0 left-0 z-[9999] pointer-events-none"
-      style={{
-        translateX: cursorXSpring,
-        translateY: cursorYSpring,
-      }}
-    >
-      <motion.div
-        className={cn(
-          "absolute -top-1/2 -left-1/2 rounded-full border-2 transition-transform duration-300",
-          isHovering 
-            ? "border-accent bg-accent/20" 
-            : "border-primary bg-primary/10"
-        )}
-        animate={{ 
-          width: isHovering ? 48 : 24,
-          height: isHovering ? 48 : 24,
-        }}
-        transition={springConfig}
-      />
-    </motion.div>
+      className={cn(
+        "hidden lg:block fixed top-0 left-0 z-[9999] pointer-events-none rounded-full"
+      )}
+      variants={variants}
+      animate={isHovering ? "hover" : "default"}
+      transition={spring}
+    />
   );
 }
