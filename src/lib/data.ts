@@ -46,7 +46,6 @@ export const siteConfig = {
     { href: "#experience", label: "Experience" },
     { href: "#projects", label: "Projects" },
     { href: "#skills", label: "Skills" },
-    { href: "/search", label: "Search AI" },
     { href: "#contact", label: "Contact" },
   ] as NavLink[],
 
@@ -475,5 +474,5 @@ export const siteConfig = {
         { name: "Motivation", description: "Inspiring others" }
       ]
     }
-  ] as TechCategory[]
+  ]
 };
