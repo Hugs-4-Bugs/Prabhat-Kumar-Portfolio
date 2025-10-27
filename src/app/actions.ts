@@ -128,7 +128,7 @@ export async function handleResumeUpload(
 // AI Assistant Actions
 export async function getAIResponse(question: string) {
   try {
-    const response = await askPrabhatAI({ question });
+    const response = await askPrabhatAI({ question, history: [] });
     return { success: true, answer: response.answer };
   } catch (error) {
     console.error("Error getting AI response:", error);
@@ -147,12 +147,12 @@ export async function getAIAudio(text: string) {
 }
 
 // AI Search Action
-export async function getAISearchResponse(question: string) {
+export async function getAISearchResponse(question: string, history: Array<{ user: string; model: string }>) {
   if (!question.trim()) {
     return { success: false, message: "Please enter a question." };
   }
   try {
-    const response = await askPrabhatAI({ question });
+    const response = await askPrabhatAI({ question, history });
     return { success: true, answer: response.answer };
   } catch (error) {
     console.error("Error getting AI search response:", error);

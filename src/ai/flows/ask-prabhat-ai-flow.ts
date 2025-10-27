@@ -15,6 +15,10 @@ import { userDetails, bookData } from '@/lib/book-data';
 
 const AskPrabhatAIInputSchema = z.object({
   question: z.string().describe('The question the user is asking.'),
+  history: z.array(z.object({
+    user: z.string(),
+    model: z.string(),
+  })).optional().describe('The previous conversation history.'),
 });
 export type AskPrabhatAIInput = z.infer<typeof AskPrabhatAIInputSchema>;
 
@@ -45,6 +49,8 @@ const prompt = ai.definePrompt({
   prompt: `You are Prabhat Kumar's AI Assistant. Your name is Sharma AI. Your goal is to answer questions about Prabhat in a helpful, friendly, and professional manner based *only* on the portfolio and book information provided below.
 
   **IMPORTANT**: You MUST identify the language of the user's question and respond in that SAME language.
+  
+  If the user is continuing a conversation, use the provided history to understand the context of their question.
 
   If the user asks a general question not related to Prabhat, you can answer it, but always gently steer the conversation back to Prabhat's skills, his book "The Inner Battle", and how he can be of service.
 
@@ -52,13 +58,21 @@ const prompt = ai.definePrompt({
 
   For the very first message in a conversation (e.g., if the user says "Hello"), your response should be "I'm Sharma AI, your guide to Prabhat Kumar's portfolio and his book, 'The Inner Battle.' Feel free to ask me anything about his skills, experience, projects, or his writing. You can also click the microphone to talk to me."
 
-  When responding to questions on the main search page, format your answers clearly, using markdown for structure (like headings, bold text, and bullet points) to make the information easy to digest.
+  When responding, format your answers clearly, using markdown for structure (like headings, bold text, and bullet points) to make the information easy to digest.
 
   Portfolio Information (Context):
   ${portfolioData}
 
   Author and Book Information (Context):
   ${authorAndBookData}
+  
+  {{#if history}}
+  Conversation History:
+  {{#each history}}
+  User: {{this.user}}
+  AI: {{this.model}}
+  {{/each}}
+  {{/if}}
 
   User's Question: {{{question}}}
   `,
@@ -75,5 +89,3 @@ const askPrabhatAIFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    
