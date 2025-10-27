@@ -118,7 +118,7 @@ export const siteConfig = {
       description: 'A machine learning-based app that predicts Bitcoin prices using historical data. Demonstrates data preprocessing, model training, and performance evaluation in a real-world finance use case.',
       tags: ['Python', 'Machine Learning', 'Pandas', 'Matplotlib', 'Finance', 'AI'],
       link: 'https://github.com/Hugs-4-Bugs/Cryptocurrency-Price-prediction-using-ML',
-      image: '/images/cryptoprice.png',
+      image: '/cryptoprice.png',
       imageAiHint: 'cryptocurrency prediction graph'
     },
     {
@@ -126,7 +126,7 @@ export const siteConfig = {
       description: 'Official website of QuantumFusion Solutions — an innovative tech company shaping the future through AI, cloud computing, automation, and open-source development. Showcases services, projects, and the company’s mission to empower digital transformation.',
       tags: ['Next.js', 'Vercel', 'Tailwind CSS', 'Company Portfolio', 'Web', 'Business'],
       link: 'https://quantumfusion-solutions.vercel.app/',
-      image: '/images/quantumfusionsolution.png',
+      image: '/quantumfusionsolution.png',
       imageAiHint: 'modern tech company website with futuristic UI'
     },
     {
@@ -134,7 +134,7 @@ export const siteConfig = {
       description: 'A visionary personal universe crafted by Prabhat Kumar, featuring his projects, innovations, blogs, and creative works. PrabhatVerse acts as a digital portfolio, connecting all ventures from AI to cloud computing under a unified identity.',
       tags: ['Next.js', 'Portfolio', 'Creative Hub', 'Tailwind CSS', 'Web', 'Social'],
       link: 'https://prabhatverse.vercel.app/',
-      image: '/images/prabhatverse.png',
+      image: '/prabhatverse.png',
       imageAiHint: 'personal portfolio website with futuristic and minimal UI'
     },    
     {
@@ -142,7 +142,7 @@ export const siteConfig = {
       description: 'A full-stack content management platform where users can create, manage, and explore articles. Features include admin control, category management, user roles, and a clean, responsive UI. Built with Angular and integrated with a Node.js backend.',
       tags: ['Angular', 'Node.js', 'REST API', 'JWT Auth', 'Material UI', 'Web', 'API', 'Social'],
       link: 'https://github.com/Hugs-4-Bugs/ArticleHub-Application',
-      image: '/images/articlehub.png',
+      image: '/articlehub.png',
       imageAiHint: 'dashboard view of article management application'
     },    
     {
@@ -150,7 +150,7 @@ export const siteConfig = {
       description: 'A Spring Boot application implementing full CRUD functionality using RESTful APIs. Features Hibernate, JSP, and MySQL integration for robust backend operations.',
       tags: ['Spring Boot', 'Hibernate', 'MySQL', 'JSP', 'API'],
       link: 'https://github.com/Hugs-4-Bugs/REST-API-CRUD-Operation',
-      image: '/images/RestAPI.png',
+      image: '/RestAPI.png',
       imageAiHint: 'rest api crud operation backend'
     },
     {
@@ -158,7 +158,7 @@ export const siteConfig = {
       description: 'A full-featured airline booking platform using Spring Boot and AngularJS. Supports flight search, booking, and check-in with secure authentication and role-based access.',
       tags: ['Spring Boot', 'AngularJS', 'Thymeleaf', 'MySQL', 'E-commerce', 'Business'],
       link: 'https://github.com/Hugs-4-Bugs/Flight_Reservation_Project',
-      image: '/images/flight.png',
+      image: '/flight.png',
       imageAiHint: 'flight booking interface'
     },
     {
@@ -166,7 +166,7 @@ export const siteConfig = {
       description: 'A secure blog platform supporting JWT authentication, CRUD operations, and Postman testing. Built with Spring Boot and MySQL for backend robustness.',
       tags: ['Spring Boot', 'JWT', 'MySQL', 'Postman', 'API', 'Social'],
       link: 'https://github.com/Hugs-4-Bugs/Blog_Application-SpringBoot-Project',
-      image: '/images/blogapp.png',
+      image: '/blogapp.png',
       imageAiHint: 'developer blog interface'
     },
     {
@@ -174,7 +174,7 @@ export const siteConfig = {
       description: 'A full-stack hospital management app with admin panels, report downloads, and service tracking. Uses Spring Boot, Thymeleaf, and Bootstrap for a responsive UI.',
       tags: ['Spring Boot', 'Thymeleaf', 'Bootstrap', 'MySQL', 'Business', 'Web'],
       link: 'https://github.com/Hugs-4-Bugs/Hospital-Managment-Application',
-      image: '/images/hospital.png',
+      image: '/hospital.png',
       imageAiHint: 'hospital dashboard interface'
     },
     {
@@ -182,7 +182,7 @@ export const siteConfig = {
       description: 'Spring Boot project simulating Bitcoin mining operations with account management, transactions, and audit logging. Integrates BitcoinJ and REST APIs.',
       tags: ['Spring Boot', 'BitcoinJ', 'MySQL', 'REST API', 'Finance', 'API'],
       link: 'https://github.com/Hugs-4-Bugs/Bitcoin-Mining-App',
-      image: '/images/bitcoinmining.png',
+      image: '/bitcoinmining.png',
       imageAiHint: 'bitcoin mining dashboard'
     },
     {
@@ -190,7 +190,7 @@ export const siteConfig = {
       description: 'Spring Boot REST API for uploading multiple files to the database using Spring Data JPA. Supports multipart handling and easy integration.',
       tags: ['Spring Boot', 'REST API', 'File Upload', 'Utility', 'API'],
       link: 'https://github.com/Hugs-4-Bugs/MultiFileUpload-Using-Spring-Boot-Application',
-      image: '/images/multifileupload.png',
+      image: '/multifileupload.png',
       imageAiHint: 'file upload ui'
     },
     {
@@ -198,7 +198,7 @@ export const siteConfig = {
       description: 'Java-based QR code generator that accepts text input and outputs custom QR codes. Includes REST endpoints and Postman test support.',
       tags: ['Java', 'QR Code', 'Spring Boot', 'Utility', 'API'],
       link: 'https://github.com/Hugs-4-Bugs/QR-code-Generator',
-      image: '/images/qrcode.png',
+      image: '/qrcode.png',
       imageAiHint: 'qr code generator'
     },
     {
@@ -206,7 +206,7 @@ export const siteConfig = {
       description: 'A curated collection of 100+ portfolio templates built using HTML, CSS, and JavaScript. Ideal for design inspiration and development practice.',
       tags: ['HTML', 'CSS', 'JavaScript', 'UI Design', 'Resources', 'Web'],
       link: 'https://github.com/Hugs-4-Bugs/Awesome-Portfolio-Collection',
-      image: '/images/awesomeportfolio.png',
+      image: '/awesomeportfolio.png',
       imageAiHint: 'web developer portfolio gallery'
     },
     {
@@ -214,7 +214,7 @@ export const siteConfig = {
       description: 'Automates contributions to restore broken GitHub streaks using Node.js and Git. Ideal for devs who missed a commit.',
       tags: ['Node.js', 'Automation', 'Git', 'Utility'],
       link: 'https://github.com/Hugs-4-Bugs/github-streak-back.git',
-      image: '/images/githubstreakback.png',
+      image: '/githubstreakback.png',
       imageAiHint: 'github contribution graph automation'
     },
     {
@@ -222,7 +222,7 @@ export const siteConfig = {
       description: 'A learning platform for DSA concepts with visualizations. Helps learners understand algorithms via interactive examples.',
       tags: ['JavaScript', 'Algorithms', 'Data Structures', 'Educational'],
       link: 'https://github.com/Hugs-4-Bugs/AlgoByPrabhat.git',
-      image: '/images/algobyprabhat.png',
+      image: '/algobyprabhat.png',
       imageAiHint: 'algorithm visualizer interface'
     },
     {
@@ -230,7 +230,7 @@ export const siteConfig = {
       description: 'Voice-activated desktop assistant built with JavaScript and Node.js. Uses AppleScript to automate OS-level tasks.',
       tags: ['JavaScript', 'Voice Control', 'Node.js', 'AI', 'Utility'],
       link: 'https://github.com/Hugs-4-Bugs/Sharma-AI.git',
-      image: '/images/sharmaAI.png',
+      image: '/sharmaAI.png',
       imageAiHint: 'voice assistant interface'
     },
     {
@@ -238,7 +238,7 @@ export const siteConfig = {
       description: 'Spring Boot app for managing user data with REST API. Supports CRUD operations and MySQL integration.',
       tags: ['Spring Boot', 'MySQL', 'REST API', 'API', 'Business'],
       link: 'https://github.com/Hugs-4-Bugs/user-details-app.git',
-      image: '/images/userdetailapp.png',
+      image: '/userdetailapp.png',
       imageAiHint: 'user profile management'
     },
     {
@@ -246,7 +246,7 @@ export const siteConfig = {
       description: 'Integrates OpenAI into a Spring Boot backend to enable AI-powered text generation, response crafting, and content creation.',
       tags: ['Spring Boot', 'OpenAI', 'REST API', 'AI', 'API'],
       link: 'https://github.com/Hugs-4-Bugs/SpringBoot-OpenAI',
-      image: '/images/springopenai.png',
+      image: '/springopenai.png',
       imageAiHint: 'ai integration spring boot'
     },
     {
@@ -254,7 +254,7 @@ export const siteConfig = {
       description: 'Spring Boot application providing mobile banking services like transactions, fund transfers, and account management.',
       tags: ['Spring Boot', 'Banking', 'MySQL', 'Finance', 'Business'],
       link: 'https://github.com/Hugs-4-Bugs/Mobile-Banking-System-Project',
-      image: '/images/mobilebanking.png',
+      image: '/mobilebanking.png',
       imageAiHint: 'mobile banking interface'
     },
     {
@@ -262,7 +262,7 @@ export const siteConfig = {
       description: 'A ride-hailing platform with real-time ride tracking, driver management, and fare estimation. Built with Spring Boot.',
       tags: ['Spring Boot', 'Maps API', 'E-commerce', 'Business'],
       link: 'https://github.com/Hugs-4-Bugs/Uber-Application.git',
-      image: '/images/uberapp.png',
+      image: '/uberapp.png',
       imageAiHint: 'uber clone interface'
     },
     {
@@ -270,7 +270,7 @@ export const siteConfig = {
       description: 'Spring Boot-based system for handling cafe operations like order processing, billing, and menu updates.',
       tags: ['Spring Boot', 'Cafe App', 'MySQL', 'E-commerce', 'Business'],
       link: 'https://github.com/Hugs-4-Bugs/Cafe-Management-System.git',
-      image: '/images/cafemanagement.png',
+      image: '/cafemanagement.png',
       imageAiHint: 'cafe billing interface'
     },
     {
@@ -278,7 +278,7 @@ export const siteConfig = {
       description: 'Spring Boot integration with Ollama AI using Spring AI and Flux to deliver both synchronous and streaming AI responses.',
       tags: ['Spring Boot', 'Ollama', 'Spring AI', 'LLMs', 'AI', 'API'],
       link: 'https://github.com/Hugs-4-Bugs/Ollama-Spring-Boot-AI-Implementation.git',
-      image: '/images/ollamaspring.png',
+      image: '/ollamaspring.png',
       imageAiHint: 'spring ai ollama chatbot'
     },
     {
@@ -286,7 +286,7 @@ export const siteConfig = {
       description: 'A microservice-based LinkedIn clone with features like connections, posts, notifications, and user profiles.',
       tags: ['Spring Boot', 'Microservices', 'API Gateway', 'Eureka', 'Social', 'API'],
       link: 'https://github.com/Hugs-4-Bugs/LinkedIn-Application.git',
-      image: '/images/linkedinapp.png',
+      image: '/linkedinapp.png',
       imageAiHint: 'linkedin clone ui'
     }
   ] as Project[],
@@ -412,3 +412,5 @@ export const siteConfig = {
 };
 
     
+
+  
