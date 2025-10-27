@@ -5,6 +5,9 @@ import { z } from "zod";
 import { detectSpam } from "@/ai/flows/detect-spam-contact-form";
 import { parseResumeAndAutofill } from "@/ai/flows/parse-resume-autofill-form";
 import { suggestResumeImprovements } from "@/ai/flows/suggest-resume-improvements";
+import { askPrabhatAI } from "@/ai/flows/ask-prabhat-ai-flow";
+import { textToSpeech } from "@/ai/flows/text-to-speech-flow";
+
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -121,4 +124,25 @@ export async function handleResumeUpload(
       message: "Failed to process resume. The file might be corrupted or in an unsupported format. Please try another file.",
     };
   }
+}
+
+// AI Assistant Actions
+export async function getAIResponse(question: string) {
+  try {
+    const response = await askPrabhatAI({ question });
+    return { success: true, answer: response.answer };
+  } catch (error) {
+    console.error("Error getting AI response:", error);
+    return { success: false, message: "Sorry, I couldn't get a response from the AI." };
+  }
+}
+
+export async function getAIAudio(text: string) {
+    try {
+        const audioDataUri = await textToSpeech(text);
+        return { success: true, audio: audioDataUri };
+    } catch (error) {
+        console.error('Error generating TTS audio:', error);
+        return { success: false, message: 'Sorry, I was unable to generate audio for that response.' };
+    }
 }

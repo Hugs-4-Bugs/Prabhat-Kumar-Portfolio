@@ -1,0 +1,234 @@
+'use client';
+
+import { useState, useEffect, useRef, useTransition } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Lottie from "lottie-react";
+import { Mic, MicOff, Send, Bot, User, X, Volume2, Loader2, Sparkles } from 'lucide-react';
+import { useReactMediaRecorder } from 'react-media-recorder';
+import { useAudio, useToggle } from 'react-use';
+
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { getAIResponse, getAIAudio } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
+
+import listeningAnimation from '@/lib/listening-animation.json';
+
+interface Message {
+  sender: 'user' | 'ai';
+  text: string;
+}
+
+export function AIAssistant() {
+  const { toast } = useToast();
+  const [isOpen, toggleOpen] = useToggle(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [userInput, setUserInput] = useState('');
+  const [isAITyping, setIsAITyping] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  // Audio response handling
+  const [audio, audioState, audioControls] = useAudio({ src: '' });
+  
+  useEffect(() => {
+    if (audioState.playing) setIsAudioPlaying(true);
+    else setIsAudioPlaying(false);
+  }, [audioState.playing]);
+
+
+  // Speech-to-text handling
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn("Speech Recognition not supported by this browser.");
+      return;
+    }
+    recognitionRef.current = new SpeechRecognition();
+    recognitionRef.current.continuous = false;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = 'en-US';
+
+    recognitionRef.current.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setUserInput(transcript);
+      handleSend(transcript);
+      setIsListening(false);
+    };
+    recognitionRef.current.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      toast({ title: 'Voice Error', description: `Could not recognize speech: ${event.error}`, variant: 'destructive'});
+      setIsListening(false);
+    };
+     recognitionRef.current.onstart = () => {
+      setIsListening(true);
+    };
+    recognitionRef.current.onend = () => {
+      setIsListening(false);
+    };
+  }, [toast]);
+
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+    } else {
+      recognitionRef.current?.start();
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      handleSend("Hello");
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight });
+    }
+  }, [messages]);
+
+  const handleSend = async (text?: string) => {
+    const query = text || userInput;
+    if (!query.trim()) return;
+
+    audioControls.pause();
+    
+    setMessages(prev => [...prev, { sender: 'user', text: query }]);
+    setUserInput('');
+    setIsAITyping(true);
+
+    const response = await getAIResponse(query);
+
+    if (response.success && response.answer) {
+      setMessages(prev => [...prev, { sender: 'ai', text: response.answer as string }]);
+      const audioResponse = await getAIAudio(response.answer as string);
+      if(audioResponse.success && audioResponse.audio) {
+          audioControls.src(audioResponse.audio);
+          audioControls.play();
+      } else {
+         toast({ title: 'Audio Error', description: audioResponse.message, variant: 'destructive' });
+      }
+
+    } else {
+      setMessages(prev => [...prev, { sender: 'ai', text: response.message || 'An error occurred.' }]);
+    }
+    setIsAITyping(false);
+  };
+  
+  return (
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="fixed bottom-24 right-4 sm:right-6 md:right-8 z-[999] w-[calc(100vw-2rem)] max-w-md"
+          >
+            <Card className="h-[70vh] flex flex-col shadow-2xl dark:shadow-primary/10">
+              <CardHeader className="flex flex-row items-center justify-between border-b">
+                <div className="flex items-center gap-3">
+                  <Bot className="text-primary" />
+                  <CardTitle className="font-headline text-xl">Sharma AI</CardTitle>
+                </div>
+                <Button variant="ghost" size="icon" onClick={toggleOpen} data-cursor-hover>
+                  <X size={20} />
+                </Button>
+              </CardHeader>
+              <CardContent className="flex-grow p-0 flex flex-col">
+                <ScrollArea className="flex-grow h-0 p-4" ref={scrollAreaRef}>
+                  <div className="space-y-6">
+                    {messages.map((msg, i) => (
+                      <div key={i} className={cn('flex items-end gap-2', msg.sender === 'user' ? 'justify-end' : '')}>
+                        {msg.sender === 'ai' && <Bot size={24} className="text-primary shrink-0" />}
+                        <div
+                          className={cn(
+                            'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm',
+                            msg.sender === 'user'
+                              ? 'bg-primary text-primary-foreground rounded-br-none'
+                              : 'bg-secondary rounded-bl-none'
+                          )}
+                        >
+                          {msg.text}
+                        </div>
+                         {msg.sender === 'user' && <User size={24} className="text-muted-foreground shrink-0" />}
+                      </div>
+                    ))}
+                    {isAITyping && (
+                      <div className="flex items-end gap-2">
+                        <Bot size={24} className="text-primary shrink-0" />
+                        <div className="bg-secondary rounded-2xl rounded-bl-none px-4 py-2.5 flex items-center gap-2">
+                            <span className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-0"></span>
+                            <span className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-150"></span>
+                            <span className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse delay-300"></span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+                {isListening && (
+                    <div className="flex justify-center items-center p-2 border-t">
+                        <Lottie animationData={listeningAnimation} loop={true} style={{width: 60, height: 60}}/>
+                        <p className="text-sm text-muted-foreground">Listening...</p>
+                    </div>
+                )}
+                <div className="p-4 border-t flex items-center gap-2">
+                  {audio}
+                  <Textarea
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
+                    placeholder="Ask about Prabhat..."
+                    rows={1}
+                    className="flex-grow resize-none min-h-0"
+                    disabled={isAITyping || isListening}
+                    data-cursor-hover
+                  />
+                  <Button size="icon" onClick={toggleListening} disabled={!recognitionRef.current || isAITyping} variant={isListening ? "destructive" : "outline"} data-cursor-hover>
+                    {isListening ? <MicOff /> : <Mic />}
+                  </Button>
+                  <Button size="icon" onClick={() => handleSend()} disabled={!userInput.trim() || isAITyping || isListening} data-cursor-hover>
+                    <Send />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        className="fixed bottom-6 right-4 sm:right-6 md:right-8 z-[1000]"
+      >
+        <Button size="icon" className="rounded-full w-14 h-14 shadow-lg" onClick={toggleOpen} data-cursor-hover>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={isOpen ? 'x' : 'bot'}
+              initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+              animate={{ opacity: 1, rotate: 0, scale: 1 }}
+              exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+              transition={{ duration: 0.2 }}
+            >
+              {isOpen ? <X /> : <Bot />}
+            </motion.div>
+          </AnimatePresence>
+        </Button>
+      </motion.div>
+    </>
+  );
+}

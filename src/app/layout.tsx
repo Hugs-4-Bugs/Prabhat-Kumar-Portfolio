@@ -4,9 +4,10 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { SmoothScroll } from '@/components/smooth-scroll';
 import { CustomCursor } from '@/components/custom-cursor';
-import { Provider as BalancerProvider } from 'react-wrap-balancer';
+import { BalancerProvider } from 'react-wrap-balancer';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { AIAssistant } from '@/components/ai-assistant';
 
 export const metadata: Metadata = {
   title: "Prabhat Kumar - Software Alchemist",
@@ -40,6 +41,7 @@ export default function RootLayout({
                 <main className="flex-grow">{children}</main>
                 <Footer />
               </div>
+              <AIAssistant />
             </SmoothScroll>
           </BalancerProvider>
           <Toaster />
