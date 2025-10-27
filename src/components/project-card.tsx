@@ -1,0 +1,57 @@
+// src/components/project-card.tsx
+import Image from "next/image";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
+
+import type { Project } from "@/lib/types";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+
+interface ProjectCardProps {
+  project: Project;
+}
+
+export function ProjectCard({ project }: ProjectCardProps) {
+  const placeholder = PlaceHolderImages.find(p => p.id === project.image);
+
+  return (
+    <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+      <CardHeader>
+        {placeholder && (
+            <div className="aspect-[3/2] w-full overflow-hidden rounded-md mb-4">
+                <Image
+                    src={placeholder.imageUrl}
+                    alt={project.title}
+                    width={600}
+                    height={400}
+                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                    data-ai-hint={placeholder.imageHint}
+                />
+            </div>
+        )}
+        <CardTitle className="text-xl font-headline">{project.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-grow flex flex-col">
+        <ScrollArea className="h-28 pr-4 mb-4">
+          <CardDescription className="text-sm">{project.description}</CardDescription>
+        </ScrollArea>
+        <div className="flex flex-wrap gap-2">
+          {project.tags.map((tag) => (
+            <Badge key={tag} variant="secondary" className="font-normal">{tag}</Badge>
+          ))}
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button asChild variant="outline" className="w-full" data-cursor-hover>
+          <a href={project.link} target="_blank" rel="noopener noreferrer">
+            Project Link
+            <ExternalLink className="ml-2 h-4 w-4" />
+          </a>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
