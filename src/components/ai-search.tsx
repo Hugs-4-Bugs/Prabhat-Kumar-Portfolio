@@ -150,58 +150,56 @@ export function AISearch() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[1000] bg-background/80 backdrop-blur-lg flex flex-col"
+            className="fixed inset-0 z-[1000] bg-background/80 backdrop-blur-lg flex items-center justify-center"
         >
-            <div className="absolute top-4 right-4 z-20">
+             <div className="absolute top-4 right-4 z-20">
                 <Button variant="ghost" size="icon" onClick={handleClose} data-cursor-hover>
                     <X className="h-5 w-5" />
                     <span className="sr-only">Close AI Search</span>
                 </Button>
             </div>
             
-            <div className="container max-w-4xl mx-auto flex flex-col h-full">
-                <div className="flex-shrink-0">
-                    <motion.div 
-                        initial={{ y: -50, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -50, opacity: 0 }}
-                        transition={{ ease: "easeOut" }}
-                        className="text-center pt-12 pb-8"
-                    >
-                        <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
-                            <Balancer>
-                                Ask <span className="text-primary">Sharma</span> AI
-                            </Balancer>
-                        </h1>
-                        <p className="text-muted-foreground mt-2">
-                            Your personal guide to Prabhat Kumar's portfolio.
-                        </p>
-                    </motion.div>
-
-                    <form onSubmit={handleFormSubmit} className="relative mb-8">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                        <input
-                            type="text"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Ask anything about Prabhat's skills, projects, or experience..."
-                            className="w-full h-14 pl-12 pr-32 rounded-full border bg-secondary/50 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
-                            disabled={isPending || isListening}
-                            data-cursor-hover
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                            <Button type="button" size="icon" variant={isListening ? "destructive" : "ghost"} onClick={toggleListening} disabled={isPending || !recognitionRef.current}>
-                                {isListening ? <MicOff /> : <Mic />}
-                            </Button>
-                             <Button type="submit" size="icon" variant="ghost" disabled={isPending || isListening || !query.trim()}>
-                                <Keyboard />
-                            </Button>
-                        </div>
-                    </form>
+            <motion.div 
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -50, opacity: 0 }}
+                transition={{ ease: "easeOut" }}
+                className="w-full max-w-4xl h-full flex flex-col pt-12 pb-8 px-4"
+            >
+                <div className="flex-shrink-0 text-center pb-8">
+                    <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
+                        <Balancer>
+                            Ask <span className="text-primary">Sharma</span> AI
+                        </Balancer>
+                    </h1>
+                    <p className="text-muted-foreground mt-2">
+                        Your personal guide to Prabhat Kumar's portfolio.
+                    </p>
                 </div>
+
+                <form onSubmit={handleFormSubmit} className="relative mb-8 flex-shrink-0">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Ask anything about Prabhat's skills, projects, or experience..."
+                        className="w-full h-14 pl-12 pr-32 rounded-full border bg-secondary/50 focus:ring-2 focus:ring-primary focus:outline-none transition-all"
+                        disabled={isPending || isListening}
+                        data-cursor-hover
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <Button type="button" size="icon" variant={isListening ? "destructive" : "ghost"} onClick={toggleListening} disabled={isPending || !recognitionRef.current}>
+                            {isListening ? <MicOff /> : <Mic />}
+                        </Button>
+                         <Button type="submit" size="icon" variant="ghost" disabled={isPending || isListening || !query.trim()}>
+                            <Keyboard />
+                        </Button>
+                    </div>
+                </form>
                 
-                <ScrollArea className="flex-grow pb-8">
-                    <div className="min-h-[100px]">
+                <ScrollArea className="flex-grow">
+                    <div className="min-h-[100px] pb-8">
                       <AnimatePresence>
                       {isListening && (
                          <motion.div 
@@ -251,7 +249,7 @@ export function AISearch() {
                       </AnimatePresence>
                     </div>
                 </ScrollArea>
-            </div>
+            </motion.div>
         </motion.div>
     </AnimatePresence>
   );
