@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { SmoothScroll } from '@/components/smooth-scroll';
 import { CustomCursor } from '@/components/custom-cursor';
-import { BalancerProvider } from 'react-wrap-balancer';
+import { Provider as BalancerProvider } from 'react-wrap-balancer';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { AIAssistant } from '@/components/ai-assistant';
