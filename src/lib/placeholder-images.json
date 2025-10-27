@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "profile-picture",
-      "imageUrl": "https://images.unsplash.com/photo-1522556189639-b150ed9c4330?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjE0NzAyMTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://storage.googleapis.com/monorepo-prod.appspot.com/user_uploads/78a9c293-6e42-497b-9442-99933930b53c.jpeg",
       "imageHint": "man portrait",
-      "description": "Profile picture of Prabhat Kumar"
+      "description": "Prabhat image"
     },
     {
       "id": "project-crypto-prediction",
@@ -119,6 +119,24 @@
       "imageUrl": "https://images.unsplash.com/photo-1704018453307-d563498b585b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzb2NpYWwlMjBuZXR3b3JrfGVufDB8fHx8MTc2MTUyMjgyOXww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "social network",
       "description": "LinkedIn Application"
+    },
+    {
+      "id": "project-quantumfusion",
+      "imageUrl": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx0ZWNoJTIwY29tcGFueXxlbnwwfHx8fDE3NjE5MjI5MDR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tech company",
+      "description": "QuantumFusion Solutions Website"
+    },
+    {
+      "id": "project-prabhatverse",
+      "imageUrl": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkZXZlbG9wZXIlMjBwb3J0Zm9saW98ZW58MHx8fHwxNzYxOTIyOTYxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "developer portfolio",
+      "description": "PrabhatVerse Personal Website"
+    },
+    {
+      "id": "project-articlehub",
+      "imageUrl": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhcnRpY2xlJTIwaHViJTIwd2Vic2l0ZXxlbnwwfHx8fDE3NjE5MjMwMDV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "article hub website",
+      "description": "ArticleHub Content Management Platform"
     }
   ]
 }
