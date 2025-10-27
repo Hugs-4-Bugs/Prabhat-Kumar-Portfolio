@@ -1,4 +1,3 @@
-
 // src/lib/data.ts
 import {
   Github,
@@ -407,5 +406,3 @@ export const siteConfig = {
     },
   ] as TechCategory[],
 };
-
-    
