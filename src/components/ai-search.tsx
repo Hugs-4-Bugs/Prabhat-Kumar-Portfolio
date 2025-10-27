@@ -62,6 +62,12 @@ export function AISearch() {
     });
   }, [stopAudio, toast]);
 
+  // Use a ref to hold the latest `handleSubmit` function
+  const handleSubmitRef = useRef(handleSubmit);
+  useEffect(() => {
+    handleSubmitRef.current = handleSubmit;
+  }, [handleSubmit]);
+
   // Speech-to-text handling
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -71,29 +77,38 @@ export function AISearch() {
       toast({ title: "Compatibility Error", description: "Voice input is not supported by your browser.", variant: "destructive" });
       return;
     }
-    recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.continuous = false;
-    recognitionRef.current.interimResults = false;
-    recognitionRef.current.lang = 'en-US';
+    
+    if (!recognitionRef.current) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
 
-    recognitionRef.current.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setQuery(transcript);
-      handleSubmit(transcript); // <-- This was the missing piece
-      setIsListening(false);
-    };
-    recognitionRef.current.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
-      toast({ title: 'Voice Error', description: `Could not recognize speech: ${event.error}`, variant: 'destructive'});
-      setIsListening(false);
-    };
-     recognitionRef.current.onstart = () => {
-      setIsListening(true);
-    };
-    recognitionRef.current.onend = () => {
-      setIsListening(false);
-    };
-  }, [toast, handleSubmit]);
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            setQuery(transcript);
+            // Call the latest handleSubmit from the ref
+            handleSubmitRef.current(transcript); 
+            setIsListening(false);
+        };
+
+        recognition.onerror = (event) => {
+            console.error("Speech recognition error:", event.error);
+            toast({ title: 'Voice Error', description: `Could not recognize speech: ${event.error}`, variant: 'destructive'});
+            setIsListening(false);
+        };
+        
+        recognition.onstart = () => {
+            setIsListening(true);
+        };
+        
+        recognition.onend = () => {
+            setIsListening(false);
+        };
+        
+        recognitionRef.current = recognition;
+    }
+  }, [toast]);
   
   const toggleListening = () => {
     if (!recognitionRef.current) return;
@@ -101,6 +116,8 @@ export function AISearch() {
       recognitionRef.current.stop();
     } else {
       stopAudio();
+      setQuery('');
+      setResult(null);
       recognitionRef.current.start();
     }
   };
