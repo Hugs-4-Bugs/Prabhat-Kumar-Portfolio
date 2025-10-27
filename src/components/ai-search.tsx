@@ -210,7 +210,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                         <div className="flex-shrink-0 text-center pb-8">
                             <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
                                 <Balancer>
-                                    Ask <span className="text-primary">Sharma</span> AI
+                                    <span className="text-primary">Sharma</span> AI
                                 </Balancer>
                             </h1>
                             <p className="text-muted-foreground mt-2">
