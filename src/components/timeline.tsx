@@ -1,17 +1,27 @@
 // src/components/timeline.tsx
 "use client";
 
-import type { LucideIcon } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import type { TimelineEvent } from "@/lib/types";
 
+type IconName = keyof typeof LucideIcons;
+
 interface TimelineProps {
   events: TimelineEvent[];
-  icon: LucideIcon;
+  iconName: IconName;
 }
 
-export function Timeline({ events, icon: Icon }: TimelineProps) {
+const Icon = ({ name, className }: { name: IconName; className?: string }) => {
+  const LucideIcon = LucideIcons[name];
+  if (!LucideIcon) {
+    return null;
+  }
+  return <LucideIcon className={className} />;
+};
+
+export function Timeline({ events, iconName }: TimelineProps) {
   const itemVariants = {
     hidden: { opacity: 0, x: -50 },
     visible: (i: number) => ({
@@ -43,7 +53,7 @@ export function Timeline({ events, icon: Icon }: TimelineProps) {
           </div>
           
           <div className="relative z-10 w-12 h-12 rounded-full bg-secondary border-4 border-background flex-shrink-0 flex items-center justify-center">
-            <Icon className="w-6 h-6 text-primary" />
+            <Icon name={iconName} className="w-6 h-6 text-primary" />
           </div>
 
           <div className="flex-grow pb-12 md:w-1/2 md:pl-12 md:text-left">

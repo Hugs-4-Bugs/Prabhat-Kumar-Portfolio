@@ -4,7 +4,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { SmoothScroll } from '@/components/smooth-scroll';
 import { CustomCursor } from '@/components/custom-cursor';
-import Balancer from 'react-wrap-balancer';
+import { Provider as BalancerProvider } from 'react-wrap-balancer';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 
@@ -32,7 +32,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Balancer.Provider>
+          <BalancerProvider>
             <SmoothScroll>
               <CustomCursor />
               <div className="flex flex-col min-h-screen">
@@ -41,7 +41,7 @@ export default function RootLayout({
                 <Footer />
               </div>
             </SmoothScroll>
-          </Balancer.Provider>
+          </BalancerProvider>
           <Toaster />
         </ThemeProvider>
       </body>
