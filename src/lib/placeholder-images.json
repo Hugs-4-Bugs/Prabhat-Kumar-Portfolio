@@ -2,7 +2,7 @@
   "placeholderImages": [
     {
       "id": "profile-picture",
-      "imageUrl": "https://storage.googleapis.com/monorepo-prod.appspot.com/user_uploads/78a9c293-6e42-497b-9442-99933930b53c.jpeg",
+      "imageUrl": "/Prabhat image.png",
       "imageHint": "man portrait",
       "description": "Prabhat image"
     },
