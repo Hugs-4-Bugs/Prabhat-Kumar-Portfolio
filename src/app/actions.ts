@@ -1,16 +1,25 @@
+
 "use server";
 
 import { z } from "zod";
+import { Resend } from "resend";
 import { detectSpam } from "@/ai/flows/detect-spam-contact-form";
 import { parseResumeAndAutofill } from "@/ai/flows/parse-resume-autofill-form";
 import { suggestResumeImprovements } from "@/ai/flows/suggest-resume-improvements";
 import { askPrabhatAI } from "@/ai/flows/ask-prabhat-ai-flow";
 import { textToSpeech } from "@/ai/flows/text-to-speech-flow";
 
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
-  email: z.string().email("Invalid email address."),
+  email: z.string().email("Invalid email address.").refine(email => {
+    const validDomains = ["gmail.com", "yahoo.com", "outlook.com", "icloud.com"];
+    const domain = email.split('@')[1];
+    return validDomains.includes(domain);
+  }, {
+    message: "Please use a valid email provider (Gmail, Yahoo, Outlook, or iCloud)."
+  }),
   message: z.string().min(10, "Message must be at least 10 characters."),
 });
 
@@ -42,7 +51,7 @@ export async function submitContactForm(
     };
   }
 
-  const { message } = validatedFields.data;
+  const { name, email, message } = validatedFields.data;
 
   try {
     const spamResult = await detectSpam({ message });
@@ -53,9 +62,16 @@ export async function submitContactForm(
       };
     }
 
-    // Here you would typically send an email
-    // For this example, we'll just simulate success
-    console.log("Form data submitted:", validatedFields.data);
+    await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: 'mailtoprabhat72@gmail.com',
+      subject: `New Contact Form Submission from ${name}`,
+      html: `<p>You have a new message from your portfolio contact form:</p>
+             <p><strong>Name:</strong> ${name}</p>
+             <p><strong>Email:</strong> ${email}</p>
+             <p><strong>Message:</strong></p>
+             <p>${message}</p>`
+    });
 
     return {
       success: true,
