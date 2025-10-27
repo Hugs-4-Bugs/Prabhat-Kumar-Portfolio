@@ -7,12 +7,10 @@ import { Projects } from "@/components/sections/projects";
 import { Services } from "@/components/sections/services";
 import { Skills } from "@/components/sections/skills";
 import { TechStack } from "@/components/sections/tech-stack";
-import { AISearch } from "@/components/ai-search";
 
 export default function Home() {
   return (
     <>
-      <AISearch />
       <Hero />
       <About />
       <Services />

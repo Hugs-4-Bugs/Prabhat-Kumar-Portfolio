@@ -4,14 +4,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, useScroll } from "framer-motion";
-import { Menu, X, Github, Linkedin, Instagram } from "lucide-react";
+import { Menu, X, Github, Linkedin, Instagram, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { siteConfig } from "@/lib/data";
 import { Button } from "./ui/button";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
-export function Header() {
+interface HeaderProps {
+  onSearchClick: () => void;
+}
+
+export function Header({ onSearchClick }: HeaderProps) {
   const { scrollYProgress } = useScroll();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
@@ -75,6 +79,9 @@ export function Header() {
           </nav>
           <div className="flex items-center space-x-2">
              <div className="hidden md:flex items-center space-x-1">
+               <Button variant="ghost" size="icon" onClick={onSearchClick} aria-label="AI Search" data-cursor-hover>
+                  <Search size={18}/>
+               </Button>
                <Button variant="ghost" size="icon" asChild>
                  <a href={siteConfig.socials.instagram} target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
                </Button>
@@ -109,9 +116,9 @@ export function Header() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm md:hidden pt-20"
+          className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm md:hidden"
         >
-          <nav className="flex flex-col items-center space-y-6 text-lg font-medium">
+          <div className="flex flex-col items-center justify-center h-full space-y-6 text-lg font-medium">
             {siteConfig.navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -122,7 +129,11 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-          </nav>
+            <div className="border-t w-1/2 my-4"></div>
+            <Button variant="ghost" onClick={() => { onSearchClick(); setIsMobileMenuOpen(false); }} className="text-lg">
+                <Search className="mr-2"/> AI Search
+            </Button>
+          </div>
         </motion.div>
       )}
     </>
