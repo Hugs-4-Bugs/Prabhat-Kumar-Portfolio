@@ -50,26 +50,13 @@ export function AIAssistant() {
   }, [audioState.playing]);
   
   useEffect(() => {
-    // This is a bit of a hack to get the Lenis instance.
-    // In a real app, this might be better handled with context.
-    const lenis = (window as any).lenisInstance as Lenis | undefined;
-    
     const chatContainer = chatContainerRef.current;
-    if (chatContainer && isOpen && lenis) {
-      const handleMouseEnter = () => lenis.stop();
-      const handleMouseLeave = () => lenis.start();
-      
-      chatContainer.addEventListener('mouseenter', handleMouseEnter);
-      chatContainer.addEventListener('mouseleave', handleMouseLeave);
-
+    if (chatContainer && isOpen) {
+      const stopPropagation = (e: WheelEvent) => e.stopPropagation();
+      chatContainer.addEventListener('wheel', stopPropagation);
       return () => {
-        chatContainer.removeEventListener('mouseenter', handleMouseEnter);
-        chatContainer.removeEventListener('mouseleave', handleMouseLeave);
-        // Make sure to re-enable scrolling when the component unmounts or closes
-        if (lenis) lenis.start();
+        chatContainer.removeEventListener('wheel', stopPropagation);
       };
-    } else if (lenis && !isOpen) {
-      lenis.start();
     }
   }, [isOpen]);
 
@@ -101,8 +88,6 @@ export function AIAssistant() {
     } catch (error) {
       console.error("Error in handleSend:", error);
       setMessages(prev => [...prev, { sender: 'ai', text: 'Sorry, something went wrong.' }]);
-    } finally {
-      setIsAITyping(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userInput, audioControls, toast]);
