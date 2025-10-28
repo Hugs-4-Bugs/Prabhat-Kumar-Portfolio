@@ -178,17 +178,11 @@ export function ContactFormHandler() {
       <div>
         <h3 className="text-2xl font-bold font-headline mb-4">Get in Touch</h3>
         <form
-          action={`https://formsubmit.co/${siteConfig.email}`}
+          action={siteConfig.formspreeEndpoint}
           method="POST"
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-4"
         >
-          {/* FormSubmit fields */}
-          <input type="hidden" name="_subject" value={`New Contact Form Submission from ${siteConfig.name} Portfolio!`} />
-          <input type="hidden" name="_captcha" value="false" />
-           <input type="hidden" name="_next" value="https://prabhatkumar.vercel.app/thanks" />
-
-
           <div>
             <Label htmlFor="name">Name</Label>
             <Input id="name" {...register("name")} placeholder="Your Name" data-cursor-hover/>
@@ -212,5 +206,3 @@ export function ContactFormHandler() {
     </div>
   );
 }
-
-    

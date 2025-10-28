@@ -39,6 +39,7 @@ export const siteConfig = {
   email: "mailtoprabhat72@gmail.com",
   phone: "+91 7250063206",
   location: "Bengaluru, India",
+  formspreeEndpoint: "https://formspree.io/f/mqkrvgyl",
   
   navLinks: [
     { href: "#home", label: "Home" },
