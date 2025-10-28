@@ -315,5 +315,3 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     </AnimatePresence>
   );
 }
-
-    
