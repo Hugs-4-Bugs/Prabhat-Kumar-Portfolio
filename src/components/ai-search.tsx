@@ -190,7 +190,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[1000] bg-background/80 backdrop-blur-lg flex items-center justify-center"
+                className="fixed inset-0 z-[1000] bg-background/80 backdrop-blur-lg flex flex-col items-center justify-center"
             >
                 <div className="absolute top-4 right-4 z-20">
                     <Button variant="ghost" size="icon" onClick={handleClose} data-cursor-hover>
@@ -206,21 +206,29 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                     transition={{ ease: "easeOut" }}
                     className="w-full max-w-4xl h-full flex flex-col pt-12 pb-8 px-4"
                 >
-                    {conversation.length === 0 && (
-                        <div className="flex-shrink-0 text-center pb-8">
-                            <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
-                                <Balancer>
-                                    <span className="text-primary">Sharma</span> AI
-                                </Balancer>
-                            </h1>
-                            <p className="text-muted-foreground mt-2">
-                                Your personal guide to Prabhat Kumar's portfolio.
-                            </p>
-                        </div>
-                    )}
+                    <div className="flex-shrink-0 text-center pb-8">
+                        <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
+                            <Balancer>
+                                <span className="text-primary">Sharma</span> AI
+                            </Balancer>
+                        </h1>
+                        <p className="text-muted-foreground mt-2">
+                            Your personal guide to Prabhat Kumar's portfolio.
+                        </p>
+                    </div>
                     
                     <ScrollArea className="flex-grow -mx-4" ref={scrollAreaRef}>
                         <div className="min-h-[100px] px-4 pb-8 space-y-8">
+                        
+                        {conversation.length === 0 && !isPending && !isListening && (
+                             <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="text-center text-muted-foreground pt-16"
+                             >
+                                Ask me anything about Prabhat's skills, experience, or projects.
+                            </motion.div>
+                        )}
                         
                         {conversation.map((message, index) => (
                            <div key={index}>
@@ -313,5 +321,3 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     </AnimatePresence>
   );
 }
-
-    

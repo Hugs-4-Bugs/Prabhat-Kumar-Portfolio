@@ -24,6 +24,8 @@ interface Message {
   text: string;
 }
 
+const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
+
 export function AIAssistant() {
   const { toast } = useToast();
   const [isOpen, toggleOpen] = useToggle(false);
@@ -34,6 +36,7 @@ export function AIAssistant() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   const [audioComponent, setAudioComponent] = useState<React.ReactElement | null>(null);
   const audioStateRef = useRef<any>(null);
@@ -51,6 +54,43 @@ export function AIAssistant() {
   useEffect(() => {
     localStorage.setItem('assistant-conversation', JSON.stringify(messages));
   }, [messages]);
+  
+  // Inactivity timer logic
+  const resetInactivityTimer = useCallback(() => {
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+    inactivityTimerRef.current = setTimeout(() => {
+      setMessages([]);
+      localStorage.removeItem('assistant-conversation');
+      toast({
+        title: "Chat Cleared",
+        description: "Your conversation has been cleared due to inactivity.",
+      });
+    }, INACTIVITY_TIMEOUT);
+  }, [toast]);
+
+  useEffect(() => {
+    const activityEvents: (keyof WindowEventMap)[] = ['mousemove', 'keydown', 'click', 'scroll'];
+    
+    const resetTimer = () => resetInactivityTimer();
+
+    if (isOpen) {
+      resetInactivityTimer();
+      activityEvents.forEach(event => {
+        window.addEventListener(event, resetTimer);
+      });
+    }
+
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [isOpen, resetInactivityTimer]);
 
 
   useEffect(() => {
@@ -286,5 +326,3 @@ export function AIAssistant() {
     </>
   );
 }
-
-    
