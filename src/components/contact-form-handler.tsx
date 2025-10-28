@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Upload, Sparkles, Lightbulb, User, Mail, Phone, Briefcase, List } from "lucide-react";
+import { Loader2, Upload, Sparkles, Lightbulb, User, Mail, Phone, Briefcase, List, AlertTriangle } from "lucide-react";
 import { siteConfig } from "@/lib/data";
 
 const contactFormSchema = z.object({
@@ -26,7 +26,7 @@ const contactFormSchema = z.object({
     const domain = email.split('@')[1];
     return validDomains.includes(domain);
   }, {
-    message: "Please use a valid email provider."
+    message: "Please use a valid email provider (Gmail, Yahoo, Outlook, or iCloud)."
   }),
   message: z.string().min(10, "Message must be at least 10 characters."),
 });
@@ -43,7 +43,7 @@ export function ContactFormHandler() {
     resolver: zodResolver(contactFormSchema),
   });
 
-  const onSubmit: SubmitHandler<ContactFormData> = async (data) => {
+  const onSubmit: SubmitHandler<ContactFormData> = (data) => {
     // This is a client-side function now, but it's not actually submitting via JS
     // The form action will handle the submission.
     // We can use this for any pre-submission logic if needed.
@@ -180,12 +180,13 @@ export function ContactFormHandler() {
         <form
           action={`https://formsubmit.co/${siteConfig.email}`}
           method="POST"
+          onSubmit={handleSubmit(onSubmit)}
           className="space-y-4"
         >
           {/* FormSubmit fields */}
           <input type="hidden" name="_subject" value={`New Contact Form Submission from ${siteConfig.name} Portfolio!`} />
           <input type="hidden" name="_captcha" value="false" />
-           <input type="hidden" name="_next" value="https://your-domain.co/thanks" />
+           <input type="hidden" name="_next" value="https://prabhatkumar.vercel.app/thanks" />
 
 
           <div>
@@ -212,3 +213,4 @@ export function ContactFormHandler() {
   );
 }
 
+    

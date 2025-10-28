@@ -21,8 +21,7 @@ const contactFormSchema = z.object({
 });
 
 // This server action is no longer directly used by the form, 
-// but we keep it in case we need server-side logic in the future
-// and for the AI spam check, which could be triggered separately.
+// but we keep it for the AI spam check, which FormSubmit can call via a webhook if needed.
 export async function submitContactForm(formData: FormData) {
   const validatedFields = contactFormSchema.safeParse({
     name: formData.get("name"),
@@ -43,9 +42,12 @@ export async function submitContactForm(formData: FormData) {
   try {
     const spamResult = await detectSpam({ message });
     if (spamResult.isSpam) {
+      // This part is for potential future use with FormSubmit webhooks.
+      // For now, FormSubmit handles the submission directly.
+      console.log(`Spam detected: ${spamResult.reason}`);
       return {
         success: false,
-        message: `Spam detected: ${spamResult.reason}. Please revise your message.`,
+        message: `Spam detected: ${spamResult.reason}.`,
       };
     }
     
@@ -54,7 +56,7 @@ export async function submitContactForm(formData: FormData) {
 
     return {
       success: true,
-      message: "Form data is valid.",
+      message: "Form data is valid and not spam.",
     };
   } catch (error) {
     console.error("Error in form processing:", error);
@@ -96,7 +98,15 @@ export async function handleResumeUpload(
     const buffer = Buffer.from(bytes);
     const dataURI = `data:${file.type};base64,${buffer.toString("base64")}`;
     
-    const textContent = buffer.toString('utf-8');
+    // Attempt to read text for suggestions. This might fail for non-text files (like PDFs), so we wrap it.
+    let textContent = '';
+    try {
+      textContent = buffer.toString('utf-8');
+    } catch (e) {
+      console.warn('Could not read text content from file for resume suggestions.');
+      textContent = 'Could not extract text from this file format for suggestions.';
+    }
+
 
     const [autofillData, improvementData] = await Promise.all([
         parseResumeAndAutofill({ resumeDataUri: dataURI }),
@@ -155,3 +165,4 @@ export async function getAISearchResponse(question: string, history: Array<{ use
   }
 }
 
+    
