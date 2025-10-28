@@ -2,9 +2,13 @@
 
 Welcome to the source code for my personal portfolio website, a showcase of my skills in software development, AI integration, and modern web technologies. This project is not just a portfolio; it's a demonstration of what's possible with a cutting-edge tech stack.
 
-**Live Demo:** [prabhatkumar.vercel.app](https://prabhatkumar.vercel.app/)
+**Live Demo:** [prabhat-codes.vercel.app](https://prabhat-codes.vercel.app/)
 
-![Prabhat Kumar Portfolio Screenshot](/public/screenshot.png)
+
+<img width="1440" height="900" alt="Screenshot 2025-10-28 at 7 17 18 PM" src="https://github.com/user-attachments/assets/27c3eef1-4886-4df7-87f4-dbfbb69ff782" />
+
+<img width="1440" height="900" alt="Screenshot 2025-10-28 at 7 18 48 PM" src="https://github.com/user-attachments/assets/4c962dde-dda7-4e50-bbbb-419516256c61" />
+
 
 ## ✨ Core Features
 
