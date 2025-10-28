@@ -166,7 +166,7 @@ export function AIAssistant() {
 
     recognitionRef.current.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      handleSend(transcript);
+      setUserInput(transcript);
       setIsListening(false);
     };
     recognitionRef.current.onerror = (event) => {
@@ -180,7 +180,7 @@ export function AIAssistant() {
     recognitionRef.current.onend = () => {
       setIsListening(false);
     };
-  }, [toast, handleSend]);
+  }, [toast]);
 
   const toggleListening = () => {
     if (isListening) {
@@ -326,3 +326,5 @@ export function AIAssistant() {
     </>
   );
 }
+
+    

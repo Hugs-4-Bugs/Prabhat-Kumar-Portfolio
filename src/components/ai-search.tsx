@@ -99,11 +99,6 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     });
   }, [stopAudio, toast, conversation]);
 
-  const handleSubmitRef = useRef(handleSubmit);
-  useEffect(() => {
-    handleSubmitRef.current = handleSubmit;
-  }, [handleSubmit]);
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -121,7 +116,6 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
             setQuery(transcript);
-            handleSubmitRef.current(transcript); 
             setIsListening(false);
         };
 
@@ -190,7 +184,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[1000] bg-background/80 backdrop-blur-lg flex flex-col items-center justify-center"
+                className="fixed inset-0 z-[1000] bg-background/80 backdrop-blur-lg flex flex-col items-center justify-start"
             >
                 <div className="absolute top-4 right-4 z-20">
                     <Button variant="ghost" size="icon" onClick={handleClose} data-cursor-hover>
@@ -206,7 +200,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                     transition={{ ease: "easeOut" }}
                     className="w-full max-w-4xl h-full flex flex-col pt-12 pb-8 px-4"
                 >
-                    <div className="flex-shrink-0 text-center pb-8">
+                    <div className="flex-shrink-0 text-center pb-8 sticky top-0 bg-background/80 backdrop-blur-sm z-10 pt-4 -mt-4">
                         <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
                             <Balancer>
                                 <span className="text-primary">Sharma</span> AI
@@ -321,3 +315,5 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     </AnimatePresence>
   );
 }
+
+    
