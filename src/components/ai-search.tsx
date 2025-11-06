@@ -4,7 +4,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Balancer from "react-wrap-balancer";
-import { Sparkles, Loader2, X, Search, Mic, MicOff, Keyboard, User } from "lucide-react";
+import { Sparkles, Loader2, X, Search, Mic, MicOff, Keyboard, User, Trash2 } from "lucide-react";
 import Lottie from "lottie-react";
 
 import { getAISearchResponse, getAIAudio } from "@/app/actions";
@@ -57,6 +57,16 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
       setAudio(null);
     }
   }, [audio]);
+
+  const handleClearConversation = () => {
+    stopAudio();
+    setConversation([]);
+    localStorage.removeItem('ai-search-conversation');
+    toast({
+      title: "Conversation Cleared",
+      description: "The chat history has been cleared.",
+    });
+  }
   
   const handleSubmit = useCallback(async (currentQuery: string) => {
     if (!currentQuery.trim()) return;
@@ -186,7 +196,13 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                 exit={{ opacity: 0 }}
                 className="fixed inset-0 z-[1000] bg-background/80 backdrop-blur-lg flex flex-col items-center justify-start"
             >
-                <div className="absolute top-4 right-4 z-20">
+                <div className="absolute top-4 right-4 z-20 flex gap-2">
+                    {conversation.length > 0 && (
+                      <Button variant="ghost" size="icon" onClick={handleClearConversation} data-cursor-hover>
+                          <Trash2 className="h-5 w-5" />
+                          <span className="sr-only">Clear Conversation</span>
+                      </Button>
+                    )}
                     <Button variant="ghost" size="icon" onClick={handleClose} data-cursor-hover>
                         <X className="h-5 w-5" />
                         <span className="sr-only">Close AI Search</span>

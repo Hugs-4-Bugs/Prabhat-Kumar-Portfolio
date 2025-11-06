@@ -24,9 +24,13 @@ interface Message {
   text: string;
 }
 
+interface AIAssistantProps {
+  isSearchOpen: boolean;
+}
+
 const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
-export function AIAssistant() {
+export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
   const { toast } = useToast();
   const [isOpen, toggleOpen] = useToggle(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -303,26 +307,32 @@ export function AIAssistant() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <motion.div
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        className="fixed bottom-6 right-4 sm:right-6 md:right-8 z-[1000]"
-      >
-        <Button size="icon" className="rounded-full w-14 h-14 shadow-lg" onClick={toggleOpen} data-cursor-hover>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={isOpen ? 'x' : 'bot'}
-              initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
-              animate={{ opacity: 1, rotate: 0, scale: 1 }}
-              exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
-              transition={{ duration: 0.2 }}
-            >
-              {isOpen ? <X /> : <Bot />}
-            </motion.div>
-          </AnimatePresence>
-        </Button>
-      </motion.div>
+      <AnimatePresence>
+        {!isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="fixed bottom-6 right-4 sm:right-6 md:right-8 z-[1000]"
+          >
+            <Button size="icon" className="rounded-full w-14 h-14 shadow-lg" onClick={toggleOpen} data-cursor-hover>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={isOpen ? 'x' : 'bot'}
+                  initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
+                  animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                  exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {isOpen ? <X /> : <Bot />}
+                </motion.div>
+              </AnimatePresence>
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

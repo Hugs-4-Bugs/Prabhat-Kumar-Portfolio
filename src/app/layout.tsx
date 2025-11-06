@@ -26,7 +26,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [isSearchOpen, setIsSearchOpen] = useState(true);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Set document title
   if (typeof window !== 'undefined') {
@@ -57,7 +57,7 @@ export default function RootLayout({
                 <main className="flex-grow">{children}</main>
                 <Footer />
               </div>
-              <AIAssistant />
+              <AIAssistant isSearchOpen={isSearchOpen} />
             </SmoothScroll>
           </BalancerProvider>
           <Toaster />
