@@ -56,7 +56,7 @@ export const siteConfig = {
     linkedin: "https://www.linkedin.com/in/prabhat-kumar-6963661a4/",
     instagram: "https://www.instagram.com/_s_4_sharma/",
     twitter: "https://x.com/kattyPrabhat",
-    naukri: "https://www.naukri.com/mnjuser/profile?id=&altresid",
+    naukri: "https://www.naukri.com/mnjuser/profile",
     stackoverflow: "https://stackoverflow.com/users/19520484/prabhat-kumar",
     hackerrank: "https://www.hackerrank.com/profile/Prabhat_7250",
     leetcode: "https://leetcode.com/u/Hugs-2-Bugs/",
@@ -70,7 +70,7 @@ export const siteConfig = {
     { name: "Twitter", icon: Twitter, url: "https://x.com/kattyPrabhat" },
     { name: "Instagram", icon: Instagram, url: "https://www.instagram.com/_s_4_sharma/" },
     { name: "StackOverflow", icon: Layers, url: "https://stackoverflow.com/users/19520484/prabhat-kumar" },
-    { name: "Naukri", icon: Briefcase, url: "https://www.naukri.com/mnjuser/profile?id=&altresid" },
+    { name: "Naukri", icon: Briefcase, url: "https://www.naukri.com/mnjuser/profile" },
     { name: "HackerRank", icon: Code, url: "https://www.hackerrank.com/profile/Prabhat_7250" },
     { name: "LeetCode", icon: ListCheck, url: "https://leetcode.com/u/Hugs-2-Bugs/" },
     { name: "GeeksforGeeks", icon: ListChecks, url: "https://www.geeksforgeeks.org/user/stealthy_prabhat/" },
@@ -101,23 +101,7 @@ export const siteConfig = {
   ] as Service[],
   
   workExperience: [
-    {
-        date: "Jan 2023 – Present",
-        title: "Java Software Developer",
-        company: "Netcore Cloud (Onsite)",
-        description: `Leveraged Java, Spring Boot, Hibernate, Microservices, and AWS to contribute to core product development in a high-growth environment.
-• Developed and maintained scalable backend services using Spring Boot and Microservices architecture.
-• Integrated AWS services (EC2, RDS, S3) for deployment, database management, and cloud storage.
-• Designed and optimized complex SQL queries and database schemas in MySQL using Hibernate.
-• Collaborated with cross-functional teams to define, design, and ship new features, adhering to agile methodologies.
-
-Project: Real Estate Listing & Blog Management System
-• Led backend development for the blog module within a team of 8 engineers.
-• Designed and implemented REST APIs for creating, editing, updating, and managing blog posts.
-• Applied Spring Security + JWT for secure API access and implemented like/dislike functionality to boost user engagement.
-• Tested APIs, debugged effectively, and optimized the code using Postman.`,
-        tags: ["Java", "Spring Boot", "Hibernate", "Microservices", "AWS", "MySQL", "RESTful APIs", "Spring Security", "JWT", "Postman"]
-    },
+    { date: "Jan 2023 – Present", title: "Java Software Developer", company: "Netcore Cloud (Onsite)", description: "Contributed to core product development using Java, Spring Boot, Hibernate, Microservices, and AWS; built scalable backend services, integrated cloud components, optimized MySQL schemas, and delivered high-performance REST APIs in an agile environment.", tags: ["Java","Spring Boot","Hibernate","Microservices","MySQL","SQL","REST APIs","AWS","EC2","RDS","S3","Scalable Systems","Agile","Maven","Postman"] },
     // { date: "June 2025 – Present", title: "Technical Support Engineer", company: "Startek Technology Private Limited", description: "Provided technical support for Acer systems, troubleshot hardware/software/network issues, and handled incident management. Collaborated with cross-functional teams to ensure smooth service delivery.", tags: ["Windows", "Linux", "Networking", "Remote Support", "Ticketing Systems"] },
     // { date: "Jan 2023 – April 2025", title: "Backend Developer", company: "JMR Infotech Pvt Ltd", description: "Developed login/signup systems with Spring Security & JWT. Built scalable backend services for Supply Chain & Real Estate projects and created blog APIs. Collaborated with frontend and QA teams.", tags: ["Java", "Spring Boot", "Hibernate", "MySQL", "JWT", "Postman"] },
     { date: "Oct 2022 – Dec 2022", title: "Java Software Engineer Intern", company: "CodeSpeedy Technology Pvt Ltd", description: "Built authentication modules using Spring Boot & JWT. Managed entity relationships via Hibernate ORM and streamlined error handling with custom exceptions.", tags: ["Java", "Spring Boot", "Hibernate", "JWT", "MySQL"] },
@@ -432,6 +416,3 @@ Project: Real Estate Listing & Blog Management System
     
 
   
-
-
-    

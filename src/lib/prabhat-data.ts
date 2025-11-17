@@ -187,47 +187,65 @@ export const prabhatData = {
   },
   work_experience: [
     {
-      company: "Startek Technology Private Limited",
-      role: "Technical Support Engineer",
-      duration: "June 2025 – Present",
+      company: "Netcore Cloud",
+      role: "Java Software Developer",
+      duration: "Jan 2023 – Present",
       details: [
-        "Provided technical support for Acer systems and end-users across multiple environments.",
-        "Troubleshot hardware, software, and network-related issues to minimize downtime.",
-        "Handled incident management, ticket resolution, and escalation for critical issues.",
-        "Assisted clients with system configurations, updates, and application usability.",
-        "Collaborated with cross-functional teams to ensure smooth service delivery."
+        "Developed and maintained scalable backend services using Java, Spring Boot, Hibernate, and Microservices, ensuring high availability and fault tolerance.",
+        "Integrated AWS services (EC2, RDS, S3) for deployment, database management, and cloud storage, improving application performance and reliability.",
+        "Designed and optimized complex SQL queries and MySQL database schemas using Hibernate for efficient data persistence and retrieval.",
+        "Collaborated with cross-functional teams to define, design, and ship new features following agile methodologies and best coding practices.",
+        "Led backend development for the Real Estate Blog Management System within a team of 8 engineers.",
+        "Designed and implemented REST APIs for creating, editing, updating, and managing blog posts and comments.",
+        "Built database tables and relationships for blogs, comments, and user actions, optimizing schema performance in MySQL.",
+        "Implemented Spring Security + JWT for secure API access and added like/dislike functionality to increase user engagement.",
+        "Tested, debugged, and optimized APIs using Postman to ensure performance and reliability."
       ],
-      tech: ["Windows", "Linux", "Networking", "Remote Support Tools", "Ticketing Systems"]
+      tech: ["Java","Spring Boot","Hibernate","Microservices","MySQL","SQL","REST APIs","Spring Security","JWT","AWS","EC2","RDS","S3","Maven","Postman"]    
     },
-    {
-      company: "JMR Infotech Pvt Ltd",
-      role: "Backend Developer",
-      duration: "Jan 2023 – April 2025",
-      projects: [
-        {
-          name: "Supply Chain Management System",
-          details: [
-            "Developed secure login/signup system using Spring Security & JWT.",
-            "Designed robust data models with Hibernate/JPA (including relational mapping).",
-            "Created custom exception handlers to streamline API error responses.",
-            "Collaborated with frontend & QA teams for smooth integration.",
-            "Utilized Postman for API testing and debugging."
-          ],
-          tech: ["Java", "Spring Boot", "Spring MVC", "MySQL", "JWT", "Postman", "Maven", "Git"]
-        },
-        {
-          name: "Real Estate Blog Module",
-          details: [
-            "Engineered blog management APIs (create, edit, delete, like/dislike).",
-            "Contributed to the 'Real Estate' project by spearheading key aspects of backend development.",
-            "Enabled real-time property listing and content management features.",
-            "Collaborated in a team of 8 to deliver scalable backend features.",
-            "Focused on enhancing user engagement via dynamic content updates."
-          ],
-          tech: ["Java", "Spring Boot", "Hibernate", "MySQL", "Maven", "RESTful API"]
-        }
-      ]
-    },
+
+    // {
+    //   company: "Startek Technology Private Limited",
+    //   role: "Technical Support Engineer",
+    //   duration: "June 2025 – Present",
+    //   details: [
+    //     "Provided technical support for Acer systems and end-users across multiple environments.",
+    //     "Troubleshot hardware, software, and network-related issues to minimize downtime.",
+    //     "Handled incident management, ticket resolution, and escalation for critical issues.",
+    //     "Assisted clients with system configurations, updates, and application usability.",
+    //     "Collaborated with cross-functional teams to ensure smooth service delivery."
+    //   ],
+    //   tech: ["Windows", "Linux", "Networking", "Remote Support Tools", "Ticketing Systems"]
+    // },
+    // {
+    //   company: "JMR Infotech Pvt Ltd",
+    //   role: "Backend Developer",
+    //   duration: "Jan 2023 – April 2025",
+    //   projects: [
+    //     {
+    //       name: "Supply Chain Management System",
+    //       details: [
+    //         "Developed secure login/signup system using Spring Security & JWT.",
+    //         "Designed robust data models with Hibernate/JPA (including relational mapping).",
+    //         "Created custom exception handlers to streamline API error responses.",
+    //         "Collaborated with frontend & QA teams for smooth integration.",
+    //         "Utilized Postman for API testing and debugging."
+    //       ],
+    //       tech: ["Java", "Spring Boot", "Spring MVC", "MySQL", "JWT", "Postman", "Maven", "Git"]
+    //     },
+    //     {
+    //       name: "Real Estate Blog Module",
+    //       details: [
+    //         "Engineered blog management APIs (create, edit, delete, like/dislike).",
+    //         "Contributed to the 'Real Estate' project by spearheading key aspects of backend development.",
+    //         "Enabled real-time property listing and content management features.",
+    //         "Collaborated in a team of 8 to deliver scalable backend features.",
+    //         "Focused on enhancing user engagement via dynamic content updates."
+    //       ],
+    //       tech: ["Java", "Spring Boot", "Hibernate", "MySQL", "Maven", "RESTful API"]
+    //     }
+    //   ]
+    // },
     {
       company: "CodeSpeedy Technology Pvt Ltd",
       role: "Java Software Engineer Intern",
@@ -371,3 +389,5 @@ export const prabhatData = {
     ]
   }
 };
+
+    
