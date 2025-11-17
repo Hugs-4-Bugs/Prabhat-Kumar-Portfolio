@@ -78,10 +78,15 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     setQuery("");
 
     startTransition(async () => {
-      const history = newConversation.filter(m => m.role === 'model').map((m, i) => ({
-          user: newConversation[i * 2]?.content || '',
-          model: m.content,
-      }));
+      const history = conversation.reduce((acc: Array<{ user: string; model: string }>, message, index) => {
+        if (message.role === 'user' && conversation[index + 1]?.role === 'model') {
+          acc.push({
+            user: message.content,
+            model: conversation[index + 1].content,
+          });
+        }
+        return acc;
+      }, []);
 
       const response = await getAISearchResponse(currentQuery, history);
 
