@@ -101,12 +101,22 @@ export const siteConfig = {
   ] as Service[],
   
   workExperience: [
-    { 
-      date: "Jan 2023 – Present", 
-      title: "Java Software Developer", 
-      company: "Netcore Cloud (Onsite)", 
-      description: "Leveraged Java, Spring Boot, Hibernate, Microservices, API, AWS, MySQL, SQL, and Netcore Cloud to contribute to core product development in a high-growth environment. Developed and maintained scalable backend services using Spring Boot and Microservices architecture, ensuring high availability and fault tolerance. Integrated AWS services (EC2, RDS, S3) for deployment, database management, and cloud storage, significantly enhancing application performance and reliability. Designed and optimized complex SQL queries and database schemas in MySQL using Hibernate for efficient data persistence and retrieval. Collaborated with cross-functional teams to define, design, and ship new features, adhering to agile methodologies and best coding practices. Project: Real Estate Listing & Blog Management System. Led backend development for the blog module within a team of 8 engineers. Designed and implemented REST APIs for creating, editing, updating, and managing blog posts. Built database tables and relationships for blogs, comments, and user actions, optimizing the schema for MySQL. Applied Spring Security + JWT for secure API access and implemented like/dislike functionality to boost user engagement. Tested APIs, debugged effectively, and optimized the code using Postman.", 
-      tags: ["Java", "Spring Boot", "Hibernate", "Microservices", "AWS", "MySQL", "RESTful APIs", "Spring Security", "JWT"] 
+    {
+        date: "Jan 2023 – Present",
+        title: "Java Software Developer",
+        company: "Netcore Cloud (Onsite)",
+        description: `Leveraged Java, Spring Boot, Hibernate, Microservices, and AWS to contribute to core product development in a high-growth environment.
+• Developed and maintained scalable backend services using Spring Boot and Microservices architecture.
+• Integrated AWS services (EC2, RDS, S3) for deployment, database management, and cloud storage.
+• Designed and optimized complex SQL queries and database schemas in MySQL using Hibernate.
+• Collaborated with cross-functional teams to define, design, and ship new features, adhering to agile methodologies.
+
+Project: Real Estate Listing & Blog Management System
+• Led backend development for the blog module within a team of 8 engineers.
+• Designed and implemented REST APIs for creating, editing, updating, and managing blog posts.
+• Applied Spring Security + JWT for secure API access and implemented like/dislike functionality to boost user engagement.
+• Tested APIs, debugged effectively, and optimized the code using Postman.`,
+        tags: ["Java", "Spring Boot", "Hibernate", "Microservices", "AWS", "MySQL", "RESTful APIs", "Spring Security", "JWT", "Postman"]
     },
     // { date: "June 2025 – Present", title: "Technical Support Engineer", company: "Startek Technology Private Limited", description: "Provided technical support for Acer systems, troubleshot hardware/software/network issues, and handled incident management. Collaborated with cross-functional teams to ensure smooth service delivery.", tags: ["Windows", "Linux", "Networking", "Remote Support", "Ticketing Systems"] },
     // { date: "Jan 2023 – April 2025", title: "Backend Developer", company: "JMR Infotech Pvt Ltd", description: "Developed login/signup systems with Spring Security & JWT. Built scalable backend services for Supply Chain & Real Estate projects and created blog APIs. Collaborated with frontend and QA teams.", tags: ["Java", "Spring Boot", "Hibernate", "MySQL", "JWT", "Postman"] },

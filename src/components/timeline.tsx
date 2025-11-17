@@ -60,7 +60,7 @@ export function Timeline({ events, iconName }: TimelineProps) {
             <p className="font-semibold text-primary mb-1 md:hidden">{event.date}</p>
             <h3 className="font-headline text-xl font-bold">{event.title}</h3>
             <p className="text-muted-foreground font-medium">{event.company}</p>
-            {event.description && <p className="mt-2 text-sm text-muted-foreground">{event.description}</p>}
+            {event.description && <p className="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">{event.description}</p>}
             {event.tags && event.tags.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {event.tags.map((tag) => (
