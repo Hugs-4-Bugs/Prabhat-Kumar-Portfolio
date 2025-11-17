@@ -413,6 +413,3 @@ export const siteConfig = {
   ] as TechCategory[],
 };
 
-    
-
-  
