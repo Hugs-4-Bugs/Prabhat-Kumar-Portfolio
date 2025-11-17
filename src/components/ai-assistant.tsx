@@ -127,16 +127,19 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
     try {
       // Correctly build the history array
       const history = messages.reduce((acc: Array<{ user: string; model: string }>, msg, index) => {
-        if (msg.sender === 'user' && messages[index + 1]?.sender === 'ai') {
-          acc.push({
-            user: msg.text,
-            model: messages[index + 1].text,
-          });
+        if (msg.sender === 'user') {
+          const nextMsg = messages[index + 1];
+          if (nextMsg && nextMsg.sender === 'ai') {
+            acc.push({
+              user: msg.text,
+              model: nextMsg.text,
+            });
+          }
         }
         return acc;
       }, []);
 
-      const response = await getAIResponse(query);
+      const response = await getAIResponse(query, history);
       setIsAITyping(false);
 
       if (response.success && response.answer) {
@@ -339,3 +342,4 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
     </>
   );
 }
+

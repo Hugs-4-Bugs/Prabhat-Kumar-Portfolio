@@ -131,9 +131,9 @@ export async function handleResumeUpload(
 }
 
 // AI Assistant Actions
-export async function getAIResponse(question: string) {
+export async function getAIResponse(question: string, history: Array<{ user: string; model: string }>) {
   try {
-    const response = await askPrabhatAI({ question, history: [] });
+    const response = await askPrabhatAI({ question, history });
     return { success: true, answer: response.answer };
   } catch (error) {
     console.error("Error getting AI response:", error);
