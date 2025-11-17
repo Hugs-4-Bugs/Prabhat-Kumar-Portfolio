@@ -125,13 +125,16 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
     setIsAITyping(true);
 
     try {
-      const history = newMessages.filter(m => m.sender === 'ai').map((m, i) => {
-          const userMessage = newMessages.find((um, umi) => um.sender === 'user' && umi > i*2);
-          return {
-            user: userMessage?.text || '',
-            model: m.text,
-          }
-      }).slice(-5); // Keep last 5 interactions for context
+      // Correctly build the history array
+      const history = messages.reduce((acc: Array<{ user: string; model: string }>, msg, index) => {
+        if (msg.sender === 'user' && messages[index + 1]?.sender === 'ai') {
+          acc.push({
+            user: msg.text,
+            model: messages[index + 1].text,
+          });
+        }
+        return acc;
+      }, []);
 
       const response = await getAIResponse(query);
       setIsAITyping(false);
