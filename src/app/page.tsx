@@ -15,6 +15,7 @@ import { Services } from "@/components/sections/services";
 import { Skills } from "@/components/sections/skills";
 import { TechStack } from "@/components/sections/tech-stack";
 
+
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
