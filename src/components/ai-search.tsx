@@ -1,4 +1,5 @@
 
+
 // "use client";
 
 // import { useState, useTransition, useEffect, useRef, useCallback } from "react";
@@ -377,7 +378,13 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // This ensures the Audio object is only created on the client side.
+    audioRef.current = new Audio();
+  }, []);
+
 
   // Load conversation from localStorage on initial render
   useEffect(() => {
@@ -395,11 +402,11 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   }, [conversation]);
 
   const stopAudio = useCallback(() => {
-    if (audio) {
-      audio.pause();
-      setAudio(null);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
     }
-  }, [audio]);
+  }, []);
 
   const handleClearConversation = () => {
     stopAudio();
@@ -437,10 +444,9 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         setConversation(prev => [...prev, { role: 'model', content: response.answer as string }]);
         
         const audioResponse = await getAIAudio(response.answer);
-         if(audioResponse.success && audioResponse.audio) {
-            const audioInstance = new Audio(audioResponse.audio);
-            setAudio(audioInstance);
-            audioInstance.play();
+         if(audioResponse.success && audioResponse.audio && audioRef.current) {
+            audioRef.current.src = audioResponse.audio;
+            audioRef.current.play();
         } else if (!audioResponse.success) {
            toast({ title: 'Audio Error', description: audioResponse.message, variant: 'destructive' });
         }
