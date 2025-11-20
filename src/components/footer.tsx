@@ -38,7 +38,7 @@ export function Footer() {
         </div>
         <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Prabhat Kumar. All Rights Reserved.</p>
-          <p className="mt-1">Built with Next.js, Tailwind CSS, and a touch of AI magic ✨</p>
+          {/* <p className="mt-1">Built with Next.js, Tailwind CSS, and a touch of AI magic ✨</p> */}
         </div>
       </div>
     </footer>
