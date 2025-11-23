@@ -34,7 +34,7 @@ export function BlogCard({ blog, onReadMore }: BlogCardProps) {
         <CardHeader>
           <div className="flex justify-between items-start mb-2">
             <CardTitle className="font-headline text-xl">{blog.title}</CardTitle>
-            <Badge variant={blog.tag === 'Paid' ? 'destructive' : 'secondary'} className="capitalize">
+            <Badge variant={blog.tag === 'Paid' ? 'destructive' : 'secondary'} className="capitalize shrink-0">
               {blog.tag}
             </Badge>
           </div>

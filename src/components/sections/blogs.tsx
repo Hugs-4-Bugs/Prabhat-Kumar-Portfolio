@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useBookmarks } from '@/hooks/use-bookmarks';
 import { Section } from "@/components/section-wrapper";
@@ -21,6 +21,19 @@ export function BlogsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { bookmarks } = useBookmarks();
 
+  useEffect(() => {
+    // If viewer is open, prevent body scroll
+    if (isViewerOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isViewerOpen]);
+
+
   const filteredBlogs = useMemo(() => {
     let blogs = allBlogs;
 
@@ -37,7 +50,7 @@ export function BlogsPage() {
     }
 
     return blogs;
-  }, [searchTerm, activeFilter, allBlogs, bookmarks]);
+  }, [searchTerm, activeFilter, bookmarks]);
 
   const handleReadMore = (blog: Blog) => {
     if (blog.tag === 'Paid') {
@@ -57,7 +70,7 @@ export function BlogsPage() {
   };
 
   return (
-    <Section id="blogs" className="py-24 sm:py-32">
+    <Section id="blogs" className="min-h-screen py-24 sm:py-32">
       <SectionHeading>Blogs & Resources</SectionHeading>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FilterBar

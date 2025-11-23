@@ -432,6 +432,3 @@ Role & Responsibilities:
     },
   ] as TechCategory[],
 };
-
-
-
