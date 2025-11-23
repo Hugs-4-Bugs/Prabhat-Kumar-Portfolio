@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -14,17 +15,22 @@ import { Projects } from "@/components/sections/projects";
 import { Services } from "@/components/sections/services";
 import { Skills } from "@/components/sections/skills";
 import { TechStack } from "@/components/sections/tech-stack";
+import { useRouter } from "next/navigation";
 
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const mainRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       const sections = gsap.utils.toArray<HTMLElement>('section');
       sections.forEach((section, i) => {
+        // Skip the hero section for the fade-in-up animation
+        if (section.id === 'home') return;
+
         gsap.fromTo(section, 
           { opacity: 0, y: 50 }, 
           {
@@ -36,7 +42,7 @@ export default function Home() {
               trigger: section,
               start: "top 80%",
               end: "bottom 20%",
-              toggleActions: "play none none none",
+              toggleActions: "play none none reverse", // Use reverse on scroll back up
             }
           }
         );
@@ -44,6 +50,13 @@ export default function Home() {
     }, mainRef);
     return () => ctx.revert();
   }, []);
+  
+  // Navigate to blogs page if the URL has a /blogs hash
+  useEffect(() => {
+    if(window.location.pathname === '/blogs') {
+      router.push('/blogs');
+    }
+  }, [router]);
 
   return (
     <div ref={mainRef}>
@@ -59,3 +72,4 @@ export default function Home() {
     </div>
   );
 }
+

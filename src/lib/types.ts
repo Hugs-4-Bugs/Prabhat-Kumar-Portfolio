@@ -1,3 +1,4 @@
+
 // src/lib/types.ts
 import type { LucideIcon } from 'lucide-react';
 
@@ -63,3 +64,12 @@ export type TechCategory = {
   category: string;
   tools: TechTool[];
 };
+
+export interface Blog {
+  id: number;
+  title: string;
+  description: string;
+  content: string;
+  tag: 'Free' | 'Paid';
+  date: string;
+}
