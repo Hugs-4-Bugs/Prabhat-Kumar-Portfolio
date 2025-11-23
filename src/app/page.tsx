@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -15,21 +15,35 @@ import { Projects } from "@/components/sections/projects";
 import { Services } from "@/components/sections/services";
 import { Skills } from "@/components/sections/skills";
 import { TechStack } from "@/components/sections/tech-stack";
-import { useRouter } from "next/navigation";
-
+import { BlogsPage } from "@/components/sections/blogs";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   const mainRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const [isBlogPage, setIsBlogPage] = useState(false);
 
   useEffect(() => {
+    const checkHash = () => {
+      setIsBlogPage(window.location.hash === "#blogs");
+    };
+
+    checkHash(); // Check on initial load
+    window.addEventListener('hashchange', checkHash, false);
+
+    return () => {
+      window.removeEventListener('hashchange', checkHash, false);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isBlogPage) return; // Don't run animations on blog page view
+
     const ctx = gsap.context(() => {
       const sections = gsap.utils.toArray<HTMLElement>('section');
       sections.forEach((section, i) => {
         // Skip the hero section for the fade-in-up animation
-        if (section.id === 'home') return;
+        if (section.id === 'home' || section.id === 'blogs') return;
 
         gsap.fromTo(section, 
           { opacity: 0, y: 50 }, 
@@ -49,15 +63,12 @@ export default function Home() {
       });
     }, mainRef);
     return () => ctx.revert();
-  }, []);
-  
-  // Navigate to blogs page if the URL has a /blogs hash
-  useEffect(() => {
-    if(window.location.pathname === '/blogs') {
-      router.push('/blogs');
-    }
-  }, [router]);
+  }, [isBlogPage]);
 
+  if (isBlogPage) {
+    return <BlogsPage />;
+  }
+  
   return (
     <div ref={mainRef}>
       <Hero />
@@ -66,10 +77,10 @@ export default function Home() {
       <Experience />
       <Projects />
       <Skills />
+      {/* The BlogsPage component will be rendered by the logic above */}
       <TechStack />
       <Education />
       <Contact />
     </div>
   );
 }
-

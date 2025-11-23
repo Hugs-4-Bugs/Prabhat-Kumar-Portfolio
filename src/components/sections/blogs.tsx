@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useBookmarks } from '@/hooks/use-bookmarks';
 import { Section } from "@/components/section-wrapper";
 import { SectionHeading } from "@/components/section-heading";
@@ -13,7 +13,7 @@ import { PremiumLockModal } from "@/components/blog/premium-lock-modal";
 import { blogs as allBlogs } from "@/lib/blogs.json";
 import type { Blog } from "@/lib/types";
 
-export default function BlogsPage() {
+export function BlogsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);

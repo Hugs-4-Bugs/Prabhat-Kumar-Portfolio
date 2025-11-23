@@ -32,9 +32,9 @@ export function BlogCard({ blog, onReadMore }: BlogCardProps) {
     >
       <Card className="flex flex-col h-full bg-secondary/30 border-border/30 overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10">
         <CardHeader>
-          <div className="flex justify-between items-start">
-            <CardTitle className="font-headline text-xl mb-2">{blog.title}</CardTitle>
-            <Badge variant={blog.tag === 'Paid' ? 'destructive' : 'secondary'}>
+          <div className="flex justify-between items-start mb-2">
+            <CardTitle className="font-headline text-xl">{blog.title}</CardTitle>
+            <Badge variant={blog.tag === 'Paid' ? 'destructive' : 'secondary'} className="capitalize">
               {blog.tag}
             </Badge>
           </div>

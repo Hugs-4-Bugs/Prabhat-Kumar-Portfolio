@@ -49,7 +49,7 @@ export const siteConfig = {
     { href: "#experience", label: "Experience" },
     { href: "#projects", label: "Projects" },
     { href: "#skills", label: "Skills" },
-    { href: "/blogs", label: "Blogs" },
+    { href: "#blogs", label: "Blogs" },
     { href: "#contact", label: "Contact" },
   ] as NavLink[],
 
@@ -107,12 +107,24 @@ export const siteConfig = {
       date: "Jan 2023 – Present",
       title: "Java Software Developer",
       company: "Netcore Cloud (Onsite)",
-      description: "As a key member of the product development team, I leverage Java, Spring Boot, and AWS to build and maintain high-availability backend services and REST APIs in a fast-paced, agile environment.",
+      description: `
+• Leveraged Java, Spring Boot, Hibernate, Microservices, API, AWS, MySQL, SQL, and Netcore Cloud to contribute to core product development in a high-growth environment.
+• Developed and maintained scalable backend services using Spring Boot and Microservices architecture, ensuring high availability and fault tolerance.
+• Integrated AWS services (EC2, RDS, S3) for deployment, database management, and cloud storage, significantly enhancing application performance and reliability.
+• Designed and optimized complex SQL queries and database schemas in MySQL using Hibernate for efficient data persistence and retrieval.
+• Collaborated with cross-functional teams to define, design, and ship new features, adhering to agile methodologies and best coding practices.
+Project: Real Estate Listing & Blog Management System
+Role & Responsibilities:
+• Led backend development for the blog module within a team of 8 engineers.
+• Designed and implemented REST APIs for creating, editing, updating, and managing blog posts.
+• Built database tables and relationships for blogs, comments, and user actions, optimizing the schema for MySQL.
+• Applied Spring Security + JWT for secure API access and implemented like/dislike functionality to boost user engagement. • Tested APIs, debugged effectively, and optimized the code using Postman.
+`,
       tags: ["Java","Spring Boot","Hibernate","Microservices","MySQL","SQL","REST APIs","AWS","EC2","RDS","S3","Scalable Systems","Agile","Maven","Postman"]
     },
     // { date: "June 2025 – Present", title: "Technical Support Engineer", company: "Startek Technology Private Limited", description: "Provided technical support for Acer systems, troubleshot hardware/software/network issues, and handled incident management. Collaborated with cross-functional teams to ensure smooth service delivery.", tags: ["Windows", "Linux", "Networking", "Remote Support", "Ticketing Systems"] },
     // { date: "Jan 2023 – April 2025", title: "Backend Developer", company: "JMR Infotech Pvt Ltd", description: "Developed login/signup systems with Spring Security & JWT. Built scalable backend services for Supply Chain & Real Estate projects and created blog APIs. Collaborated with frontend and QA teams.", tags: ["Java", "Spring Boot", "Hibernate", "MySQL", "JWT", "Postman"] },
-    { date: "Oct 2022 – Dec 2022", title: "Java Software Engineer Intern", company: "CodeSpeedy Technology Pvt Ltd", description: "Built backend authentication modules with Spring Boot & JWT. Managed entity relationships via Hibernate ORM and streamlined error handling with custom exceptions.", tags: ["Java", "Spring Boot", "Hibernate", "JWT", "MySQL"] },
+    { date: "Oct 2022 – Dec 2022", title: "Java Software Engineer Intern", company: "CodeSpeedy Technology Pvt Ltd", description: "Built authentication modules using Spring Boot & JWT. Managed entity relationships via Hibernate ORM and streamlined error handling with custom exceptions.", tags: ["Java", "Spring Boot", "Hibernate", "JWT", "MySQL"] },
     { date: "2022", title: "Remote Job Simulation", company: "Walmart USA", description: "Completed Advanced Software Engineering simulations. Built custom Java heap for logistics and created UML/ER diagrams for scalable system design.", tags: ["Java", "System Design", "UML", "Logistics"] },
   ] as TimelineEvent[],
 
@@ -420,5 +432,6 @@ export const siteConfig = {
     },
   ] as TechCategory[],
 };
+
 
 
