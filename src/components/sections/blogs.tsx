@@ -13,7 +13,8 @@ import { SectionHeading } from "@/components/section-heading";
 import { BlogList } from "@/components/blog/BlogList";
 import { BlogViewer } from "@/components/blog/BlogViewer";
 import { PaidModal } from "@/components/blog/PaidModal";
-import type { Blog, BlogCategory } from "@/lib/types";
+import { FilterBar } from "@/components/blog/FilterBar";
+import type { Blog } from "@/lib/types";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -21,8 +22,14 @@ export function Blogs() {
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
   const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
   const [bookmarks, addBookmark, removeBookmark] = useBookmarks();
+  
+  const [filters, setFilters] = useState<Record<string, { query: string; category: string }>>({
+    Technical: { query: '', category: 'All' },
+    'Non-Technical': { query: '', category: 'All' },
+    Books: { query: '', category: 'All' },
+  });
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const lenis = useLenis(ScrollTrigger.update);
   
   useEffect(() => {
@@ -30,27 +37,34 @@ export function Blogs() {
   }, [lenis]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!sectionRef.current) return;
     
-    const sections: HTMLElement[] = gsap.utils.toArray(".blog-category-panel");
-    const totalWidth = sections.reduce((acc, section) => acc + section.scrollWidth, 0);
-
+    const categories = sectionRef.current.querySelectorAll('.blog-category-container');
+    
     let ctx = gsap.context(() => {
-      gsap.to(sections, {
-        xPercent: -100 * (sections.length - 1),
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          pin: true,
-          scrub: 1,
-          snap: 1 / (sections.length - 1),
-          end: () => `+=${containerRef.current!.offsetWidth * (sections.length - 1)}`,
-        },
+      categories.forEach(category => {
+        const track = category.querySelector('.blog-horizontal-track') as HTMLElement;
+        const cards = category.querySelectorAll('.blog-card-item');
+        
+        if (!track || cards.length === 0) return;
+
+        gsap.to(track, {
+          x: () => -(track.scrollWidth - category.clientWidth),
+          ease: "none",
+          scrollTrigger: {
+            trigger: category,
+            pin: true,
+            scrub: 1,
+            start: "top top",
+            end: () => `+=${track.scrollWidth - category.clientWidth}`,
+            invalidateOnRefresh: true,
+          },
+        });
       });
-    }, containerRef);
+    }, sectionRef);
     
     return () => ctx.revert();
-  }, [lenis]);
+  }, [lenis, filters]); // Re-run when filters change to recalculate scroll widths
 
   useEffect(() => {
     if (selectedBlog || isPaidModalOpen) {
@@ -62,17 +76,6 @@ export function Blogs() {
       lenis?.start();
     }
   }, [selectedBlog, isPaidModalOpen, lenis]);
-
-  const groupedBlogs = useMemo(() => {
-    return blogData.reduce((acc, blog) => {
-      const category = blog.category || "Uncategorized";
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(blog);
-      return acc;
-    }, {} as Record<string, Blog[]>);
-  }, []);
 
   const handleRead = (blog: Blog) => {
     if (blog.tag === "Paid") {
@@ -93,25 +96,79 @@ export function Blogs() {
   const closeViewer = () => {
     setSelectedBlog(null);
   };
+
+  const groupedBlogs = useMemo(() => {
+    return blogData.reduce((acc, blog) => {
+      const category = blog.category || "Uncategorized";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(blog);
+      return acc;
+    }, {} as Record<string, Blog[]>);
+  }, []);
+
+  const filteredGroupedBlogs = useMemo(() => {
+    const result: Record<string, Blog[]> = {};
+    for (const categoryName in groupedBlogs) {
+      const categoryBlogs = groupedBlogs[categoryName];
+      const categoryFilter = filters[categoryName];
+      
+      result[categoryName] = categoryBlogs.filter(blog => {
+        const matchesQuery = blog.title.toLowerCase().includes(categoryFilter.query.toLowerCase());
+        const matchesCategory = 
+          categoryFilter.category === 'All' ||
+          (categoryFilter.category === 'Paid' && blog.tag === 'Paid') ||
+          (categoryFilter.category === 'Free' && blog.tag === 'Free') ||
+          (categoryFilter.category === 'Bookmarked' && bookmarks.includes(blog.slug));
+        
+        return matchesQuery && matchesCategory;
+      });
+    }
+    return result;
+  }, [groupedBlogs, filters, bookmarks]);
+
+  const handleFilterChange = (category: string, filterType: 'query' | 'category', value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [filterType]: value,
+      }
+    }));
+    // We need to refresh ScrollTrigger when content changes
+    setTimeout(() => ScrollTrigger.refresh(), 100);
+  };
   
   return (
-    <Section id="blogs" className="min-h-screen p-0 m-0 max-w-full">
-        <div ref={containerRef} className="blog-section-container h-[100vh] w-full flex">
-          <div className="blog-horizontal-track">
-            {Object.entries(groupedBlogs).map(([category, blogs]) => (
-              <div key={category} className="blog-category-panel w-[100vw] h-full flex flex-col items-center justify-center p-8">
-                <SectionHeading>{category}</SectionHeading>
-                <div className="w-full">
-                  <BlogList
-                    blogs={blogs}
-                    onRead={handleRead}
-                    bookmarks={bookmarks}
-                    onBookmark={handleBookmark}
-                  />
+    <Section id="blogs" ref={sectionRef} className="p-0 m-0 max-w-full relative bg-slate-950">
+        <SectionHeading>
+            My Blogs
+        </SectionHeading>
+        <div className="relative">
+            {Object.entries(groupedBlogs).map(([categoryName, _]) => (
+                <div key={categoryName} className="blog-category-container h-screen flex flex-col">
+                    <div className="pt-24 pb-8 px-8">
+                        <h3 className="text-4xl font-bold font-headline text-cyan-300">{categoryName}</h3>
+                        <FilterBar
+                          searchQuery={filters[categoryName]?.query || ''}
+                          setSearchQuery={(query) => handleFilterChange(categoryName, 'query', query)}
+                          activeFilter={filters[categoryName]?.category || 'All'}
+                          setActiveFilter={(category) => handleFilterChange(categoryName, 'category', category)}
+                        />
+                    </div>
+                    <div className="flex-grow flex items-center overflow-x-hidden">
+                        <div className="blog-horizontal-track flex gap-8 px-8">
+                           <BlogList
+                              blogs={filteredGroupedBlogs[categoryName] || []}
+                              onRead={handleRead}
+                              bookmarks={bookmarks}
+                              onBookmark={handleBookmark}
+                            />
+                        </div>
+                    </div>
                 </div>
-              </div>
             ))}
-          </div>
         </div>
       <AnimatePresence>
         {selectedBlog && <BlogViewer blog={selectedBlog} onClose={closeViewer} />}

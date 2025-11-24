@@ -34,7 +34,11 @@ export function BlogList({ blogs, onRead, bookmarks, onBookmark }: BlogListProps
   };
 
   if (blogs.length === 0) {
-    return <p className="text-center text-slate-400 mt-12">No blogs found for this filter.</p>;
+    return (
+      <div className="flex items-center justify-center w-[calc(100vw-64px)]">
+         <p className="text-center text-slate-400 mt-12 text-lg">No blogs found for this filter.</p>
+      </div>
+    );
   }
 
   return (
@@ -45,7 +49,7 @@ export function BlogList({ blogs, onRead, bookmarks, onBookmark }: BlogListProps
       className="flex gap-8"
     >
       {blogs.map((blog) => (
-        <motion.div key={blog.slug} variants={itemVariants}>
+        <motion.div key={blog.slug} variants={itemVariants} className="blog-card-item">
           <BlogCard
             blog={blog}
             onRead={onRead}
