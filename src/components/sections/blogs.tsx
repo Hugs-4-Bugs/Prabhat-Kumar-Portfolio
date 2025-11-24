@@ -2,6 +2,7 @@
 "use client";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 
 import { blogData } from "@/lib/blogs";
 import { useBookmarks } from "@/hooks/use-bookmarks";
@@ -61,7 +62,7 @@ export function Blogs() {
           activeFilter === 'All' ||
           (activeFilter === 'Paid' && blog.tag === 'Paid') ||
           (activeFilter === 'Free' && blog.tag === 'Free') ||
-          (activeFilter === 'Bookmarked' && bookmarks.includes(blog.slug));
+          (activeFilter === 'Bookmarked' && bookmarks.includes(slug));
         
         return matchesQuery && matchesCategory;
       });
@@ -98,7 +99,18 @@ export function Blogs() {
             }).map(([categoryName, blogs]) => (
                 blogs.length > 0 && (
                   <div key={categoryName} className="blog-category-container">
-                      <h3 className="text-3xl font-bold font-headline text-cyan-300 mb-8 px-4 md:px-8">{categoryName}</h3>
+                      <div className="flex justify-between items-center px-4 md:px-8">
+                        <h3 className="text-3xl font-bold font-headline text-cyan-300 mb-8">{categoryName}</h3>
+                        <div className="md:hidden flex items-center text-sm text-cyan-300/80 mb-8">
+                           <motion.div
+                              animate={{ x: [0, 5, 0] }}
+                              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                            >
+                              <ArrowRight className="h-4 w-4 mr-2" />
+                            </motion.div>
+                            Swipe
+                        </div>
+                      </div>
                       <div className="horizontal-scroll-container">
                          <div className="flex gap-8 px-4 md:px-8 blog-horizontal-track">
                            <BlogList
