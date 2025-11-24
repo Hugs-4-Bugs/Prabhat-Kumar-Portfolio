@@ -2,8 +2,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Bookmark, Lock, Star } from "lucide-react";
+import { ArrowRight, Bookmark, Star } from "lucide-react";
 import type { Blog } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface BlogCardProps {
   blog: Blog;
@@ -11,6 +13,12 @@ interface BlogCardProps {
   onBookmark: (slug: string) => void;
   isBookmarked: boolean;
 }
+
+const categoryColors = {
+  Technical: 'bg-blue-500/10 border-blue-400/30 text-blue-300',
+  'Non-Technical': 'bg-purple-500/10 border-purple-400/30 text-purple-300',
+  Books: 'bg-green-500/10 border-green-400/30 text-green-300',
+};
 
 export function BlogCard({ blog, onRead, onBookmark, isBookmarked }: BlogCardProps) {
   return (
@@ -22,7 +30,7 @@ export function BlogCard({ blog, onRead, onBookmark, isBookmarked }: BlogCardPro
       <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
 
       <div className="p-6 h-full flex flex-col">
-        <div className="flex justify-between items-start mb-4">
+        <div className="flex justify-between items-start mb-2">
           <h3 className="font-headline text-2xl text-slate-100 group-hover:text-cyan-300 transition-colors">{blog.title}</h3>
           <div className="flex items-center gap-2">
             {blog.tag === 'Paid' && (
@@ -41,6 +49,15 @@ export function BlogCard({ blog, onRead, onBookmark, isBookmarked }: BlogCardPro
               />
             </button>
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+            <Badge className={cn("text-xs font-medium", categoryColors[blog.category] || 'bg-slate-700')}>
+              {blog.category}
+            </Badge>
+            <Badge variant="outline" className="text-xs font-medium border-slate-600">
+              {blog.subCategory}
+            </Badge>
         </div>
 
         <p className="text-slate-400 flex-grow mb-6">{blog.description}</p>
