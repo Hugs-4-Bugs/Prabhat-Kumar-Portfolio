@@ -104,6 +104,24 @@ body.no-scroll {
   @apply flex-grow overflow-y-auto;
 }
 
+.blog-content-wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.blog-content-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.blog-content-wrapper::-webkit-scrollbar-thumb {
+  background-color: rgba(139, 92, 246, 0.5);
+  border-radius: 4px;
+}
+
+.blog-content-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(139, 92, 246, 0.7);
+}
+
+
 /* Horizontal scroll container for blog cards */
 .horizontal-scroll-container {
   @apply flex overflow-x-auto pb-4;

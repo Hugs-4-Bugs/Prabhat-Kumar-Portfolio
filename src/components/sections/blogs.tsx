@@ -151,7 +151,7 @@ export function Blogs() {
           activeFilter === 'All' ||
           (activeFilter === 'Paid' && blog.tag === 'Paid') ||
           (activeFilter === 'Free' && blog.tag === 'Free') ||
-          (activeFilter === 'Bookmarked' && bookmarks.includes(blog.slug));
+          (activeFilter === 'Bookmarked' && bookmarks.includes(slug));
         
         return matchesQuery && matchesCategory;
       });
@@ -200,7 +200,7 @@ export function Blogs() {
         </div>
         
       <AnimatePresence>
-        {selectedBlog && <BlogViewer blog={selectedBlog} onClose={closeViewer} />}
+        {selectedBlog && <BlogViewer blog={selectedBlog} onClose={closeViewer} onBookmark={handleBookmark} isBookmarked={bookmarks.includes(selectedBlog.slug)} />}
       </AnimatePresence>
       <PaidModal isOpen={isPaidModalOpen} onClose={() => setIsPaidModalOpen(false)} />
     </Section>
