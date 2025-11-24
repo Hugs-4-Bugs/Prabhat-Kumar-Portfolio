@@ -48,7 +48,7 @@ export function BlogViewer({ blog, onClose }: BlogViewerProps) {
   }, [blog]);
   
   useEffect(() => {
-    const originalStyle = document.body.style.overflow;
+    const originalStyle = window.getComputedStyle(document.body).overflow;
     if (blog) {
       document.body.style.overflow = 'hidden';
     }
