@@ -18,7 +18,7 @@ const calculateReadingTime = (content: string) => {
 export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () => void; }) {
   const [toc, setToc] = useState<{ id: string; level: number; text: string }[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default to closed on all
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { width } = useWindowSize();
   const isMobile = width < 768; // md breakpoint
 
@@ -45,7 +45,6 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
   }, [blog]);
 
   useEffect(() => {
-    // Open sidebar by default on desktop, closed on mobile
     setIsSidebarOpen(!isMobile);
   }, [isMobile]);
 
@@ -72,11 +71,9 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
               const modalContainer = document.querySelector(".modal-content-wrapper");
               const element = contentRef.current?.querySelector(`#${id}`);
               if (modalContainer && element) {
-                // Calculate position relative to the modal content wrapper
                 const topPos = (element as HTMLElement).offsetTop;
-                modalContainer.scrollTo({ top: topPos - 80, behavior: 'smooth' }); // Offset for sticky header
+                modalContainer.scrollTo({ top: topPos - 80, behavior: 'smooth' });
                 
-                // Close sidebar on mobile after clicking a link
                 if (isMobile) setIsSidebarOpen(false);
               }
               }}
@@ -90,13 +87,6 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
       <AISection />
     </>
   );
-
-  // --- MODAL CLASSES FIXES ---
-  // modal-overlay: fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4
-  // modal-container: relative w-full h-full max-w-7xl max-h-[90vh] bg-slate-900 rounded-xl flex flex-col shadow-2xl overflow-hidden
-  // modal-header: sticky top-0 bg-slate-900/90 backdrop-blur-md p-6 border-b border-slate-800 z-10
-  // modal-content-wrapper: flex-grow overflow-y-auto 
-  // modal-content: flex-shrink-0 p-6 md:p-8 w-full max-w-full lg:max-w-4xl lg:mx-auto
   
   return (
     <AnimatePresence>
@@ -106,8 +96,7 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          // MODAL OVERLAY CLASS
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 md:p-8" 
+          className="modal-overlay"
           onClick={onClose}
         >
           <motion.div
@@ -115,12 +104,11 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
             animate={{ y: 0, scale: 1 }}
             exit={{ y: 50, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            // MODAL CONTAINER CLASS
-            className="relative w-full h-full max-w-7xl max-h-[95vh] bg-slate-900 rounded-xl flex flex-col shadow-2xl overflow-hidden" 
+            className="modal-container"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header - Fixed at Top */}
-            <div className="sticky top-0 bg-slate-900/90 backdrop-blur-md p-6 border-b border-slate-800 z-20 flex justify-between items-start">
+            <div className="modal-header flex justify-between items-start">
               <div className="max-w-[calc(100%-40px)]">
                 <span className={`inline-block px-3 py-1 text-sm font-bold rounded-full border mb-4 ${
                     blog.tag === 'Paid'
@@ -149,27 +137,24 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
               </Button>
             </div>
             
-            {/* Content & Sidebar Wrapper - Scrollable Area */}
-            <div className="flex flex-grow overflow-hidden relative">
-                <div className="modal-content-wrapper flex-grow overflow-y-auto">
-                    {/* Main Content */}
-                    <main ref={contentRef} className="p-6 md:p-8 w-full lg:max-w-4xl lg:mx-auto">
-                      <div className="prose prose-invert prose-lg max-w-none text-slate-300 
-                                            prose-headings:text-cyan-300 prose-headings:font-headline
-                                            prose-h2:text-3xl prose-h3:text-2xl
-                                            prose-a:text-cyan-400 hover:prose-a:text-cyan-200 transition-colors
-                                            prose-strong:text-white
-                                            prose-em:text-purple-300
-                                            prose-blockquote:border-l-4 prose-blockquote:border-purple-400/50 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-400
-                                            prose-ul:list-disc prose-ul:marker:text-cyan-400
-                                            prose-ol:list-decimal prose-ol:marker:text-cyan-400
-                                            prose-code:bg-slate-800/80 prose-code:p-1 prose-code:rounded prose-code:font-mono prose-code:text-sm prose-code:text-yellow-300
-                                            prose-pre:bg-slate-900/80 prose-pre:p-4 prose-pre:rounded-lg prose-pre:border prose-pre:border-slate-700"
-                        dangerouslySetInnerHTML={{ __html: blog.content }}
-                      />
-                    </main>
-                    
-                </div>
+            {/* Content Wrapper */}
+            <div className="modal-content">
+                {/* Main Content - SCROLLABLE */}
+                <main ref={contentRef} className="modal-content-wrapper p-6 md:p-8 w-full lg:max-w-4xl lg:mx-auto">
+                  <div className="prose prose-invert prose-lg max-w-none text-slate-300 
+                                        prose-headings:text-cyan-300 prose-headings:font-headline
+                                        prose-h2:text-3xl prose-h3:text-2xl
+                                        prose-a:text-cyan-400 hover:prose-a:text-cyan-200 transition-colors
+                                        prose-strong:text-white
+                                        prose-em:text-purple-300
+                                        prose-blockquote:border-l-4 prose-blockquote:border-purple-400/50 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-400
+                                        prose-ul:list-disc prose-ul:marker:text-cyan-400
+                                        prose-ol:list-decimal prose-ol:marker:text-cyan-400
+                                        prose-code:bg-slate-800/80 prose-code:p-1 prose-code:rounded prose-code:font-mono prose-code:text-sm prose-code:text-yellow-300
+                                        prose-pre:bg-slate-900/80 prose-pre:p-4 prose-pre:rounded-lg prose-pre:border prose-pre:border-slate-700"
+                    dangerouslySetInnerHTML={{ __html: blog.content }}
+                  />
+                </main>
               
               {/* Desktop Sidebar */}
               <AnimatePresence>
@@ -180,7 +165,7 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
                       animate={{ width: 320, opacity: 1 }}
                       exit={{ width: 0, opacity: 0 }}
                       transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className="flex-shrink-0 h-full overflow-y-auto bg-slate-900/50 border-l border-slate-800 p-6 hidden md:block z-20"
+                      className="flex-shrink-0 h-full overflow-y-auto bg-slate-900/50 border-l border-slate-800 p-6 hidden md:block"
                   >
                     <SidebarContent />
                   </motion.aside>
@@ -189,14 +174,14 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
 
               {/* Sidebar Toggle for Desktop */}
               {!isMobile && (
-                  <div className="absolute top-1/2 right-0 transform -translate-y-1/2 hidden md:block z-20">
+                  <div className="absolute top-1/2 right-0 transform -translate-y-1/2 hidden md:block">
                       <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="bg-slate-800/80 hover:bg-slate-700/80 text-white rounded-l-lg rounded-r-none border border-r-0 border-slate-700">
                           {isSidebarOpen ? <X size={18} /> : <List size={18} />}
                       </Button>
                   </div>
               )}
 
-              {/* Collapsible Panel for Mobile (Bottom Bar) */}
+              {/* Collapsible Panel for Mobile */}
               {isMobile && (
                   <div className="fixed bottom-0 left-0 right-0 z-30 bg-slate-900/95 backdrop-blur-md border-t border-slate-800">
                       <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full p-3 flex justify-center items-center text-cyan-300 font-semibold">
