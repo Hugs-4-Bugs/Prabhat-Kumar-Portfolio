@@ -23,52 +23,49 @@ export function Blogs() {
   const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
   const [bookmarks, addBookmark, removeBookmark] = useBookmarks();
   
-  const [filters, setFilters] = useState<Record<string, { query: string; category: string }>>({
-    Technical: { query: '', category: 'All' },
-    'Non-Technical': { query: '', category: 'All' },
-    Books: { query: '', category: 'All' },
-  });
+  // Single filter state for the entire blog section
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const lenis = useLenis(ScrollTrigger.update);
   
   useEffect(() => {
     ScrollTrigger.refresh();
-  }, [lenis, filters]);
+  }, [lenis, searchQuery, activeFilter]);
 
   useEffect(() => {
     if (!sectionRef.current) return;
     
+    // Master context for GSAP animations to ensure proper cleanup
     const ctx = gsap.context(() => {
       const categories = gsap.utils.toArray<HTMLElement>('.blog-category-container');
       
       categories.forEach(category => {
         const track = category.querySelector('.blog-horizontal-track') as HTMLElement;
-        if (!track) return;
-        
-        const trackWidth = track.scrollWidth;
-        const containerWidth = category.clientWidth;
-        
-        // Only apply the animation if the track is wider than the container
-        if (trackWidth > containerWidth) {
-          gsap.to(track, {
-            x: () => -(trackWidth - containerWidth),
-            ease: "none",
-            scrollTrigger: {
-              trigger: category,
-              start: "top top",
-              end: () => `+=${trackWidth - containerWidth}`,
-              pin: true,
-              scrub: 1,
-              invalidateOnRefresh: true,
-            },
-          });
+        if (!track || track.scrollWidth <= category.clientWidth) {
+            // If track is not scrollable, ensure it's visible and not pinned.
+            gsap.set(category, { height: 'auto', marginBottom: '5rem' });
+            return;
         }
+        
+        gsap.to(track, {
+          x: () => -(track.scrollWidth - category.clientWidth),
+          ease: "none",
+          scrollTrigger: {
+            trigger: category,
+            start: "top top",
+            end: () => `+=${track.scrollWidth - category.clientWidth}`,
+            pin: true,
+            scrub: 1,
+            invalidateOnRefresh: true,
+          },
+        });
       });
     }, sectionRef);
     
     return () => ctx.revert();
-  }, [lenis, filters]);
+  }, [lenis, searchQuery, activeFilter]); // Re-run animations if filters change the content width
 
   useEffect(() => {
     if (selectedBlog || isPaidModalOpen) {
@@ -101,8 +98,21 @@ export function Blogs() {
     setSelectedBlog(null);
   };
 
-  const groupedBlogs = useMemo(() => {
-    return blogData.reduce((acc, blog) => {
+  const filteredBlogs = useMemo(() => {
+    return blogData.filter(blog => {
+        const matchesQuery = blog.title.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = 
+          activeFilter === 'All' ||
+          (activeFilter === 'Paid' && blog.tag === 'Paid') ||
+          (activeFilter === 'Free' && blog.tag === 'Free') ||
+          (activeFilter === 'Bookmarked' && bookmarks.includes(blog.slug));
+        
+        return matchesQuery && matchesCategory;
+      });
+  }, [searchQuery, activeFilter, bookmarks]);
+
+  const groupedAndFilteredBlogs = useMemo(() => {
+    return filteredBlogs.reduce((acc, blog) => {
       const category = blog.category || "Uncategorized";
       if (!acc[category]) {
         acc[category] = [];
@@ -110,61 +120,36 @@ export function Blogs() {
       acc[category].push(blog);
       return acc;
     }, {} as Record<string, Blog[]>);
-  }, []);
+  }, [filteredBlogs]);
 
-  const filteredGroupedBlogs = useMemo(() => {
-    const result: Record<string, Blog[]> = {};
-    for (const categoryName in groupedBlogs) {
-      const categoryBlogs = groupedBlogs[categoryName];
-      const categoryFilter = filters[categoryName];
-      
-      result[categoryName] = categoryBlogs.filter(blog => {
-        const matchesQuery = blog.title.toLowerCase().includes(categoryFilter.query.toLowerCase());
-        const matchesCategory = 
-          categoryFilter.category === 'All' ||
-          (categoryFilter.category === 'Paid' && blog.tag === 'Paid') ||
-          (categoryFilter.category === 'Free' && blog.tag === 'Free') ||
-          (categoryFilter.category === 'Bookmarked' && bookmarks.includes(blog.slug));
-        
-        return matchesQuery && matchesCategory;
-      });
-    }
-    return result;
-  }, [groupedBlogs, filters, bookmarks]);
-
-  const handleFilterChange = (category: string, filterType: 'query' | 'category', value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [filterType]: value,
-      }
-    }));
-    // We need to refresh ScrollTrigger when content changes
-    setTimeout(() => ScrollTrigger.refresh(), 100);
-  };
-  
   return (
     <Section id="blogs" ref={sectionRef} className="p-0 m-0 max-w-full relative bg-slate-950">
-        <SectionHeading>
-            My Blogs
-        </SectionHeading>
+        <SectionHeading>My Blogs</SectionHeading>
+
+        {/* Single Global Filter Bar */}
+        <div className="px-8 pb-12 sticky top-24 z-20 bg-slate-950/80 backdrop-blur-sm">
+            <FilterBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              activeFilter={activeFilter}
+              setActiveFilter={setActiveFilter}
+            />
+        </div>
+
         <div className="relative">
-            {Object.entries(groupedBlogs).map(([categoryName, _]) => (
-                <div key={categoryName} className="blog-category-container h-screen flex flex-col justify-center overflow-x-hidden">
-                    <div className="pt-24 pb-8 px-8">
+            {Object.entries({
+                'Technical': groupedAndFilteredBlogs['Technical'] || [],
+                'Non-Technical': groupedAndFilteredBlogs['Non-Technical'] || [],
+                'Books': groupedAndFilteredBlogs['Books'] || [],
+            }).map(([categoryName, blogs]) => (
+                <div key={categoryName} className="blog-category-container h-screen flex flex-col justify-center overflow-hidden">
+                    <div className="pt-12 pb-8 px-8">
                         <h3 className="text-4xl font-bold font-headline text-cyan-300">{categoryName}</h3>
-                        <FilterBar
-                          searchQuery={filters[categoryName]?.query || ''}
-                          setSearchQuery={(query) => handleFilterChange(categoryName, 'query', query)}
-                          activeFilter={filters[categoryName]?.category || 'All'}
-                          setActiveFilter={(category) => handleFilterChange(categoryName, 'category', category)}
-                        />
                     </div>
                     <div className="flex-grow flex items-center">
                         <div className="blog-horizontal-track flex gap-8 px-8">
                            <BlogList
-                              blogs={filteredGroupedBlogs[categoryName] || []}
+                              blogs={blogs}
                               onRead={handleRead}
                               bookmarks={bookmarks}
                               onBookmark={handleBookmark}
@@ -174,6 +159,7 @@ export function Blogs() {
                 </div>
             ))}
         </div>
+        
       <AnimatePresence>
         {selectedBlog && <BlogViewer blog={selectedBlog} onClose={closeViewer} />}
       </AnimatePresence>
