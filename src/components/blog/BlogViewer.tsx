@@ -133,8 +133,12 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
                                 href={`#${id}`}
                                 onClick={(e) => {
                                 e.preventDefault();
+                                const contentEl = contentRef.current?.parentElement;
                                 const element = contentRef.current?.querySelector(`#${id}`);
-                                element?.scrollIntoView({ behavior: 'smooth' });
+                                if (contentEl && element) {
+                                  const topPos = element.offsetTop;
+                                  contentEl.scrollTo({ top: topPos, behavior: 'smooth' });
+                                }
                                 }}
                                 className="text-slate-400 hover:text-cyan-300 transition-colors text-sm"
                             >

@@ -1,9 +1,7 @@
-
 // src/components/sections/blogs.tsx
 "use client";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useLenis } from "@studio-freight/react-lenis";
 
 import { blogData } from "@/lib/blogs";
 import { useBookmarks } from "@/hooks/use-bookmarks";
@@ -23,21 +21,18 @@ export function Blogs() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
 
-  const lenis = useLenis();
-
   useEffect(() => {
+    const body = document.body;
     if (selectedBlog || isPaidModalOpen) {
-      lenis?.stop();
-      document.body.classList.add('no-scroll');
+      body.classList.add('no-scroll');
     } else {
-      lenis?.start();
-      document.body.classList.remove('no-scroll');
+      body.classList.remove('no-scroll');
     }
+    // Cleanup function to ensure scroll is re-enabled on component unmount
     return () => {
-      lenis?.start();
-      document.body.classList.remove('no-scroll');
-    }
-  }, [selectedBlog, isPaidModalOpen, lenis]);
+      body.classList.remove('no-scroll');
+    };
+  }, [selectedBlog, isPaidModalOpen]);
 
   const handleRead = (blog: Blog) => {
     if (blog.tag === "Paid") {
@@ -66,7 +61,7 @@ export function Blogs() {
           activeFilter === 'All' ||
           (activeFilter === 'Paid' && blog.tag === 'Paid') ||
           (activeFilter === 'Free' && blog.tag === 'Free') ||
-          (activeFilter === 'Bookmarked' && bookmarks.includes(slug));
+          (activeFilter === 'Bookmarked' && bookmarks.includes(blog.slug));
         
         return matchesQuery && matchesCategory;
       });
@@ -95,17 +90,17 @@ export function Blogs() {
             />
         </div>
 
-        <div className="space-y-20">
+        <div className="space-y-12">
             {Object.entries({
                 'Technical': groupedAndFilteredBlogs['Technical'] || [],
                 'Non-Technical': groupedAndFilteredBlogs['Non-Technical'] || [],
                 'Books': groupedAndFilteredBlogs['Books'] || [],
             }).map(([categoryName, blogs]) => (
                 blogs.length > 0 && (
-                  <div key={categoryName}>
-                      <h3 className="text-3xl font-bold font-headline text-cyan-300 mb-8 px-8">{categoryName}</h3>
+                  <div key={categoryName} className="blog-category-container">
+                      <h3 className="text-3xl font-bold font-headline text-cyan-300 mb-8 px-4 md:px-8">{categoryName}</h3>
                       <div className="horizontal-scroll-container">
-                         <div className="flex gap-8 px-8">
+                         <div className="flex gap-8 px-4 md:px-8 blog-horizontal-track">
                            <BlogList
                               blogs={blogs}
                               onRead={handleRead}

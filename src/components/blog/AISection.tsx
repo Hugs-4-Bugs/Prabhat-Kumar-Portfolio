@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Bot, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { Sparkles, Bot, Send, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,7 @@ export function AISection() {
 
   const handleGenerateSummary = () => {
     setIsLoadingSummary(true);
+    setSummary("");
     // Dummy logic
     setTimeout(() => {
       setSummary("This is a dummy AI-generated summary of the blog post, highlighting the key concepts and main takeaways in a concise manner.");
@@ -70,6 +71,7 @@ export function AISection() {
               <div>
                 <h4 className="font-semibold text-purple-400 mb-3">AI Summary</h4>
                 <Button onClick={handleGenerateSummary} disabled={isLoadingSummary} size="sm" className="bg-purple-600/80 hover:bg-purple-600 text-white">
+                  {isLoadingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
                   {isLoadingSummary ? "Generating..." : "Generate Summary"}
                 </Button>
                 {summary && <p className="mt-4 text-sm text-slate-300 border-l-2 border-purple-400/50 pl-4">{summary}</p>}
@@ -85,16 +87,29 @@ export function AISection() {
                       <p className="text-slate-300 mt-1">AI: {entry.ai}</p>
                     </div>
                   ))}
+                   {isLoadingQuestion && (
+                      <div className="flex items-center gap-2">
+                        <Bot size={16} className="text-cyan-400"/>
+                        <span className="text-sm text-slate-400">Thinking...</span>
+                      </div>
+                    )}
                 </div>
                 <div className="mt-4 flex items-center gap-2">
                   <Textarea
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     placeholder="Ask anything about this blog..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleAskQuestion();
+                      }
+                    }}
                     className="bg-slate-800/60 border-purple-500/40 text-white"
                     rows={1}
+                    disabled={isLoadingQuestion}
                   />
-                  <Button onClick={handleAskQuestion} disabled={isLoadingQuestion} size="icon" className="bg-cyan-600/80 hover:bg-cyan-600 text-white flex-shrink-0">
+                  <Button onClick={handleAskQuestion} disabled={isLoadingQuestion || !question.trim()} size="icon" className="bg-cyan-600/80 hover:bg-cyan-600 text-white flex-shrink-0">
                     <Send />
                   </Button>
                 </div>
