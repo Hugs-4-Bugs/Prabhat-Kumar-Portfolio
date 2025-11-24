@@ -1,64 +1,105 @@
+
 {
   "blogs": [
     {
       "slug": "mastering-java-collections",
       "title": "Mastering Java Collections",
       "description": "A beginner-friendly guide to understanding and using Java Collections framework effectively.",
-      "category": "Technical",
-      "subcategory": "Java",
       "tag": "Free",
       "date": "2024-05-20",
-      "content": "<h2>Introduction to Java Collections</h2><p>The <strong>Java Collections Framework</strong> is a cornerstone of the Java programming language, providing a unified architecture for storing and manipulating groups of objects. It offers a rich set of interfaces, implementations, and algorithms to make your life as a developer easier.</p><h3>Why Use Collections?</h3><p>Before collections, developers had to rely on arrays, which are fixed in size and lack many useful features. Collections, on the other hand, are <em>dynamic</em> and come with powerful methods for adding, removing, and iterating over elements.</p><ul><li><strong>Performance:</strong> Highly optimized data structures.</li><li><strong>Flexibility:</strong> Dynamic resizing and rich API.</li><li><strong>Reusability:</strong> Standardized interfaces promote code reuse.</li></ul><pre><code class='language-java'>// Example: Creating and using an ArrayList\nList<String> names = new ArrayList<>();\nnames.add(\"Prabhat\");\nnames.add(\"Kumar\");\nSystem.out.println(names);</code></pre><h2>Core Interfaces</h2><p>The framework is built around a few core interfaces. <em>Understanding these is key to mastering collections.</em></p><h3>List</h3><p>A <code>List</code> is an ordered collection that allows duplicate elements. Think of it as a dynamic array. The most common implementations are <strong>ArrayList</strong> and <strong>LinkedList</strong>.</p><h3>Set</h3><p>A <code>Set</code> is a collection that contains no duplicate elements. It's great for storing unique items. Common implementations include <code>HashSet</code>, <code>LinkedHashSet</code>, and <code>TreeSet</code>.</p><h3>Map</h3><p>A <code>Map</code> is an object that maps keys to values. A map cannot contain duplicate keys. Each key can map to at most one value. <code>HashMap</code>, <code>LinkedHashMap</code>, and <code>TreeMap</code> are the go-to choices.</p><h2>Conclusion</h2><p>Mastering Java Collections is a significant step in becoming a proficient Java developer. By understanding the core interfaces and their implementations, you can write more efficient, flexible, and maintainable code.</p>"
+      "category": "Technical",
+      "subCategory": "Collections",
+      "content": "<h2>Introduction to Java Collections</h2><p>The Java Collections Framework is a cornerstone of the Java programming language, providing a unified architecture for storing and manipulating groups of objects. It offers a rich set of interfaces, implementations, and algorithms to make your life as a developer easier.</p><ul><li><strong>Performance:</strong> Highly optimized data structures.</li><li><strong>Flexibility:</strong> Dynamic resizing and rich API.</li><li><strong>Reusability:</strong> Standardized interfaces promote code reuse.</li></ul><p>This is a core resource for **Core Java** study.</p>"
     },
     {
       "slug": "intro-to-spring-security",
       "title": "Introduction to Spring Boot Security",
       "description": "An overview of authentication, authorization, and security fundamentals in Spring Boot.",
-      "category": "Technical",
-      "subcategory": "Java",
       "tag": "Free",
       "date": "2024-06-10",
-      "content": "<h2>Securing Your Spring Boot Application</h2><p><strong>Spring Security</strong> is a powerful and highly customizable authentication and access-control framework. It is the <em>de-facto standard</em> for securing Spring-based applications.</p><h3>Core Concepts</h3><p>At its core, Spring Security deals with two main concepts:</p><ul><li><strong>Authentication:</strong> Who are you? This is the process of verifying the identity of a user.</li><li><strong>Authorization:</strong> What are you allowed to do? This is the process of deciding if a user has permission to perform a certain action.</li></ul><h2>Basic Configuration</h2><p>Getting started with Spring Security is surprisingly easy. By simply adding the <code>spring-boot-starter-security</code> dependency, Spring Boot automatically secures all HTTP endpoints with basic authentication.</p><h3>Customizing Security</h3><p>For most real-world applications, you'll need to customize the security configuration. This is typically done by creating a <code>SecurityFilterChain</code> bean.</p><pre><code class='language-java'>@Configuration\n@EnableWebSecurity\npublic class WebSecurityConfig {\n\n    @Bean\n    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {\n        http\n            .authorizeHttpRequests((requests) -> requests\n                .requestMatchers(\"/\", \"/home\").permitAll()\n                .anyRequest().authenticated()\n            )\n            .formLogin((form) -> form\n                .loginPage(\"/login\")\n                .permitAll()\n            )\n            .logout((logout) -> logout.permitAll());\n\n        return http.build();\n    }\n}</code></pre><p>You can configure things like:</p><ul><li>Which endpoints are public and which are protected.</li><li>Form-based login instead of basic auth.</li><li>Integration with JWT (JSON Web Tokens) for stateless authentication.</li></ul><h2>Conclusion</h2><p>Spring Security provides a comprehensive set of tools to secure your applications. While it can seem daunting at first, its modular design allows you to start simple and add complexity as needed.</p>"
+      "category": "Technical",
+      "subCategory": "Java",
+      "content": "<h2>Securing Your Spring Boot Application</h2><p>Spring Security is a powerful and highly customizable authentication and access-control framework. It is the de-facto standard for securing Spring-based applications.</p><h3>Core Concepts</h3><p>At its core, Spring Security deals with two main concepts: **Authentication** and **Authorization**.</p>"
     },
     {
       "slug": "advanced-system-design",
-      "title": "Advanced System Design",
+      "title": "Advanced System Design for Backend Engineers",
       "description": "A deep dive into distributed systems, scalability patterns, and modern backend architecture.",
-      "category": "Technical",
-      "subcategory": "System Design",
       "tag": "Paid",
       "date": "2024-07-01",
-      "content": "<h3>This is a Premium Article</h3><p>This content is part of an exclusive series on advanced system design. Full access requires a subscription. Thank you for your interest!</p>"
+      "category": "Technical",
+      "subCategory": "Career",
+      "content": "<h2>Advanced System Design</h2><p>This is **premium content** covering advanced topics like consensus algorithms (Paxos, Raft), database sharding strategies, and microservices communication patterns. This is vital for senior **Career** growth. Please purchase to view the full content.</p>"
     },
     {
       "slug": "trading-psychology-the-inner-battle",
       "title": "Trading Psychology — The Inner Battle",
       "description": "An exploration of the emotional and psychological aspects of becoming a disciplined and successful trader.",
-      "category": "Books",
-      "subcategory": "Psychology",
       "tag": "Paid",
       "date": "2024-07-15",
-      "content": "<h3>Unlock the Secrets of Trading Psychology</h3><p>This article is an excerpt from the book 'The Inner Battle'. To gain full access to the insights on mastering your trading mindset, please consider purchasing the book.</p>"
+      "category": "Non-Technical",
+      "subCategory": "Resources",
+      "content": "<h2>Trading Psychology</h2><p>This is **premium content** focused on non-technical skills essential for high-performance careers. It covers risk management, emotional resilience, and pattern recognition. Please purchase to view the full content.</p>"
     },
     {
-      "slug": "python-for-data-science",
-      "title": "Python for Data Science",
-      "description": "A comprehensive guide to using Python libraries like Pandas, NumPy, and Scikit-learn for data analysis.",
-      "category": "Technical",
-      "subcategory": "Python",
+      "slug": "great-expectations-classic",
+      "title": "Great Expectations by Charles Dickens",
+      "description": "A review of the classic novel exploring themes of class, ambition, and wealth.",
       "tag": "Free",
       "date": "2024-08-01",
-      "content": "<h2>The Power of Python for Data Science</h2><p>Python has become the language of choice for data scientists, and for good reason. Its simplicity, combined with a powerful ecosystem of libraries, makes it ideal for everything from data cleaning to machine learning.</p><h3>Key Libraries</h3><ul><li><strong>Pandas:</strong> For data manipulation and analysis. Its DataFrame object is essential.</li><li><strong>NumPy:</strong> For numerical operations, especially on large, multi-dimensional arrays.</li><li><strong>Scikit-learn:</strong> For machine learning algorithms, including classification, regression, and clustering.</li></ul><h2>Example Workflow</h2><p>A typical data science workflow in Python might look like this: Load data with Pandas, clean and preprocess it, use NumPy for numerical transformations, and finally, build and evaluate a model with Scikit-learn.</p>"
+      "category": "Books",
+      "subCategory": "Fiction",
+      "content": "<h2>Great Expectations Review</h2><p>Pip's journey from humble beginnings to the high society of London is a timeless exploration of social status and personal identity. We discuss the significance of Miss Havisham's character and the ending's enduring debate.</p>"
     },
     {
-      "slug": "building-a-career-in-tech",
-      "title": "Building a Career in Tech",
-      "description": "Practical advice and strategies for navigating the tech industry and growing as a software engineer.",
-      "category": "Non-Technical",
-      "subcategory": "Career",
-      "tag": "Free",
+      "slug": "clean-code-book-review",
+      "title": "Book Review: Clean Code",
+      "description": "Why Robert C. Martin's guide to writing better code is still mandatory reading for every software engineer.",
+      "tag": "Paid",
       "date": "2024-08-15",
-      "content": "<h2>Navigating Your Tech Career</h2><p>A career in technology is a marathon, not a sprint. Continuous learning, networking, and strategic planning are key to long-term success.</p><h3>Core Pillars of Growth</h3><ul><li><strong>Technical Skills:</strong> Always be learning new languages, frameworks, and tools.</li><li><strong>Soft Skills:</strong> Communication, teamwork, and problem-solving are just as important as code.</li><li><strong>Networking:</strong> Build genuine relationships with peers and mentors.</li></ul><h2>Finding Your Niche</h2><p>Don't be afraid to specialize. Whether it's backend, frontend, DevOps, or AI/ML, finding a niche you're passionate about can accelerate your growth and open up unique opportunities.</p>"
+      "category": "Books",
+      "subCategory": "Non-Fiction",
+      "content": "<h2>Clean Code Principles</h2><p>This **premium content** review dives into key chapters of 'Clean Code', focusing on function structure, error handling, and object-oriented design. These principles are essential for scalable professional projects. Please purchase to view the full content.</p>"
+    },
+    {
+      "slug": "functional-programming-java8",
+      "title": "Functional Programming with Java 8 Streams",
+      "description": "Unlock the power of lambdas and streams for cleaner, more concise Java code.",
+      "tag": "Free",
+      "date": "2024-09-01",
+      "category": "Technical",
+      "subCategory": "Java 8",
+      "content": "<h2>Java 8 Streams API</h2><p>The introduction of lambda expressions and the Streams API revolutionized Java development, enabling powerful functional style programming. This article walks you through the fundamentals of `map`, `filter`, and `reduce` operations.</p>"
+    },
+    {
+      "slug": "python-for-data-science-basics",
+      "title": "Python Basics for Data Science",
+      "description": "Essential Python concepts and libraries (Pandas, NumPy) for beginners in ML and data analysis.",
+      "tag": "Free",
+      "date": "2024-09-15",
+      "category": "Technical",
+      "subCategory": "Python",
+      "content": "<h2>Python Data Stack</h2><p>Python is the lingua franca of data science. We cover setting up your environment, basic data structures, and how to load and clean data using the Pandas library.</p>"
+    },
+    {
+      "slug": "ml-model-deployment-guide",
+      "title": "ML Model Deployment: From Training to Production",
+      "description": "A guide to containerizing and serving machine learning models using Docker and FastAPI.",
+      "tag": "Paid",
+      "date": "2024-10-01",
+      "category": "Technical",
+      "subCategory": "ML",
+      "content": "<h2>Productionizing ML</h2><p>This **premium content** covers the often-overlooked challenge of moving ML models from the Jupyter Notebook to a robust, scalable production environment. We cover model versioning and API design. Please purchase to view the full content.</p>"
+    },
+    {
+      "slug": "soft-skills-interview-prep",
+      "title": "Mastering Soft Skills for Technical Interviews",
+      "description": "Tips on behavioral questions, communication, and demonstrating leadership in job interviews.",
+      "tag": "Free",
+      "date": "2024-10-15",
+      "category": "Non-Technical",
+      "subCategory": "Career",
+      "content": "<h2>Acing the Behavioral Interview</h2><p>Your technical skills get you the interview, but your soft skills get you the job. Learn how to use the STAR method effectively and demonstrate how you handle conflict and failure.</p>"
     }
   ]
 }
