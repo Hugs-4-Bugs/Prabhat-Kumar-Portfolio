@@ -14,7 +14,7 @@ interface BlogCardProps {
   isBookmarked: boolean;
 }
 
-const categoryColors = {
+const categoryColors: { [key: string]: string } = {
   Technical: 'bg-blue-500/10 border-blue-400/30 text-blue-300',
   'Non-Technical': 'bg-purple-500/10 border-purple-400/30 text-purple-300',
   Books: 'bg-green-500/10 border-green-400/30 text-green-300',
@@ -24,7 +24,7 @@ export function BlogCard({ blog, onRead, onBookmark, isBookmarked }: BlogCardPro
   return (
     <motion.div
       whileHover="hover"
-      className="group relative h-full w-[400px] rounded-2xl overflow-hidden border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl transform-style-3d shadow-xl shadow-black/20"
+      className="group relative h-full w-full rounded-2xl overflow-hidden border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl transform-style-3d shadow-xl shadow-black/20"
     >
       {/* Animated Border */}
       <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>

@@ -46,7 +46,7 @@ export function BlogList({ blogs, onRead, bookmarks, onBookmark }: BlogListProps
             initial="hidden"
             animate="visible"
             custom={index}
-            className="flex-shrink-0 w-[350px] md:w-[400px]"
+            className="flex-shrink-0 w-[80vw] sm:w-[350px] md:w-[400px]"
             style={{ scrollSnapAlign: "start" }}
         >
           <BlogCard
