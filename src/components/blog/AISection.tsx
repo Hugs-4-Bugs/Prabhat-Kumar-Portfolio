@@ -19,7 +19,7 @@ export function AISection() {
   const handleGenerateSummary = () => {
     setIsLoadingSummary(true);
     setSummary("");
-    // Dummy logic
+    // Dummy logic for summary generation
     setTimeout(() => {
       setSummary("This is a dummy AI-generated summary of the blog post, highlighting the key concepts and main takeaways in a concise manner.");
       setIsLoadingSummary(false);
@@ -29,7 +29,7 @@ export function AISection() {
   const handleAskQuestion = () => {
     if (!question.trim()) return;
     setIsLoadingQuestion(true);
-    // Dummy logic
+    // Dummy logic for Q&A
     setTimeout(() => {
       setConversation([
         ...conversation,
