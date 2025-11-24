@@ -119,7 +119,7 @@ export function Blogs() {
 
   return (
     <Section id="blogs" ref={sectionRef} className="p-0 m-0 max-w-full bg-slate-950">
-        <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-sm pt-12 pb-8">
+        <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-sm pt-24 pb-12">
             <SectionHeading>My Blogs</SectionHeading>
             <FilterBar
               searchQuery={searchQuery}
@@ -135,11 +135,11 @@ export function Blogs() {
                 'Non-Technical': groupedAndFilteredBlogs['Non-Technical'] || [],
                 'Books': groupedAndFilteredBlogs['Books'] || [],
             }).map(([categoryName, blogs]) => (
-                <div key={categoryName} className="blog-category-container overflow-hidden py-16">
-                    <div className="px-8 mb-8">
+                <div key={categoryName} className="blog-category-container overflow-hidden">
+                    <div className="px-8 pt-16 pb-8">
                         <h3 className="text-4xl font-bold font-headline text-cyan-300">{categoryName}</h3>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center pb-16">
                         <div className="blog-horizontal-track flex gap-8 px-8">
                            <BlogList
                               blogs={blogs}
