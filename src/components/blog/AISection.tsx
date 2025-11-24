@@ -44,11 +44,11 @@ export function AISection() {
   };
 
   return (
-    <div className="relative rounded-2xl border border-purple-500/30 bg-slate-900/50 p-6 backdrop-blur-xl group">
-      <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
+    <div className="relative rounded-2xl border border-primary/30 bg-secondary/30 p-6 backdrop-blur-xl group">
+      <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between font-headline text-xl text-purple-300"
+        className="flex w-full items-center justify-between font-headline text-xl text-primary"
       >
         <div className="flex items-center gap-3">
           <Sparkles className="h-6 w-6" />
@@ -69,28 +69,28 @@ export function AISection() {
             <div className="space-y-6">
               {/* AI Summary */}
               <div>
-                <h4 className="font-semibold text-purple-400 mb-3">AI Summary</h4>
-                <Button onClick={handleGenerateSummary} disabled={isLoadingSummary} size="sm" className="bg-purple-600/80 hover:bg-purple-600 text-white">
+                <h4 className="font-semibold text-primary mb-3">AI Summary</h4>
+                <Button onClick={handleGenerateSummary} disabled={isLoadingSummary} size="sm" variant="secondary" className="text-foreground">
                   {isLoadingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
                   {isLoadingSummary ? "Generating..." : "Generate Summary"}
                 </Button>
-                {summary && <p className="mt-4 text-sm text-slate-300 border-l-2 border-purple-400/50 pl-4">{summary}</p>}
+                {summary && <p className="mt-4 text-sm text-muted-foreground border-l-2 border-primary/50 pl-4">{summary}</p>}
               </div>
 
               {/* AI Q&A */}
               <div>
-                <h4 className="font-semibold text-purple-400 mb-3">Ask a Question</h4>
+                <h4 className="font-semibold text-primary mb-3">Ask a Question</h4>
                 <div className="space-y-4">
                   {conversation.map((entry, i) => (
                     <div key={i} className="text-sm">
-                      <p className="font-semibold text-cyan-300">You: {entry.user}</p>
-                      <p className="text-slate-300 mt-1">AI: {entry.ai}</p>
+                      <p className="font-semibold text-primary">You: {entry.user}</p>
+                      <p className="text-muted-foreground mt-1">AI: {entry.ai}</p>
                     </div>
                   ))}
                    {isLoadingQuestion && (
                       <div className="flex items-center gap-2">
-                        <Bot size={16} className="text-cyan-400"/>
-                        <span className="text-sm text-slate-400">Thinking...</span>
+                        <Bot size={16} className="text-primary"/>
+                        <span className="text-sm text-muted-foreground">Thinking...</span>
                       </div>
                     )}
                 </div>
@@ -105,11 +105,11 @@ export function AISection() {
                         handleAskQuestion();
                       }
                     }}
-                    className="bg-slate-800/60 border-purple-500/40 text-white"
+                    className="bg-background/60 border-primary/40 text-foreground"
                     rows={1}
                     disabled={isLoadingQuestion}
                   />
-                  <Button onClick={handleAskQuestion} disabled={isLoadingQuestion || !question.trim()} size="icon" className="bg-cyan-600/80 hover:bg-cyan-600 text-white flex-shrink-0">
+                  <Button onClick={handleAskQuestion} disabled={isLoadingQuestion || !question.trim()} size="icon" variant="secondary" className="text-foreground flex-shrink-0">
                     <Send />
                   </Button>
                 </div>

@@ -53,8 +53,8 @@ const BlogCategoryRow = ({ categoryName, blogs, onRead, bookmarks, onBookmark }:
   return (
     <div className="blog-category-container">
       <div className="flex justify-between items-center px-4 md:px-8">
-        <h3 className="text-3xl font-bold font-headline text-cyan-300 mb-8">{categoryName}</h3>
-        <div className="md:hidden flex items-center text-sm text-cyan-300/80 mb-8">
+        <h3 className="text-3xl font-bold font-headline text-primary mb-8">{categoryName}</h3>
+        <div className="md:hidden flex items-center text-sm text-primary/80 mb-8">
            <AnimatePresence mode="wait">
             <motion.div
               key={scrollDirection}
@@ -151,7 +151,7 @@ export function Blogs() {
           activeFilter === 'All' ||
           (activeFilter === 'Paid' && blog.tag === 'Paid') ||
           (activeFilter === 'Free' && blog.tag === 'Free') ||
-          (activeFilter === 'Bookmarked' && bookmarks.includes(blog.slug));
+          (activeFilter === 'Bookmarked' && bookmarks.includes(slug));
         
         return matchesQuery && matchesCategory;
       });
@@ -169,8 +169,8 @@ export function Blogs() {
   }, [filteredBlogs]);
 
   return (
-    <Section id="blogs" className="bg-slate-950/90 py-24">
-        <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-sm py-12">
+    <Section id="blogs" className="bg-secondary/30 py-24">
+        <div className="sticky top-0 z-20 bg-background/80 dark:bg-slate-950/80 backdrop-blur-sm py-12">
             <SectionHeading>My Blogs</SectionHeading>
             <FilterBar
               searchQuery={searchQuery}

@@ -50,14 +50,14 @@ export function BlogViewer({ blog, onClose, onBookmark, isBookmarked }: { blog: 
         <Button 
             onClick={() => blog && onBookmark(blog.slug)}
             variant="outline" 
-            className="w-full mb-8 bg-slate-800/50 border-slate-700 hover:bg-slate-700/50"
+            className="w-full mb-8 bg-background/50 border-border hover:bg-secondary"
         >
             <Bookmark className={`mr-2 h-4 w-4 transition-all ${isBookmarked ? 'text-yellow-400 fill-yellow-400/20' : ''}`} />
             {isBookmarked ? 'Bookmarked' : 'Bookmark'}
         </Button>
 
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-headline text-lg text-cyan-300 flex items-center gap-2">
+        <h3 className="font-headline text-lg text-primary flex items-center gap-2">
           <List className="h-5 w-5"/>
           Table of Contents
         </h3>
@@ -76,7 +76,7 @@ export function BlogViewer({ blog, onClose, onBookmark, isBookmarked }: { blog: 
                   contentWrapper.scrollTo({ top: topPos, behavior: 'smooth' });
                 }
               }}
-              className="text-slate-400 hover:text-cyan-300 transition-colors text-sm"
+              className="text-muted-foreground hover:text-primary transition-colors text-sm"
             >
               {text}
             </a>
@@ -95,7 +95,7 @@ export function BlogViewer({ blog, onClose, onBookmark, isBookmarked }: { blog: 
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="fixed inset-0 top-16 bg-slate-950/95 backdrop-blur-lg z-40 overflow-hidden"
+          className="fixed inset-0 top-16 bg-background/95 backdrop-blur-lg z-40 overflow-hidden"
         >
             <div className="container mx-auto h-full flex items-start p-4 md:p-8">
                 {/* Scrollable Main Content */}
@@ -103,16 +103,16 @@ export function BlogViewer({ blog, onClose, onBookmark, isBookmarked }: { blog: 
                     <main ref={contentRef} className="max-w-4xl mx-auto pb-32">
                         <span className={`inline-block px-3 py-1 text-sm font-bold rounded-full border mb-4 ${
                             blog.tag === 'Paid'
-                                ? 'bg-yellow-500/10 border-yellow-400/30 text-yellow-300'
-                                : 'bg-green-500/10 border-green-400/30 text-green-300'
+                                ? 'bg-yellow-500/10 border-yellow-400/30 text-yellow-500 dark:text-yellow-300'
+                                : 'bg-green-500/10 border-green-400/30 text-green-500 dark:text-green-300'
                         }`}
                         >
                         {blog.tag}
                         </span>
-                        <h1 className="font-headline text-3xl md:text-5xl text-white break-words">
+                        <h1 className="font-headline text-3xl md:text-5xl text-foreground break-words">
                         {blog.title}
                         </h1>
-                        <div className="flex items-center flex-wrap space-x-4 text-slate-400 mt-4 mb-8">
+                        <div className="flex items-center flex-wrap space-x-4 text-muted-foreground mt-4 mb-8">
                             <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
                                 <span>{blog.date}</span>
@@ -123,17 +123,17 @@ export function BlogViewer({ blog, onClose, onBookmark, isBookmarked }: { blog: 
                             </div>
                         </div>
 
-                        <div className="prose prose-invert prose-lg max-w-none text-slate-300 
-                                                prose-headings:text-cyan-300 prose-headings:font-headline
+                        <div className="prose dark:prose-invert prose-lg max-w-none text-foreground 
+                                                prose-headings:text-primary prose-headings:font-headline
                                                 prose-h2:text-3xl prose-h3:text-2xl
-                                                prose-a:text-cyan-400 hover:prose-a:text-cyan-200 transition-colors
-                                                prose-strong:text-white
-                                                prose-em:text-purple-300
-                                                prose-blockquote:border-l-4 prose-blockquote:border-purple-400/50 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-400
-                                                prose-ul:list-disc prose-ul:marker:text-cyan-400
-                                                prose-ol:list-decimal prose-ol:marker:text-cyan-400
-                                                prose-code:bg-slate-800/80 prose-code:p-1 prose-code:rounded prose-code:font-mono prose-code:text-sm prose-code:text-yellow-300
-                                                prose-pre:bg-slate-900/80 prose-pre:p-4 prose-pre:rounded-lg prose-pre:border prose-pre:border-slate-700"
+                                                prose-a:text-primary hover:prose-a:text-primary/80 transition-colors
+                                                prose-strong:text-foreground
+                                                prose-em:text-primary/90
+                                                prose-blockquote:border-l-4 prose-blockquote:border-primary/50 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground
+                                                prose-ul:list-disc prose-ul:marker:text-primary
+                                                prose-ol:list-decimal prose-ol:marker:text-primary
+                                                prose-code:bg-secondary prose-code:p-1 prose-code:rounded prose-code:font-mono prose-code:text-sm prose-code:text-primary
+                                                prose-pre:bg-secondary/80 prose-pre:p-4 prose-pre:rounded-lg prose-pre:border prose-pre:border-border"
                             dangerouslySetInnerHTML={{ __html: blog.content }}
                         />
                     </main>
@@ -149,7 +149,7 @@ export function BlogViewer({ blog, onClose, onBookmark, isBookmarked }: { blog: 
             
             {/* Global Close Button */}
             <div className="fixed top-20 right-4 z-50">
-                <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-200 bg-black/50 hover:bg-black/80 backdrop-blur-sm">
+                <Button variant="ghost" size="icon" onClick={onClose} className="text-foreground bg-background/50 hover:bg-secondary backdrop-blur-sm">
                     <X className="h-6 w-6" />
                 </Button>
             </div>

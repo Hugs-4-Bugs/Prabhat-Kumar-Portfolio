@@ -32,7 +32,7 @@ export function BlogList({ blogs, onRead, bookmarks, onBookmark }: BlogListProps
   if (blogs.length === 0) {
     return (
       <div className="flex items-center justify-center w-full min-h-[300px]">
-         <p className="text-center text-slate-400 text-lg">No blogs found for this filter.</p>
+         <p className="text-center text-muted-foreground text-lg">No blogs found for this filter.</p>
       </div>
     );
   }
