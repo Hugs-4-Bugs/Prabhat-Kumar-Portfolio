@@ -1,3 +1,4 @@
+
 // src/components/sections/blogs.tsx
 "use client";
 import { useState, useMemo, useEffect, useRef } from "react";
@@ -36,30 +37,26 @@ export function Blogs() {
   useEffect(() => {
     if (!sectionRef.current) return;
     
-    const ctx = gsap.context(() => {
-      const categories = gsap.utils.toArray<HTMLElement>('.blog-category-container');
-      
-      categories.forEach(category => {
-        const track = category.querySelector('.blog-horizontal-track') as HTMLElement;
+    let ctx = gsap.context(() => {
+        const categories = gsap.utils.toArray<HTMLElement>('.blog-category-container');
         
-        if (!track || track.scrollWidth <= category.clientWidth) {
-          gsap.set(category, { height: 'auto', marginBottom: '5rem' });
-          return;
-        }
-        
-        gsap.to(track, {
-          x: () => -(track.scrollWidth - category.clientWidth),
-          ease: "none",
-          scrollTrigger: {
-            trigger: category,
-            start: "top top",
-            end: () => `+=${track.scrollWidth - category.clientWidth}`,
-            pin: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
-          },
+        categories.forEach((category) => {
+            const track = category.querySelector('.blog-horizontal-track') as HTMLElement;
+            if (!track || track.scrollWidth <= category.clientWidth) return;
+            
+            gsap.to(track, {
+                x: () => -(track.scrollWidth - category.clientWidth),
+                ease: "none",
+                scrollTrigger: {
+                    trigger: category,
+                    start: "top top",
+                    end: () => `+=${track.scrollWidth - category.clientWidth}`,
+                    pin: true,
+                    scrub: 1,
+                    invalidateOnRefresh: true,
+                },
+            });
         });
-      });
     }, sectionRef);
     
     return () => ctx.revert();
@@ -138,11 +135,11 @@ export function Blogs() {
                 'Non-Technical': groupedAndFilteredBlogs['Non-Technical'] || [],
                 'Books': groupedAndFilteredBlogs['Books'] || [],
             }).map(([categoryName, blogs]) => (
-                <div key={categoryName} className="blog-category-container h-screen flex flex-col justify-center overflow-hidden">
-                    <div className="pt-8 pb-4 px-8">
+                <div key={categoryName} className="blog-category-container overflow-hidden py-16">
+                    <div className="px-8 mb-8">
                         <h3 className="text-4xl font-bold font-headline text-cyan-300">{categoryName}</h3>
                     </div>
-                    <div className="flex-grow flex items-center">
+                    <div className="flex items-center">
                         <div className="blog-horizontal-track flex gap-8 px-8">
                            <BlogList
                               blogs={blogs}
