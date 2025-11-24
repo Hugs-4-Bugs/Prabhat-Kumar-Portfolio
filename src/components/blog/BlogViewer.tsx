@@ -123,6 +123,7 @@ export function BlogViewer({ blog, onClose }: BlogViewerProps) {
                        prose-headings:text-cyan-300 
                        prose-a:text-cyan-400 hover:prose-a:text-cyan-200 
                        prose-strong:text-white
+                       prose-em:text-purple-300
                        prose-code:bg-slate-800 prose-code:p-1 prose-code:rounded prose-code:font-mono prose-code:text-sm
                        prose-pre:bg-slate-900 prose-pre:p-4 prose-pre:rounded-lg prose-pre:border prose-pre:border-slate-700"
             dangerouslySetInnerHTML={{ __html: blog.content }}
