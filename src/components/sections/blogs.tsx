@@ -2,7 +2,7 @@
 "use client";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 
 import { blogData } from "@/lib/blogs";
 import { useBookmarks } from "@/hooks/use-bookmarks";
@@ -13,6 +13,96 @@ import { BlogViewer } from "@/components/blog/BlogViewer";
 import { PaidModal } from "@/components/blog/PaidModal";
 import { FilterBar } from "@/components/blog/FilterBar";
 import type { Blog } from "@/lib/types";
+
+// A new component to encapsulate the logic for a single category
+const BlogCategoryRow = ({ categoryName, blogs, onRead, bookmarks, onBookmark }: {
+  categoryName: string;
+  blogs: Blog[];
+  onRead: (blog: Blog) => void;
+  bookmarks: string[];
+  onBookmark: (slug: string) => void;
+}) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollDirection, setScrollDirection] = useState<'right' | 'left'>('right');
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = container;
+      const isAtEnd = scrollLeft + clientWidth >= scrollWidth - 10; // 10px buffer
+      const isAtStart = scrollLeft <= 10;
+
+      if (isAtEnd) {
+        setScrollDirection('left');
+      } else if (isAtStart) {
+        setScrollDirection('right');
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    // Initial check
+    handleScroll();
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  return (
+    <div className="blog-category-container">
+      <div className="flex justify-between items-center px-4 md:px-8">
+        <h3 className="text-3xl font-bold font-headline text-cyan-300 mb-8">{categoryName}</h3>
+        <div className="md:hidden flex items-center text-sm text-cyan-300/80 mb-8">
+           <AnimatePresence mode="wait">
+            <motion.div
+              key={scrollDirection}
+              initial={{ opacity: 0, x: scrollDirection === 'right' ? -10 : 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: scrollDirection === 'right' ? 10 : -10 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-center"
+            >
+              {scrollDirection === 'right' ? (
+                <>
+                  <motion.div
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                  >
+                    <ArrowRight className="h-4 w-4 mr-2" />
+                  </motion.div>
+                  Swipe
+                </>
+              ) : (
+                <>
+                  Swipe
+                  <motion.div
+                    animate={{ x: [0, -5, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                  >
+                    <ArrowLeft className="h-4 w-4 ml-2" />
+                  </motion.div>
+                </>
+              )}
+            </motion.div>
+           </AnimatePresence>
+        </div>
+      </div>
+      <div ref={scrollContainerRef} className="horizontal-scroll-container">
+         <div className="flex gap-8 px-4 md:px-8 blog-horizontal-track">
+           <BlogList
+              blogs={blogs}
+              onRead={onRead}
+              bookmarks={bookmarks}
+              onBookmark={onBookmark}
+            />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 export function Blogs() {
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
@@ -29,7 +119,6 @@ export function Blogs() {
     } else {
       body.classList.remove('no-scroll');
     }
-    // Cleanup function to ensure scroll is re-enabled on component unmount
     return () => {
       body.classList.remove('no-scroll');
     };
@@ -62,7 +151,7 @@ export function Blogs() {
           activeFilter === 'All' ||
           (activeFilter === 'Paid' && blog.tag === 'Paid') ||
           (activeFilter === 'Free' && blog.tag === 'Free') ||
-          (activeFilter === 'Bookmarked' && bookmarks.includes(slug));
+          (activeFilter === 'Bookmarked' && bookmarks.includes(blog.slug));
         
         return matchesQuery && matchesCategory;
       });
@@ -98,30 +187,14 @@ export function Blogs() {
                 'Books': groupedAndFilteredBlogs['Books'] || [],
             }).map(([categoryName, blogs]) => (
                 blogs.length > 0 && (
-                  <div key={categoryName} className="blog-category-container">
-                      <div className="flex justify-between items-center px-4 md:px-8">
-                        <h3 className="text-3xl font-bold font-headline text-cyan-300 mb-8">{categoryName}</h3>
-                        <div className="md:hidden flex items-center text-sm text-cyan-300/80 mb-8">
-                           <motion.div
-                              animate={{ x: [0, 5, 0] }}
-                              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                            >
-                              <ArrowRight className="h-4 w-4 mr-2" />
-                            </motion.div>
-                            Swipe
-                        </div>
-                      </div>
-                      <div className="horizontal-scroll-container">
-                         <div className="flex gap-8 px-4 md:px-8 blog-horizontal-track">
-                           <BlogList
-                              blogs={blogs}
-                              onRead={handleRead}
-                              bookmarks={bookmarks}
-                              onBookmark={handleBookmark}
-                            />
-                        </div>
-                      </div>
-                  </div>
+                  <BlogCategoryRow
+                    key={categoryName}
+                    categoryName={categoryName}
+                    blogs={blogs}
+                    onRead={handleRead}
+                    bookmarks={bookmarks}
+                    onBookmark={handleBookmark}
+                  />
                 )
             ))}
         </div>
