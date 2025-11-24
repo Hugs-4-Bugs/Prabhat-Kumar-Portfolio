@@ -1,12 +1,12 @@
-
+// src/hooks/use-bookmarks.ts
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
-const BOOKMARKS_KEY = 'prabhatverse-bookmarks';
+const BOOKMARKS_KEY = 'blog-bookmarks';
 
-export function useBookmarks() {
-  const [bookmarks, setBookmarks] = useState<number[]>([]);
+export function useBookmarks(): [string[], (slug: string) => void, (slug: string) => void] {
+  const [bookmarks, setBookmarks] = useState<string[]>([]);
 
   useEffect(() => {
     try {
@@ -15,24 +15,21 @@ export function useBookmarks() {
         setBookmarks(JSON.parse(storedBookmarks));
       }
     } catch (error) {
-      console.error("Failed to parse bookmarks from localStorage", error);
-      setBookmarks([]);
+      console.error("Failed to load bookmarks from localStorage", error);
     }
   }, []);
 
-  const toggleBookmark = useCallback((blogId: number) => {
-    setBookmarks(prev => {
-      const newBookmarks = new Set(prev);
-      if (newBookmarks.has(blogId)) {
-        newBookmarks.delete(blogId);
-      } else {
-        newBookmarks.add(blogId);
-      }
-      const updatedBookmarks = Array.from(newBookmarks);
-      localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(updatedBookmarks));
-      return updatedBookmarks;
-    });
-  }, []);
+  const addBookmark = (slug: string) => {
+    const newBookmarks = [...bookmarks, slug];
+    setBookmarks(newBookmarks);
+    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(newBookmarks));
+  };
 
-  return { bookmarks, toggleBookmark };
+  const removeBookmark = (slug: string) => {
+    const newBookmarks = bookmarks.filter((b) => b !== slug);
+    setBookmarks(newBookmarks);
+    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(newBookmarks));
+  };
+
+  return [bookmarks, addBookmark, removeBookmark];
 }

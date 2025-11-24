@@ -65,11 +65,11 @@ export type TechCategory = {
   tools: TechTool[];
 };
 
-export interface Blog {
-  id: number;
+export type Blog = {
+  slug: string;
   title: string;
   description: string;
-  content: string;
-  tag: 'Free' | 'Paid';
+  tag: 'Paid' | 'Free';
   date: string;
-}
+  content: string;
+};

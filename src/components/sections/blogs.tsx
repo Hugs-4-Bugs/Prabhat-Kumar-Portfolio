@@ -1,94 +1,96 @@
-
+// src/components/sections/blogs.tsx
 "use client";
-
-import { useState, useMemo, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { useBookmarks } from '@/hooks/use-bookmarks';
+import { useState, useMemo, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
+import { blogData } from "@/lib/blogs";
+import { useBookmarks } from "@/hooks/use-bookmarks";
 import { Section } from "@/components/section-wrapper";
 import { SectionHeading } from "@/components/section-heading";
-import { FilterBar } from "@/components/blog/filter-bar";
-import { BlogList } from "@/components/blog/blog-list";
-import { BlogViewer } from "@/components/blog/blog-viewer";
-import { PremiumLockModal } from "@/components/blog/premium-lock-modal";
-import { blogs as allBlogs } from "@/lib/blogs.json";
+import { FilterBar } from "@/components/blog/FilterBar";
+import { BlogList } from "@/components/blog/BlogList";
+import { BlogViewer } from "@/components/blog/BlogViewer";
+import { PaidModal } from "@/components/blog/PaidModal";
 import type { Blog } from "@/lib/types";
 
-export function BlogsPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All');
+export function Blogs() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("All");
   const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
-  const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { bookmarks } = useBookmarks();
+  const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
+
+  const [bookmarks, addBookmark, removeBookmark] = useBookmarks();
 
   useEffect(() => {
-    // If viewer is open, prevent body scroll
-    if (isViewerOpen) {
-      document.body.style.overflow = 'hidden';
+    // Disable body scroll when blog viewer or modal is open
+    if (selectedBlog || isPaidModalOpen) {
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "auto";
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isViewerOpen]);
+  }, [selectedBlog, isPaidModalOpen]);
 
 
   const filteredBlogs = useMemo(() => {
-    let blogs = allBlogs;
-
-    if (activeFilter === 'Bookmarked') {
-      blogs = blogs.filter(blog => bookmarks.includes(blog.id));
-    } else if (activeFilter !== 'All') {
-      blogs = blogs.filter(blog => blog.tag === activeFilter);
+    let blogs = blogData;
+    
+    if (searchQuery) {
+        blogs = blogs.filter(blog =>
+            blog.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
     }
-
-    if (searchTerm) {
-      blogs = blogs.filter(blog =>
-        blog.title.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    
+    if (activeFilter === "Paid") {
+        return blogs.filter(blog => blog.tag === "Paid");
     }
-
+    if (activeFilter === "Free") {
+        return blogs.filter(blog => blog.tag === "Free");
+    }
+    if (activeFilter === "Bookmarked") {
+        return blogs.filter(blog => bookmarks.includes(blog.slug));
+    }
+    
     return blogs;
-  }, [searchTerm, activeFilter, bookmarks]);
+  }, [searchQuery, activeFilter, bookmarks]);
 
-  const handleReadMore = (blog: Blog) => {
-    if (blog.tag === 'Paid') {
-      setIsModalOpen(true);
+  const handleRead = (blog: Blog) => {
+    if (blog.tag === "Paid") {
+      setIsPaidModalOpen(true);
     } else {
       setSelectedBlog(blog);
-      setIsViewerOpen(true);
+    }
+  };
+
+  const handleBookmark = (slug: string) => {
+    if (bookmarks.includes(slug)) {
+      removeBookmark(slug);
+    } else {
+      addBookmark(slug);
     }
   };
 
   const closeViewer = () => {
-    setIsViewerOpen(false);
-    // Delay clearing the blog to allow for the exit animation
-    setTimeout(() => {
-      setSelectedBlog(null);
-    }, 500);
+    setSelectedBlog(null);
   };
 
   return (
-    <Section id="blogs" className="min-h-screen py-24 sm:py-32">
-      <SectionHeading>Blogs & Resources</SectionHeading>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <FilterBar
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          activeFilter={activeFilter}
-          setActiveFilter={setActiveFilter}
-        />
-        <BlogList blogs={filteredBlogs} onReadMore={handleReadMore} />
-      </div>
-
+    <Section id="blogs" className="min-h-screen">
+      <SectionHeading>My Blogs</SectionHeading>
+      <FilterBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        activeFilter={activeFilter}
+        setActiveFilter={setActiveFilter}
+      />
+      <BlogList
+        blogs={filteredBlogs}
+        onRead={handleRead}
+        bookmarks={bookmarks}
+        onBookmark={handleBookmark}
+      />
       <AnimatePresence>
-        {isViewerOpen && selectedBlog && (
-          <BlogViewer blog={selectedBlog} onClose={closeViewer} />
-        )}
+        {selectedBlog && <BlogViewer blog={selectedBlog} onClose={closeViewer} />}
       </AnimatePresence>
-      
-      <PremiumLockModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <PaidModal isOpen={isPaidModalOpen} onClose={() => setIsPaidModalOpen(false)} />
     </Section>
   );
 }

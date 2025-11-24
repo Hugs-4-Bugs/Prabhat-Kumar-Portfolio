@@ -2,36 +2,36 @@
 {
   "blogs": [
     {
-      "id": 1,
+      "slug": "mastering-java-collections",
       "title": "Mastering Java Collections",
-      "description": "A beginner-friendly guide to understanding and using Java Collections effectively, from Lists to Maps.",
-      "content": "<h2>Understanding the Java Collections Framework</h2><p>The Java Collections Framework (JCF) is a set of classes and interfaces that implement commonly reusable collection data structures. Although it's not a language feature, it's a fundamental part of the standard Java library.</p><h3>Core Concepts</h3><p>This framework provides an architecture to store and manipulate groups of objects. It can be used with any objects, and it provides a standard way of accessing them. All the collections frameworks contain the following:</p><ul><li><strong>Interfaces:</strong> These are abstract data types that represent collections. Interfaces allow collections to be manipulated independently of the details of their representation.</li><li><em>Implementations:</em> These are the concrete implementations of the collection interfaces. In essence, they are reusable data structures.</li><li><strong>Algorithms:</strong> These are the methods that perform useful computations, such as searching and sorting, on objects that implement collection interfaces. The algorithms are said to be polymorphic: that is, the same method can be used on many different implementations of the appropriate collection interface.</li></ul><h3>Core Interfaces</h3><p>The core of the framework is a set of interfaces that define the different types of collections. The most important of these are:</p><p><code>Collection</code>: The root of the collection hierarchy. A collection represents a group of objects, known as its elements.</p><p><code>List</code>: An ordered collection (sometimes called a sequence). Lists can contain duplicate elements. You can access any element from its index.</p><p><code>Set</code>: A collection that cannot contain duplicate elements.</p><p><code>Map</code>: An object that maps keys to values. A map cannot contain duplicate keys; each key can map to at most one value.</p><h3>When to Use What?</h3><p>Choosing the right collection is crucial for performance and readability. Use a <strong>List</strong> when you need an ordered sequence of elements. Use a <strong>Set</strong> when you need to store unique elements. Use a <strong>Map</strong> when you need to associate keys with values. Understanding these distinctions is the first step toward mastering the JCF.</p>",
+      "description": "A beginner-friendly guide to understanding and using Java Collections framework effectively.",
       "tag": "Free",
-      "date": "2024-05-10"
+      "date": "2024-05-20",
+      "content": "<h2>Introduction to Java Collections</h2><p>The Java Collections Framework is a cornerstone of the Java programming language, providing a unified architecture for storing and manipulating groups of objects. It offers a rich set of interfaces, implementations, and algorithms to make your life as a developer easier.</p><h3>Why Use Collections?</h3><p>Before collections, developers had to rely on arrays, which are fixed in size and lack many useful features. Collections, on the other hand, are dynamic and come with powerful methods for adding, removing, and iterating over elements.</p><ul><li><strong>Performance:</strong> Highly optimized data structures.</li><li><strong>Flexibility:</strong> Dynamic resizing and rich API.</li><li><strong>Reusability:</strong> Standardized interfaces promote code reuse.</li></ul><h2>Core Interfaces</h2><p>The framework is built around a few core interfaces. Understanding these is key to mastering collections.</p><h3>List</h3><p>A <code>List</code> is an ordered collection that allows duplicate elements. Think of it as a dynamic array. The most common implementations are <code>ArrayList</code> and <code>LinkedList</code>.</p><h3>Set</h3><p>A <code>Set</code> is a collection that contains no duplicate elements. It's great for storing unique items. Common implementations include <code>HashSet</code>, <code>LinkedHashSet</code>, and <code>TreeSet</code>.</p><h3>Map</h3><p>A <code>Map</code> is an object that maps keys to values. A map cannot contain duplicate keys. Each key can map to at most one value. <code>HashMap</code>, _LinkedHashMap_, and <code>TreeMap</code> are the go-to choices.</p><h2>Conclusion</h2><p>Mastering Java Collections is a significant step in becoming a proficient Java developer. By understanding the core interfaces and their implementations, you can write more efficient, flexible, and maintainable code.</p>"
     },
     {
-      "id": 2,
+      "slug": "intro-to-spring-security",
       "title": "Introduction to Spring Boot Security",
-      "description": "An overview of authentication, authorization, and security fundamentals in Spring Boot applications.",
-      "content": "<h2>Securing Your Spring Boot Application</h2><p>Spring Security is a powerful and highly customizable authentication and access-control framework. It is the <em>de-facto standard</em> for securing Spring-based applications.</p><h3>Key Features</h3><p>Spring Security provides a comprehensive set of features out of the box:</p><ul><li>Support for various authentication mechanisms (HTTP Basic, form-based, LDAP, OAuth2, etc.).</li><li>Protection against common attacks like session fixation, clickjacking, cross-site request forgery, etc.</li><li>Servlet API integration.</li><li>Extensibility to support custom security requirements.</li></ul><h3>Getting Started</h3><p>To get started, you need to add the Spring Boot Starter for Security to your project:</p><p><code>implementation 'org.springframework.boot:spring-boot-starter-security'</code></p><p>Once added, Spring Boot will automatically configure a basic security setup, including a default user and form-based login. From there, you can customize everything to fit your needs.</p><h2>Authentication vs. Authorization</h2><p>It's crucial to understand the difference:</p><p><strong>Authentication</strong> is the process of verifying who a user is.</p><p><strong>Authorization</strong> is the process of determining if a user has permission to do something.</p><p>Spring Security handles both, but they are configured separately.</p><h3>Conclusion</h3><p>This was a brief introduction to Spring Security. Properly securing your application is a critical step in development, and Spring Security provides the tools you need to do it effectively.</p>",
+      "description": "An overview of authentication, authorization, and security fundamentals in Spring Boot.",
       "tag": "Free",
-      "date": "2024-05-15"
+      "date": "2024-06-10",
+      "content": "<h2>Securing Your Spring Boot Application</h2><p>Spring Security is a powerful and highly customizable authentication and access-control framework. It is the de-facto standard for securing Spring-based applications.</p><h3>Core Concepts</h3><p>At its core, Spring Security deals with two main concepts:</p><ul><li><strong>Authentication:</strong> Who are you? This is the process of verifying the identity of a user.</li><li><strong>Authorization:</strong> What are you allowed to do? This is the process of deciding if a user has permission to perform a certain action.</li></ul><h2>Basic Configuration</h2><p>Getting started with Spring Security is surprisingly easy. By simply adding the <code>spring-boot-starter-security</code> dependency, Spring Boot automatically secures all HTTP endpoints with basic authentication.</p><h3>Customizing Security</h3><p>For most real-world applications, you'll need to customize the security configuration. This is typically done by creating a <code>SecurityFilterChain</code> bean.</p><p>You can configure things like:</p><ul><li>Which endpoints are public and which are protected.</li><li>Form-based login instead of basic auth.</li><li>Integration with JWT (JSON Web Tokens) for stateless authentication.</li></ul><h2>Conclusion</h2><p>Spring Security provides a comprehensive set of tools to secure your applications. While it can seem daunting at first, its modular design allows you to start simple and add complexity as needed.</p>"
     },
     {
-      "id": 3,
+      "slug": "advanced-system-design",
       "title": "Advanced System Design for Backend Engineers",
-      "description": "A deep dive into distributed systems, scalability, and backend architecture.",
-      "content": "<h2>Scaling Your Systems</h2><p>This is a premium article. The full content is available to subscribers. This is just a preview.</p><p>Designing systems that can handle millions of users requires thinking beyond a single server. This article explores the principles of distributed systems, including topics like:</p><ul><li>Load Balancing</li><li>Database Sharding</li><li>Caching Strategies</li><li>Message Queues</li><li>CAP Theorem</li></ul>",
+      "description": "A deep dive into distributed systems, scalability patterns, and modern backend architecture.",
       "tag": "Paid",
-      "date": "2024-05-20"
+      "date": "2024-07-01",
+      "content": "<p>This is premium content and is not available for free. Please purchase to view.</p>"
     },
     {
-      "id": 4,
+      "slug": "trading-psychology-the-inner-battle",
       "title": "Trading Psychology — The Inner Battle",
-      "description": "The emotional and psychological aspects of becoming a disciplined and successful trader.",
-      "content": "<h2>The Mind of a Trader</h2><p>This is a premium article. The full content is available to subscribers. This is just a preview.</p><p>Success in trading is often said to be 80% psychology and 20% strategy. This article delves into the mental game of trading, covering:</p><ul><li>Managing Greed and Fear</li><li>Developing Discipline</li><li>The Importance of a Trading Plan</li><li>Handling Losses</li><li>Cognitive Biases in Trading</li></ul>",
+      "description": "An exploration of the emotional and psychological aspects of becoming a disciplined and successful trader.",
       "tag": "Paid",
-      "date": "2024-05-25"
+      "date": "2024-07-15",
+      "content": "<p>This is premium content and is not available for free. Please purchase to view.</p>"
     }
   ]
 }

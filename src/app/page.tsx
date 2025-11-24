@@ -15,7 +15,7 @@ import { Projects } from "@/components/sections/projects";
 import { Services } from "@/components/sections/services";
 import { Skills } from "@/components/sections/skills";
 import { TechStack } from "@/components/sections/tech-stack";
-import { BlogsPage } from "@/components/sections/blogs";
+import { Blogs } from "@/components/sections/blogs";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -59,8 +59,8 @@ export default function Home() {
         <Projects />
         <Skills />
         <TechStack />
+        <Blogs />
         <Education />
-        <BlogsPage />
         <Contact />
     </div>
   );
