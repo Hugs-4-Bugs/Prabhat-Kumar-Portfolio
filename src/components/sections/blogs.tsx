@@ -147,7 +147,7 @@ export function Blogs() {
         </SectionHeading>
         <div className="relative">
             {Object.entries(groupedBlogs).map(([categoryName, _]) => (
-                <div key={categoryName} className="blog-category-container h-screen flex flex-col">
+                <div key={categoryName} className="blog-category-container h-screen flex flex-col justify-center">
                     <div className="pt-24 pb-8 px-8">
                         <h3 className="text-4xl font-bold font-headline text-cyan-300">{categoryName}</h3>
                         <FilterBar
