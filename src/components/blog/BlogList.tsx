@@ -42,7 +42,7 @@ export function BlogList({ blogs, onRead, bookmarks, onBookmark }: BlogListProps
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8"
+      className="flex gap-8"
     >
       {blogs.map((blog) => (
         <motion.div key={blog.slug} variants={itemVariants}>

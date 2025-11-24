@@ -1,4 +1,3 @@
-
 // src/lib/types.ts
 import type { LucideIcon } from 'lucide-react';
 
@@ -69,7 +68,14 @@ export type Blog = {
   slug: string;
   title: string;
   description: string;
+  category: 'Technical' | 'Non-Technical' | 'Books';
+  subcategory: string;
   tag: 'Paid' | 'Free';
   date: string;
   content: string;
+};
+
+export type BlogCategory = {
+  name: 'Technical' | 'Non-Technical' | 'Books';
+  blogs: Blog[];
 };

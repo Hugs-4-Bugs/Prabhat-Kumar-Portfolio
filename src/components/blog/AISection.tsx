@@ -43,8 +43,8 @@ export function AISection() {
   };
 
   return (
-    <div className="relative rounded-2xl border border-purple-500/30 bg-slate-900/50 p-6 backdrop-blur-xl">
-       <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
+    <div className="relative rounded-2xl border border-purple-500/30 bg-slate-900/50 p-6 backdrop-blur-xl group">
+      <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between font-headline text-xl text-purple-300"
