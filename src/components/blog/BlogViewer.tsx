@@ -1,15 +1,11 @@
 // src/components/blog/BlogViewer.tsx
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, AnimatePresence } from "framer-motion";
-import { X, Calendar, Clock, List, Sparkles, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Calendar, Clock, Sparkles, PanelRightOpen, PanelRightClose, List } from "lucide-react";
 import type { Blog } from "@/lib/types";
 import { AISection } from "./AISection";
-
-interface BlogViewerProps {
-  blog: Blog | null;
-  onClose: () => void;
-}
+import { Button } from "../ui/button";
 
 const calculateReadingTime = (content: string) => {
   const wordsPerMinute = 200;
@@ -17,53 +13,33 @@ const calculateReadingTime = (content: string) => {
   return Math.ceil(wordCount / wordsPerMinute);
 };
 
-export function BlogViewer({ blog, onClose }: BlogViewerProps) {
+export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () => void; }) {
   const [toc, setToc] = useState<{ id: string; level: number; text: string }[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ container: contentRef });
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
-    if (blog && contentRef.current) {
-      // Use a timeout to ensure content is rendered before querying headings
+    if (blog) {
+      // Small delay to let content render before generating ToC
       setTimeout(() => {
-        if (!contentRef.current) return;
-        const headings = Array.from(
-          contentRef.current.querySelectorAll("h2, h3")
-        );
-        const newToc = headings.map((heading, index) => {
-          const id = `heading-${index}`;
-          heading.id = id;
-          return {
-            id,
-            level: parseInt(heading.tagName.substring(1)),
-            text: heading.textContent || "",
-          };
-        });
-        setToc(newToc);
+        if (contentRef.current) {
+          const headings = Array.from(contentRef.current.querySelectorAll("h2, h3"));
+          const newToc = headings.map((heading, index) => {
+            const id = `heading-${index}`;
+            heading.id = id;
+            return {
+              id,
+              level: parseInt(heading.tagName.substring(1)),
+              text: heading.textContent || "",
+            };
+          });
+          setToc(newToc);
+        }
       }, 100);
     } else {
-        setToc([]);
+      setToc([]);
     }
   }, [blog]);
-  
-  useEffect(() => {
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-    if (blog) {
-      document.body.style.overflow = 'hidden';
-    }
-    return () => {
-      document.body.style.overflow = originalStyle;
-    };
-  }, [blog]);
-
-
-  const scrollToHeading = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
 
   const readingTime = blog ? calculateReadingTime(blog.content) : 0;
 
@@ -71,29 +47,24 @@ export function BlogViewer({ blog, onClose }: BlogViewerProps) {
     <AnimatePresence>
       {blog && (
         <motion.div
-          initial={{ x: "100%" }}
-          animate={{ x: 0 }}
-          exit={{ x: "100%" }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="fixed inset-0 bg-slate-950 z-50 flex"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="modal-overlay"
+          onClick={onClose}
         >
-          {/* Reading Progress Bar */}
           <motion.div
-            className="fixed top-0 left-0 right-0 h-1 bg-cyan-400 origin-left z-20"
-            style={{ scaleX: scrollYProgress }}
-          />
-
-          {/* Main Content Area */}
-          <main ref={contentRef} className="flex-grow overflow-y-auto p-8 md:p-12 lg:p-16 transition-all duration-300" style={{ paddingRight: isSidebarOpen ? '21rem' : '4rem' }}>
-            <div className="max-w-4xl mx-auto">
-              {/* Header */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <span
-                  className={`inline-block px-3 py-1 text-sm font-bold rounded-full border mb-4 ${
+            initial={{ y: 50, scale: 0.95 }}
+            animate={{ y: 0, scale: 1 }}
+            exit={{ y: 50, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="modal-container"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header flex justify-between items-start">
+              <div>
+                <span className={`inline-block px-3 py-1 text-sm font-bold rounded-full border mb-4 ${
                     blog.tag === 'Paid'
                       ? 'bg-yellow-500/10 border-yellow-400/30 text-yellow-300'
                       : 'bg-green-500/10 border-green-400/30 text-green-300'
@@ -101,10 +72,10 @@ export function BlogViewer({ blog, onClose }: BlogViewerProps) {
                 >
                   {blog.tag}
                 </span>
-                <h1 className="font-headline text-4xl md:text-6xl text-white mb-6">
+                <h1 className="font-headline text-2xl md:text-4xl text-white">
                   {blog.title}
                 </h1>
-                <div className="flex items-center space-x-6 text-slate-400 mb-8">
+                <div className="flex items-center space-x-4 text-slate-400 mt-2">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <span>{blog.date}</span>
@@ -114,101 +85,78 @@ export function BlogViewer({ blog, onClose }: BlogViewerProps) {
                     <span>{readingTime} min read</span>
                   </div>
                 </div>
-              </motion.div>
-
-              {/* Blog Content */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="prose prose-invert prose-lg max-w-none text-slate-300 
-                          prose-headings:text-cyan-300 prose-headings:font-headline
-                          prose-h2:text-3xl prose-h3:text-2xl
-                          prose-a:text-cyan-400 hover:prose-a:text-cyan-200 transition-colors
-                          prose-strong:text-white
-                          prose-em:text-purple-300
-                          prose-blockquote:border-l-4 prose-blockquote:border-purple-400/50 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-400
-                          prose-ul:list-disc prose-ul:marker:text-cyan-400
-                          prose-ol:list-decimal prose-ol:marker:text-cyan-400
-                          prose-code:bg-slate-800/80 prose-code:p-1 prose-code:rounded prose-code:font-mono prose-code:text-sm prose-code:text-yellow-300
-                          prose-pre:bg-slate-900/80 prose-pre:p-4 prose-pre:rounded-lg prose-pre:border prose-pre:border-slate-700"
-                dangerouslySetInnerHTML={{ __html: blog.content }}
-              />
+              </div>
+              <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white">
+                <X className="h-6 w-6" />
+              </Button>
             </div>
-          </main>
+            
+            <div className="flex flex-grow overflow-hidden">
+                <main ref={contentRef} className="modal-content flex-grow">
+                    <div className="prose prose-invert prose-lg max-w-none text-slate-300 
+                                prose-headings:text-cyan-300 prose-headings:font-headline
+                                prose-h2:text-3xl prose-h3:text-2xl
+                                prose-a:text-cyan-400 hover:prose-a:text-cyan-200 transition-colors
+                                prose-strong:text-white
+                                prose-em:text-purple-300
+                                prose-blockquote:border-l-4 prose-blockquote:border-purple-400/50 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-400
+                                prose-ul:list-disc prose-ul:marker:text-cyan-400
+                                prose-ol:list-decimal prose-ol:marker:text-cyan-400
+                                prose-code:bg-slate-800/80 prose-code:p-1 prose-code:rounded prose-code:font-mono prose-code:text-sm prose-code:text-yellow-300
+                                prose-pre:bg-slate-900/80 prose-pre:p-4 prose-pre:rounded-lg prose-pre:border prose-pre:border-slate-700"
+                    dangerouslySetInnerHTML={{ __html: blog.content }}
+                    />
+                </main>
+              
+                <AnimatePresence>
+                {isSidebarOpen && (
+                    <motion.aside
+                        initial={{ width: 0, opacity: 0 }}
+                        animate={{ width: 320, opacity: 1 }}
+                        exit={{ width: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex-shrink-0 h-full overflow-y-auto bg-slate-900/50 border-l border-slate-800 p-6"
+                    >
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-headline text-lg text-cyan-300 flex items-center gap-2">
+                                <List className="h-5 w-5"/>
+                                Table of Contents
+                            </h3>
+                            <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(false)} className="text-slate-400">
+                                <PanelRightClose />
+                            </Button>
+                        </div>
+                        <ul className="space-y-2 mb-8">
+                        {toc.map(({ id, level, text }) => (
+                            <li key={id} style={{ marginLeft: `${(level - 2) * 0.5}rem` }}>
+                            <a
+                                href={`#${id}`}
+                                onClick={(e) => {
+                                e.preventDefault();
+                                const element = contentRef.current?.querySelector(`#${id}`);
+                                element?.scrollIntoView({ behavior: 'smooth' });
+                                }}
+                                className="text-slate-400 hover:text-cyan-300 transition-colors text-sm"
+                            >
+                                {text}
+                            </a>
+                            </li>
+                        ))}
+                        </ul>
+                        <AISection />
+                    </motion.aside>
+                )}
+                </AnimatePresence>
 
-          {/* Sidebar */}
-          <AnimatePresence>
-            {isSidebarOpen && (
-              <motion.aside 
-                initial={{ x: "100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "100%" }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="fixed top-0 right-0 h-full w-80 flex-shrink-0 bg-slate-900/50 border-l border-slate-800 p-8 overflow-y-auto"
-              >
-                <div className="sticky top-8">
-                  <button
-                    onClick={() => setIsSidebarOpen(false)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-slate-800 hover:bg-slate-700/80 transition-colors mb-8 text-slate-300"
-                  >
-                    <PanelRightClose className="h-5 w-5" />
-                    Hide Panel
-                  </button>
-                  
-                  <h3 className="font-headline text-xl text-cyan-300 mb-4 flex items-center gap-3">
-                    <List className="h-5 w-5"/>
-                    Table of Contents
-                  </h3>
-                  <ul className="space-y-2">
-                    {toc.map(({ id, level, text }) => (
-                      <li key={id} style={{ marginLeft: `${(level - 2) * 1}rem` }}>
-                        <a
-                          href={`#${id}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            scrollToHeading(id);
-                          }}
-                          className="text-slate-400 hover:text-cyan-300 transition-colors"
-                        >
-                          {text}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="mt-10">
-                      <AISection />
-                  </div>
-                </div>
-              </motion.aside>
-            )}
-          </AnimatePresence>
-          
-          {/* Sidebar Toggle Button */}
-          <AnimatePresence>
-            {!isSidebarOpen && (
-              <motion.button
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  onClick={() => setIsSidebarOpen(true)}
-                  className="fixed top-24 right-6 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700/80 text-white z-10"
-                  whileHover={{ scale: 1.1 }}
-                >
-                  <PanelRightOpen />
-                </motion.button>
-            )}
-          </AnimatePresence>
-
-          {/* Close Button */}
-          <motion.button
-            onClick={onClose}
-            className="fixed top-6 right-6 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700/80 text-white z-50"
-            whileHover={{ scale: 1.1, rotate: 90 }}
-          >
-            <X />
-          </motion.button>
+                {!isSidebarOpen && (
+                    <div className="absolute top-1/2 right-0 transform -translate-y-1/2">
+                        <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
+                            <PanelRightOpen />
+                        </Button>
+                    </div>
+                )}
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

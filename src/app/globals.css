@@ -30,7 +30,7 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
- 
+
   .dark {
     --background: 224 71.4% 4.1%;
     --foreground: 210 40% 98%;
@@ -77,6 +77,47 @@
     text-wrap: balance;
   }
 }
+
+/* Scroll-lock for modal */
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* Modal styles */
+.modal-overlay {
+  @apply fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center;
+}
+
+.modal-container {
+  @apply bg-card rounded-2xl shadow-2xl flex flex-col;
+  width: min(900px, 95vw);
+  height: 90vh;
+}
+
+.modal-header {
+  @apply p-6 border-b sticky top-0 bg-card/80 backdrop-blur-sm z-10;
+}
+
+.modal-content {
+  @apply p-6 overflow-y-auto flex-grow;
+}
+
+/* Horizontal scroll container for blog cards */
+.horizontal-scroll-container {
+  @apply flex overflow-x-auto pb-4;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch; /* for smooth scrolling on iOS */
+}
+
+/* Hide scrollbar */
+.horizontal-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+.horizontal-scroll-container {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 
 @keyframes animate-gradient {
   0% {

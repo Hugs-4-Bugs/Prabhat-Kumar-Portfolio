@@ -13,43 +13,42 @@ interface BlogListProps {
 }
 
 export function BlogList({ blogs, onRead, bookmarks, onBookmark }: BlogListProps) {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.9 },
-    visible: {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: (i: number) => ({
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { type: "spring", stiffness: 100, damping: 15 },
-    },
+      transition: { 
+        type: "spring", 
+        stiffness: 100, 
+        damping: 15,
+        delay: i * 0.1
+      },
+    }),
   };
 
   if (blogs.length === 0) {
     return (
-      <div className="flex items-center justify-center w-[calc(100vw-64px)]">
-         <p className="text-center text-slate-400 mt-12 text-lg">No blogs found for this filter.</p>
+      <div className="flex items-center justify-center w-full min-h-[300px]">
+         <p className="text-center text-slate-400 text-lg">No blogs found for this filter.</p>
       </div>
     );
   }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="flex gap-8"
-    >
-      {blogs.map((blog) => (
-        <motion.div key={blog.slug} variants={itemVariants} className="blog-card-item">
+    <>
+      {blogs.map((blog, index) => (
+        <motion.div 
+            key={blog.slug} 
+            variants={itemVariants}
+            initial="hidden"
+            animate="visible"
+            custom={index}
+            className="flex-shrink-0 w-[350px] md:w-[400px]"
+            style={{ scrollSnapAlign: "start" }}
+        >
           <BlogCard
             blog={blog}
             onRead={onRead}
@@ -58,6 +57,6 @@ export function BlogList({ blogs, onRead, bookmarks, onBookmark }: BlogListProps
           />
         </motion.div>
       ))}
-    </motion.div>
+    </>
   );
 }
