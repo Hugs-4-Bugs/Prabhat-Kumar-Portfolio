@@ -1,7 +1,7 @@
 // src/components/sections/blogs.tsx
 "use client";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLenis } from "@studio-freight/react-lenis";
@@ -34,37 +34,41 @@ export function Blogs() {
   
   useEffect(() => {
     ScrollTrigger.refresh();
-  }, [lenis]);
+  }, [lenis, filters]);
 
   useEffect(() => {
     if (!sectionRef.current) return;
     
-    const categories = sectionRef.current.querySelectorAll('.blog-category-container');
-    
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
+      const categories = gsap.utils.toArray<HTMLElement>('.blog-category-container');
+      
       categories.forEach(category => {
         const track = category.querySelector('.blog-horizontal-track') as HTMLElement;
-        const cards = category.querySelectorAll('.blog-card-item');
+        if (!track) return;
         
-        if (!track || cards.length === 0) return;
-
-        gsap.to(track, {
-          x: () => -(track.scrollWidth - category.clientWidth),
-          ease: "none",
-          scrollTrigger: {
-            trigger: category,
-            pin: true,
-            scrub: 1,
-            start: "top top",
-            end: () => `+=${track.scrollWidth - category.clientWidth}`,
-            invalidateOnRefresh: true,
-          },
-        });
+        const trackWidth = track.scrollWidth;
+        const containerWidth = category.clientWidth;
+        
+        // Only apply the animation if the track is wider than the container
+        if (trackWidth > containerWidth) {
+          gsap.to(track, {
+            x: () => -(trackWidth - containerWidth),
+            ease: "none",
+            scrollTrigger: {
+              trigger: category,
+              start: "top top",
+              end: () => `+=${trackWidth - containerWidth}`,
+              pin: true,
+              scrub: 1,
+              invalidateOnRefresh: true,
+            },
+          });
+        }
       });
     }, sectionRef);
     
     return () => ctx.revert();
-  }, [lenis, filters]); // Re-run when filters change to recalculate scroll widths
+  }, [lenis, filters]);
 
   useEffect(() => {
     if (selectedBlog || isPaidModalOpen) {
@@ -147,7 +151,7 @@ export function Blogs() {
         </SectionHeading>
         <div className="relative">
             {Object.entries(groupedBlogs).map(([categoryName, _]) => (
-                <div key={categoryName} className="blog-category-container h-screen flex flex-col justify-center">
+                <div key={categoryName} className="blog-category-container h-screen flex flex-col justify-center overflow-x-hidden">
                     <div className="pt-24 pb-8 px-8">
                         <h3 className="text-4xl font-bold font-headline text-cyan-300">{categoryName}</h3>
                         <FilterBar
@@ -157,7 +161,7 @@ export function Blogs() {
                           setActiveFilter={(category) => handleFilterChange(categoryName, 'category', category)}
                         />
                     </div>
-                    <div className="flex-grow flex items-center overflow-x-hidden">
+                    <div className="flex-grow flex items-center">
                         <div className="blog-horizontal-track flex gap-8 px-8">
                            <BlogList
                               blogs={filteredGroupedBlogs[categoryName] || []}
