@@ -2,10 +2,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, Clock, Sparkles, PanelRightOpen, PanelRightClose, List } from "lucide-react";
+import { X, Calendar, Clock, Sparkles, PanelRightOpen, PanelRightClose, List, ChevronUp, ChevronDown } from "lucide-react";
 import type { Blog } from "@/lib/types";
 import { AISection } from "./AISection";
 import { Button } from "../ui/button";
+import { useWindowSize } from 'react-use';
+
 
 const calculateReadingTime = (content: string) => {
   const wordsPerMinute = 200;
@@ -17,10 +19,11 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
   const [toc, setToc] = useState<{ id: string; level: number; text: string }[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { width } = useWindowSize();
+  const isMobile = width < 768; // md breakpoint
 
   useEffect(() => {
     if (blog) {
-      // Small delay to let content render before generating ToC
       setTimeout(() => {
         if (contentRef.current) {
           const headings = Array.from(contentRef.current.querySelectorAll("h2, h3"));
@@ -41,7 +44,48 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
     }
   }, [blog]);
 
+  useEffect(() => {
+      // Collapse sidebar by default on mobile
+      setIsSidebarOpen(!isMobile);
+  }, [isMobile]);
+
   const readingTime = blog ? calculateReadingTime(blog.content) : 0;
+
+  const SidebarContent = () => (
+    <>
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="font-headline text-lg text-cyan-300 flex items-center gap-2">
+            <List className="h-5 w-5"/>
+            Table of Contents
+        </h3>
+        <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(false)} className="text-slate-400 md:hidden">
+            <X size={18}/>
+        </Button>
+      </div>
+      <ul className="space-y-2 mb-8">
+      {toc.map(({ id, level, text }) => (
+          <li key={id} style={{ paddingLeft: `${(level - 2) * 0.75}rem` }}>
+          <a
+              href={`#${id}`}
+              onClick={(e) => {
+              e.preventDefault();
+              const contentEl = contentRef.current?.parentElement;
+              const element = contentRef.current?.querySelector(`#${id}`);
+              if (contentEl && element) {
+                const topPos = element.offsetTop;
+                contentEl.scrollTo({ top: topPos - 80, behavior: 'smooth' }); // Offset for sticky header
+              }
+              }}
+              className="text-slate-400 hover:text-cyan-300 transition-colors text-sm"
+          >
+              {text}
+          </a>
+          </li>
+      ))}
+      </ul>
+      <AISection />
+    </>
+  );
 
   return (
     <AnimatePresence>
@@ -75,7 +119,7 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
                 <h1 className="font-headline text-2xl md:text-4xl text-white">
                   {blog.title}
                 </h1>
-                <div className="flex items-center space-x-4 text-slate-400 mt-2">
+                <div className="flex items-center flex-wrap space-x-4 text-slate-400 mt-2">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     <span>{blog.date}</span>
@@ -91,7 +135,7 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
               </Button>
             </div>
             
-            <div className="flex flex-grow overflow-hidden">
+            <div className="flex flex-grow overflow-hidden relative">
                 <main ref={contentRef} className="modal-content flex-grow">
                     <div className="prose prose-invert prose-lg max-w-none text-slate-300 
                                 prose-headings:text-cyan-300 prose-headings:font-headline
@@ -108,55 +152,51 @@ export function BlogViewer({ blog, onClose }: { blog: Blog | null; onClose: () =
                     />
                 </main>
               
+                {/* Desktop Sidebar */}
                 <AnimatePresence>
-                {isSidebarOpen && (
+                {!isMobile && isSidebarOpen && (
                     <motion.aside
-                        initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: 320, opacity: 1 }}
-                        exit={{ width: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="flex-shrink-0 h-full overflow-y-auto bg-slate-900/50 border-l border-slate-800 p-6"
+                        initial={{ width: 0, opacity: 0, x: 100 }}
+                        animate={{ width: 320, opacity: 1, x: 0 }}
+                        exit={{ width: 0, opacity: 0, x: 100 }}
+                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                        className="flex-shrink-0 h-full overflow-y-auto bg-slate-900/50 border-l border-slate-800 p-6 hidden md:block"
                     >
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-headline text-lg text-cyan-300 flex items-center gap-2">
-                                <List className="h-5 w-5"/>
-                                Table of Contents
-                            </h3>
-                            <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(false)} className="text-slate-400">
-                                <PanelRightClose />
-                            </Button>
-                        </div>
-                        <ul className="space-y-2 mb-8">
-                        {toc.map(({ id, level, text }) => (
-                            <li key={id} style={{ marginLeft: `${(level - 2) * 0.5}rem` }}>
-                            <a
-                                href={`#${id}`}
-                                onClick={(e) => {
-                                e.preventDefault();
-                                const contentEl = contentRef.current?.parentElement;
-                                const element = contentRef.current?.querySelector(`#${id}`);
-                                if (contentEl && element) {
-                                  const topPos = element.offsetTop;
-                                  contentEl.scrollTo({ top: topPos, behavior: 'smooth' });
-                                }
-                                }}
-                                className="text-slate-400 hover:text-cyan-300 transition-colors text-sm"
-                            >
-                                {text}
-                            </a>
-                            </li>
-                        ))}
-                        </ul>
-                        <AISection />
+                      <SidebarContent />
                     </motion.aside>
                 )}
                 </AnimatePresence>
 
-                {!isSidebarOpen && (
-                    <div className="absolute top-1/2 right-0 transform -translate-y-1/2">
+                {/* Sidebar Toggle for Desktop */}
+                {!isMobile && !isSidebarOpen && (
+                    <div className="absolute top-1/2 right-0 transform -translate-y-1/2 hidden md:block">
                         <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(true)}>
                             <PanelRightOpen />
                         </Button>
+                    </div>
+                )}
+
+                 {/* Collapsible Panel for Mobile */}
+                {isMobile && (
+                    <div className="fixed bottom-0 left-0 right-0 z-20 bg-slate-900/80 backdrop-blur-md border-t border-slate-800">
+                        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="w-full p-3 flex justify-center items-center text-cyan-300">
+                             {isSidebarOpen ? <ChevronDown className="h-5 w-5 mr-2" /> : <ChevronUp className="h-5 w-5 mr-2" />}
+                             AI Tools & Contents
+                        </button>
+                        <AnimatePresence>
+                        {isSidebarOpen && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="p-4 max-h-[40vh] overflow-y-auto">
+                                    <SidebarContent />
+                                </div>
+                            </motion.div>
+                        )}
+                        </AnimatePresence>
                     </div>
                 )}
             </div>
