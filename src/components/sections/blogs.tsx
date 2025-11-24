@@ -23,7 +23,6 @@ export function Blogs() {
   const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
   const [bookmarks, addBookmark, removeBookmark] = useBookmarks();
   
-  // Single filter state for the entire blog section
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
 
@@ -37,16 +36,15 @@ export function Blogs() {
   useEffect(() => {
     if (!sectionRef.current) return;
     
-    // Master context for GSAP animations to ensure proper cleanup
     const ctx = gsap.context(() => {
       const categories = gsap.utils.toArray<HTMLElement>('.blog-category-container');
       
       categories.forEach(category => {
         const track = category.querySelector('.blog-horizontal-track') as HTMLElement;
+        
         if (!track || track.scrollWidth <= category.clientWidth) {
-            // If track is not scrollable, ensure it's visible and not pinned.
-            gsap.set(category, { height: 'auto', marginBottom: '5rem' });
-            return;
+          gsap.set(category, { height: 'auto', marginBottom: '5rem' });
+          return;
         }
         
         gsap.to(track, {
@@ -65,7 +63,7 @@ export function Blogs() {
     }, sectionRef);
     
     return () => ctx.revert();
-  }, [lenis, searchQuery, activeFilter]); // Re-run animations if filters change the content width
+  }, [lenis, searchQuery, activeFilter]);
 
   useEffect(() => {
     if (selectedBlog || isPaidModalOpen) {
@@ -123,11 +121,9 @@ export function Blogs() {
   }, [filteredBlogs]);
 
   return (
-    <Section id="blogs" ref={sectionRef} className="p-0 m-0 max-w-full relative bg-slate-950">
-        <SectionHeading>My Blogs</SectionHeading>
-
-        {/* Single Global Filter Bar */}
-        <div className="px-8 pb-12 sticky top-24 z-20 bg-slate-950/80 backdrop-blur-sm">
+    <Section id="blogs" ref={sectionRef} className="p-0 m-0 max-w-full bg-slate-950">
+        <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-sm pt-12 pb-8">
+            <SectionHeading>My Blogs</SectionHeading>
             <FilterBar
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -143,7 +139,7 @@ export function Blogs() {
                 'Books': groupedAndFilteredBlogs['Books'] || [],
             }).map(([categoryName, blogs]) => (
                 <div key={categoryName} className="blog-category-container h-screen flex flex-col justify-center overflow-hidden">
-                    <div className="pt-12 pb-8 px-8">
+                    <div className="pt-8 pb-4 px-8">
                         <h3 className="text-4xl font-bold font-headline text-cyan-300">{categoryName}</h3>
                     </div>
                     <div className="flex-grow flex items-center">
