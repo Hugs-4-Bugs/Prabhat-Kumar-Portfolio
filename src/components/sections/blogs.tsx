@@ -4,13 +4,13 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, ArrowLeft } from "lucide-react";
+import { useModal } from '@/context/ModalContext';
 
 import { blogData } from "@/lib/blogs";
 import { useBookmarks } from "@/hooks/use-bookmarks";
 import { Section } from "@/components/section-wrapper";
 import { SectionHeading } from "@/components/section-heading";
 import { BlogList } from "@/components/blog/BlogList";
-import { PaidModal } from "@/components/blog/PaidModal";
 import { FilterBar } from "@/components/blog/FilterBar";
 import type { Blog } from "@/lib/types";
 
@@ -105,29 +105,16 @@ const BlogCategoryRow = ({ categoryName, blogs, onRead, bookmarks, onBookmark }:
 
 
 export function Blogs() {
-  const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
+  const { openModal } = useModal();
   const [bookmarks, addBookmark, removeBookmark] = useBookmarks();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
 
-  useEffect(() => {
-    const body = document.body;
-    if (isPaidModalOpen) {
-      body.classList.add('no-scroll');
-    } else {
-      body.classList.remove('no-scroll');
-    }
-    return () => {
-      body.classList.remove('no-scroll');
-    };
-  }, [isPaidModalOpen]);
-
   const handleRead = (blog: Blog) => {
     if (blog.tag === "Paid") {
-      setIsPaidModalOpen(true);
-    } 
-    // For free blogs, the link will handle navigation.
+      openModal();
+    }
   };
 
   const handleBookmark = (slug: string) => {
@@ -192,8 +179,6 @@ export function Blogs() {
                 )
             ))}
         </div>
-        
-      <PaidModal isOpen={isPaidModalOpen} onClose={() => setIsPaidModalOpen(false)} />
     </Section>
   );
 }
