@@ -1,12 +1,11 @@
-
 // src/app/blog/[slug]/page.tsx
 import { notFound } from 'next/navigation';
 import { blogData } from '@/lib/blogs';
-import type { Blog } from '@/lib/types';
 import { Calendar, Clock, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { AISection } from '@/components/blog/AISection';
 import { Button } from '@/components/ui/button';
+import { TableOfContents } from '@/components/blog/TableOfContents';
 
 // Helper function to get reading time
 const calculateReadingTime = (content: string) => {
@@ -32,12 +31,12 @@ export default function BlogPage({ params }: { params: { slug: string } }) {
 
   return (
     <div className="bg-background text-foreground min-h-screen">
-       <div className="container mx-auto py-12 px-4 md:px-8">
+       <div className="container mx-auto py-8 px-4 md:px-8">
         <div className="mb-8">
-            <Button variant="ghost" asChild>
+            <Button variant="outline" asChild className="group" data-cursor-hover>
                 <Link href="/#blogs">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Blogs
+                    <ArrowLeft className="mr-2 h-4 w-4 transform transition-transform group-hover:-translate-x-1" />
+                    Back to Portfolio
                 </Link>
             </Button>
         </div>
@@ -83,8 +82,9 @@ export default function BlogPage({ params }: { params: { slug: string } }) {
                 />
             </main>
 
-            {/* Sidebar with AI Tools */}
-            <aside className="lg:col-span-4 lg:sticky top-24 h-fit">
+            {/* Sidebar with AI Tools & ToC */}
+            <aside className="lg:col-span-4 lg:sticky top-24 h-fit space-y-8">
+                <TableOfContents content={blog.content} />
                 <AISection content={blog.content} />
             </aside>
         </div>

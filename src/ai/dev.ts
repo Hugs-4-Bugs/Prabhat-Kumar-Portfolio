@@ -7,3 +7,4 @@ import '@/ai/flows/parse-resume-autofill-form.ts';
 import '@/ai/flows/suggest-resume-improvements.ts';
 import '@/ai/flows/ask-prabhat-ai-flow.ts';
 import '@/ai/flows/text-to-speech-flow.ts';
+import '@/ai/flows/summarize-and-qa-blog-flow.ts';
