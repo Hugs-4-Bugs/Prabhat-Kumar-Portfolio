@@ -1,11 +1,16 @@
 // src/app/blog/[slug]/page.tsx
+"use client";
+
+import { useState } from 'react';
 import { notFound } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { blogData } from '@/lib/blogs';
-import { Calendar, Clock, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Calendar, Clock, PanelRightOpen, PanelRightClose, X } from 'lucide-react';
 import { AISection } from '@/components/blog/AISection';
 import { Button } from '@/components/ui/button';
 import { TableOfContents } from '@/components/blog/TableOfContents';
+import { cn } from '@/lib/utils';
+
 
 // Helper function to get reading time
 const calculateReadingTime = (content: string) => {
@@ -14,14 +19,9 @@ const calculateReadingTime = (content: string) => {
   return Math.ceil(wordCount / wordsPerMinute);
 };
 
-export async function generateStaticParams() {
-  return blogData.map((blog) => ({
-    slug: blog.slug,
-  }));
-}
-
 export default function BlogPage({ params }: { params: { slug: string } }) {
   const blog = blogData.find((p) => p.slug === params.slug);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   if (!blog) {
     notFound();
@@ -29,20 +29,51 @@ export default function BlogPage({ params }: { params: { slug: string } }) {
 
   const readingTime = calculateReadingTime(blog.content);
 
+  // Stop body scroll when sidebar is open on mobile
+  // This is a common pattern to prevent background scrolling when an overlay is active
+  useState(() => {
+    if (typeof window !== 'undefined' && isSidebarOpen && window.innerWidth < 1024) {
+      document.body.style.overflow = 'hidden';
+    } else if (typeof window !== 'undefined') {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        document.body.style.overflow = 'auto';
+      }
+    };
+  }, [isSidebarOpen]);
+
   return (
-    <div className="bg-background text-foreground min-h-screen">
+    <div className="bg-background text-foreground min-h-screen relative">
        <div className="container mx-auto py-8 px-4 md:px-8">
-        <div className="mb-8">
-            <Button variant="outline" asChild className="group" data-cursor-hover>
-                <Link href="/#blogs">
-                    <ArrowLeft className="mr-2 h-4 w-4 transform transition-transform group-hover:-translate-x-1" />
-                    Back to Portfolio
-                </Link>
+        
+        {/* Toggle Sidebar Button - Visible on all screens */}
+        <div className="fixed top-4 right-4 z-[60]">
+            <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="rounded-full shadow-lg bg-secondary/50 backdrop-blur-md"
+                aria-label="Toggle Sidebar"
+                data-cursor-hover
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={isSidebarOpen ? 'close' : 'open'}
+                  initial={{ opacity: 0, rotate: -90 }}
+                  animate={{ opacity: 1, rotate: 0 }}
+                  exit={{ opacity: 0, rotate: 90 }}
+                >
+                  {isSidebarOpen ? <PanelRightClose /> : <PanelRightOpen />}
+                </motion.div>
+              </AnimatePresence>
             </Button>
         </div>
-        <div className="grid lg:grid-cols-12 gap-12">
+        
+        <div className={cn("transition-all duration-500 ease-in-out", isSidebarOpen ? "lg:mr-[420px]" : "lg:mr-0")}>
             {/* Main Content */}
-            <main className="lg:col-span-8">
+            <main>
                  <span className={`inline-block px-3 py-1 text-sm font-bold rounded-full border mb-4 ${
                     blog.tag === 'Paid'
                         ? 'bg-yellow-500/10 border-yellow-400/30 text-yellow-500 dark:text-yellow-300'
@@ -81,14 +112,26 @@ export default function BlogPage({ params }: { params: { slug: string } }) {
                     dangerouslySetInnerHTML={{ __html: blog.content }}
                 />
             </main>
-
-            {/* Sidebar with AI Tools & ToC */}
-            <aside className="lg:col-span-4 lg:sticky top-24 h-fit space-y-8">
-                <TableOfContents content={blog.content} />
-                <AISection content={blog.content} />
-            </aside>
         </div>
        </div>
+
+       {/* Sidebar with AI Tools & ToC */}
+        <AnimatePresence>
+            {isSidebarOpen && (
+                <motion.aside 
+                    initial={{ x: '100%' }}
+                    animate={{ x: '0%' }}
+                    exit={{ x: '100%' }}
+                    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                    className="fixed top-0 right-0 h-full w-full max-w-md lg:max-w-sm xl:max-w-md bg-secondary/50 backdrop-blur-xl border-l border-border/50 z-50 overflow-y-auto"
+                >
+                    <div className="p-6 space-y-8">
+                        <TableOfContents content={blog.content} />
+                        <AISection content={blog.content} />
+                    </div>
+                </motion.aside>
+            )}
+        </AnimatePresence>
     </div>
   );
 }
