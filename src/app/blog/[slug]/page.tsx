@@ -1,7 +1,7 @@
 // src/app/blog/[slug]/page.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { blogData } from '@/lib/blogs';
@@ -30,17 +30,15 @@ export default function BlogPage({ params }: { params: { slug: string } }) {
   const readingTime = calculateReadingTime(blog.content);
 
   // Stop body scroll when sidebar is open on mobile
-  // This is a common pattern to prevent background scrolling when an overlay is active
-  useState(() => {
-    if (typeof window !== 'undefined' && isSidebarOpen && window.innerWidth < 1024) {
+  useEffect(() => {
+    if (isSidebarOpen && window.innerWidth < 1024) {
       document.body.style.overflow = 'hidden';
-    } else if (typeof window !== 'undefined') {
+    } else {
       document.body.style.overflow = 'auto';
     }
+    // Cleanup function to restore scrolling when component unmounts or sidebar state changes
     return () => {
-      if (typeof window !== 'undefined') {
-        document.body.style.overflow = 'auto';
-      }
+      document.body.style.overflow = 'auto';
     };
   }, [isSidebarOpen]);
 
