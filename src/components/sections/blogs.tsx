@@ -151,7 +151,7 @@ export function Blogs() {
           activeFilter === 'All' ||
           (activeFilter === 'Paid' && blog.tag === 'Paid') ||
           (activeFilter === 'Free' && blog.tag === 'Free') ||
-          (activeFilter === 'Bookmarked' && bookmarks.includes(slug));
+          (activeFilter === 'Bookmarked' && bookmarks.includes(blog.slug));
         
         return matchesQuery && matchesCategory;
       });
