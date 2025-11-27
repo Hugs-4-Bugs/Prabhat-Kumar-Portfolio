@@ -1,3 +1,4 @@
+
 // src/components/blog/BlogCard.tsx
 "use client";
 
@@ -6,6 +7,7 @@ import { ArrowRight, Bookmark, Star } from "lucide-react";
 import type { Blog } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import Link from 'next/link';
 
 interface BlogCardProps {
   blog: Blog;
@@ -21,10 +23,12 @@ const categoryColors: { [key: string]: string } = {
 };
 
 export function BlogCard({ blog, onRead, onBookmark, isBookmarked }: BlogCardProps) {
-  const handleReadClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onRead(blog);
+  const handleCardClick = (e: React.MouseEvent) => {
+    // If it's a paid blog, stop the link navigation and trigger the onRead handler for the modal.
+    if (blog.tag === 'Paid') {
+      e.preventDefault();
+      onRead(blog);
+    }
   };
   
   const handleBookmarkClick = (e: React.MouseEvent) => {
@@ -33,10 +37,9 @@ export function BlogCard({ blog, onRead, onBookmark, isBookmarked }: BlogCardPro
     onBookmark(blog.slug);
   };
 
-  return (
+  const CardContent = (
     <div
-      onClick={handleReadClick}
-      className="group relative h-full w-full rounded-2xl overflow-hidden border border-border bg-card backdrop-blur-xl transform-style-3d shadow-lg dark:shadow-black/20 cursor-pointer"
+      className="group relative h-full rounded-2xl overflow-hidden border border-border bg-card backdrop-blur-xl transform-style-3d shadow-lg dark:shadow-black/20 cursor-pointer"
     >
       {/* Animated Border */}
       <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
@@ -84,6 +87,18 @@ export function BlogCard({ blog, onRead, onBookmark, isBookmarked }: BlogCardPro
           </div>
         </div>
       </div>
+    </div>
+  );
+
+  // If the blog is free, wrap it in a Link to open in a new tab.
+  // If it's paid, use a div that triggers the modal via onClick.
+  return blog.tag === 'Free' ? (
+    <Link href={`/blog/${blog.slug}`} target="_blank" rel="noopener noreferrer" onClick={handleCardClick} legacyBehavior>
+      <a>{CardContent}</a>
+    </Link>
+  ) : (
+    <div onClick={handleCardClick}>
+      {CardContent}
     </div>
   );
 }

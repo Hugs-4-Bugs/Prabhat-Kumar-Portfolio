@@ -1,3 +1,4 @@
+
 // src/components/sections/blogs.tsx
 "use client";
 import { useState, useMemo, useEffect, useRef } from "react";
@@ -9,7 +10,6 @@ import { useBookmarks } from "@/hooks/use-bookmarks";
 import { Section } from "@/components/section-wrapper";
 import { SectionHeading } from "@/components/section-heading";
 import { BlogList } from "@/components/blog/BlogList";
-import { BlogViewer } from "@/components/blog/BlogViewer";
 import { PaidModal } from "@/components/blog/PaidModal";
 import { FilterBar } from "@/components/blog/FilterBar";
 import type { Blog } from "@/lib/types";
@@ -105,7 +105,6 @@ const BlogCategoryRow = ({ categoryName, blogs, onRead, bookmarks, onBookmark }:
 
 
 export function Blogs() {
-  const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
   const [isPaidModalOpen, setIsPaidModalOpen] = useState(false);
   const [bookmarks, addBookmark, removeBookmark] = useBookmarks();
   
@@ -114,7 +113,7 @@ export function Blogs() {
 
   useEffect(() => {
     const body = document.body;
-    if (selectedBlog || isPaidModalOpen) {
+    if (isPaidModalOpen) {
       body.classList.add('no-scroll');
     } else {
       body.classList.remove('no-scroll');
@@ -122,14 +121,13 @@ export function Blogs() {
     return () => {
       body.classList.remove('no-scroll');
     };
-  }, [selectedBlog, isPaidModalOpen]);
+  }, [isPaidModalOpen]);
 
   const handleRead = (blog: Blog) => {
     if (blog.tag === "Paid") {
       setIsPaidModalOpen(true);
-    } else {
-      setSelectedBlog(blog);
-    }
+    } 
+    // For free blogs, the link will handle navigation.
   };
 
   const handleBookmark = (slug: string) => {
@@ -138,10 +136,6 @@ export function Blogs() {
     } else {
       addBookmark(slug);
     }
-  };
-
-  const closeViewer = () => {
-    setSelectedBlog(null);
   };
 
   const filteredBlogs = useMemo(() => {
@@ -199,9 +193,6 @@ export function Blogs() {
             ))}
         </div>
         
-      <AnimatePresence>
-        {selectedBlog && <BlogViewer blog={selectedBlog} onClose={closeViewer} onBookmark={handleBookmark} isBookmarked={bookmarks.includes(selectedBlog.slug)} />}
-      </AnimatePresence>
       <PaidModal isOpen={isPaidModalOpen} onClose={() => setIsPaidModalOpen(false)} />
     </Section>
   );

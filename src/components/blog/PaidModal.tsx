@@ -1,3 +1,4 @@
+
 // src/components/blog/PaidModal.tsx
 "use client";
 
@@ -22,14 +23,15 @@ export function PaidModal({ isOpen, onClose }: PaidModalProps) {
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.8, y: 50 }}
-            animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.8, y: 50 }}
+            initial={{ scale: 0.8, y: 50, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.8, y: 50, opacity: 0 }}
+            transition={{ type: 'spring', damping: 15, stiffness: 200 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative max-w-md w-full bg-card border-2 border-yellow-500/50 rounded-2xl p-8 text-center shadow-2xl shadow-yellow-500/10"
+            className="relative max-w-md w-full bg-card border-2 border-yellow-500/50 rounded-2xl p-8 text-center shadow-2xl shadow-yellow-500/20"
           >
             <div className="absolute top-4 right-4">
-                <Button variant="ghost" size="icon" onClick={onClose}>
+                <Button variant="ghost" size="icon" onClick={onClose} data-cursor-hover>
                     <X className="h-5 w-5"/>
                 </Button>
             </div>
