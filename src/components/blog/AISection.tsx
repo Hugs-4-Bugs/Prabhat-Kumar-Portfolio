@@ -1,3 +1,4 @@
+
 // src/components/blog/AISection.tsx
 "use client";
 
@@ -8,7 +9,11 @@ import { Sparkles, Bot, Send, ChevronDown, ChevronUp, Loader2 } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
-export function AISection() {
+interface AISectionProps {
+  content: string;
+}
+
+export function AISection({ content }: AISectionProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [summary, setSummary] = useState("");
   const [question, setQuestion] = useState("");
@@ -21,7 +26,7 @@ export function AISection() {
     setSummary("");
     // Dummy logic for summary generation
     setTimeout(() => {
-      setSummary("This is a dummy AI-generated summary of the blog post, highlighting the key concepts and main takeaways in a concise manner.");
+      setSummary("This is a dummy AI-generated summary of the blog post, highlighting the key concepts and main takeaways in a concise manner. The full functionality requires a Genkit flow.");
       setIsLoadingSummary(false);
     }, 1500);
   };

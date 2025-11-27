@@ -85,7 +85,7 @@ export default function BlogPage({ params }: { params: { slug: string } }) {
 
             {/* Sidebar with AI Tools */}
             <aside className="lg:col-span-4 lg:sticky top-24 h-fit">
-                <AISection />
+                <AISection content={blog.content} />
             </aside>
         </div>
        </div>

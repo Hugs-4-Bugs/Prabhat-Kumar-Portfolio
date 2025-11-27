@@ -1,3 +1,4 @@
+
 // src/components/blog/BlogCard.tsx
 "use client";
 
@@ -72,9 +73,10 @@ export function BlogCard({ blog, onRead, onBookmark, isBookmarked }: BlogCardPro
     </div>
   );
 
-  const CardWrapper = ({ children }: { children: React.ReactNode }) => (
+  const CardWrapper = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => (
     <div
       className="group relative h-full rounded-2xl overflow-hidden border border-border bg-card backdrop-blur-xl transform-style-3d shadow-lg dark:shadow-black/20 cursor-pointer"
+      {...props}
     >
       {/* Animated Border */}
       <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
@@ -94,11 +96,9 @@ export function BlogCard({ blog, onRead, onBookmark, isBookmarked }: BlogCardPro
     );
   } else {
     return (
-      <div onClick={() => onRead(blog)}>
-        <CardWrapper>
-          {CardInnerContent}
-        </CardWrapper>
-      </div>
+      <CardWrapper onClick={() => onRead(blog)}>
+        {CardInnerContent}
+      </CardWrapper>
     );
   }
 }
