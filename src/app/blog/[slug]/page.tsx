@@ -46,8 +46,8 @@ export default function BlogPage({ params }: { params: { slug: string } }) {
     <div className="bg-background text-foreground min-h-screen relative">
        <div className="container mx-auto py-8 px-4 md:px-8">
         
-        {/* Toggle Sidebar Button - Visible on all screens */}
-        <div className="fixed top-4 right-4 z-[60]">
+        {/* Toggle Sidebar Button - Visible on all screens, now centered vertically */}
+        <div className="fixed top-1/2 -translate-y-1/2 right-4 z-[60]">
             <Button
                 variant="outline"
                 size="icon"
