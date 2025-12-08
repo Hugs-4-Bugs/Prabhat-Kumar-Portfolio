@@ -5,9 +5,11 @@ Welcome to the source code for my personal portfolio website, a showcase of my s
 **Live Demo:** [prabhat-codes.vercel.app](https://prabhat-codes.vercel.app/)
 
 
-<img width="1440" height="900" alt="Screenshot 2025-10-28 at 7 17 18 PM" src="https://github.com/user-attachments/assets/27c3eef1-4886-4df7-87f4-dbfbb69ff782" />
+<img width="1440" height="900" alt="Screenshot 2025-12-08 at 6 09 56 PM" src="https://github.com/user-attachments/assets/e09c10a4-6aae-4f52-a906-55d7de6b30f4" />
 
-<img width="1440" height="900" alt="Screenshot 2025-10-28 at 7 18 48 PM" src="https://github.com/user-attachments/assets/4c962dde-dda7-4e50-bbbb-419516256c61" />
+
+<img width="1440" height="900" alt="Screenshot 2025-12-08 at 6 09 20 PM" src="https://github.com/user-attachments/assets/6a41da9e-d6b1-457b-a5bd-afe8eed17efb" />
+
 
 
 ## ✨ Core Features
