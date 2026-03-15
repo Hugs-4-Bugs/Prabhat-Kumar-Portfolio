@@ -175,6 +175,38 @@ Role & Responsibilities:
       imageAiHint: 'rest api crud operation backend'
     },
     {
+      name: 'Hospital Review System',
+      description: 'A Spring Boot hospital review and management platform secured with Spring Security. Allows users to submit reviews, manage hospital records, and handle authentication and authorization with role-based access control.',
+      tags: ['Spring Boot', 'Spring Security', 'MySQL', 'REST API', 'Healthcare', 'Backend'],
+      link: 'https://github.com/Hugs-4-Bugs/Hospital-Management.git',
+      image: '/hospitalreview.png',
+      imageAiHint: 'hospital management system dashboard'
+    },
+    {
+  name: 'CodeGuard AI',
+  description: 'A VS Code extension that analyzes Terraform infrastructure code and detects potential AWS cost risks before deployment. It scans .tf files and flags expensive cloud resources using rule-based static analysis integrated directly into the editor.',
+  tags: ['VS Code Extension', 'TypeScript', 'Terraform', 'AWS', 'Cloud', 'Static Analysis', 'DevTools'],
+  link: 'https://github.com/Hugs-4-Bugs/CodeGuard-AI.git',
+  image: '/codeguardai.png',
+  imageAiHint: 'terraform cost analysis vscode extension'
+  },
+{
+  name: 'IntelliJ IDEA AI Plugin',
+  description: 'A custom IntelliJ IDEA plugin that integrates AI assistance directly into the IDE. Provides contextual coding help, project-aware responses, provider failover support, and an advanced chat interface to enhance developer productivity.',
+  tags: ['IntelliJ Plugin', 'Java', 'AI', 'IDE Tools', 'Developer Productivity'],
+  link: 'https://github.com/Hugs-4-Bugs/Intellij-IDEA-Plugin.git',
+  image: '/intellijplugin.png',
+  imageAiHint: 'ai assistant inside intellij ide'
+},
+{
+  name: 'PrabhatVerse Blog Platform',
+  description: 'A modern full-stack blogging platform with AI-powered writing assistance, markdown editing, and premium content support. Designed as a digital publishing ecosystem combining blogging, AI tools, and creator monetization.',
+  tags: ['Next.js', 'AI', 'Markdown', 'Blog Platform', 'Web', 'Full Stack'],
+  link: 'https://github.com/Hugs-4-Bugs/prabhatblogs.git',
+  image: '/prabhatblogs.png',
+  imageAiHint: 'modern ai powered blog platform interface'
+},
+    {
       name: 'Flight Reservation System',
       description: 'A full-featured airline booking platform using Spring Boot and AngularJS. Supports flight search, booking, and check-in with secure authentication and role-based access.',
       tags: ['Spring Boot', 'AngularJS', 'Thymeleaf', 'MySQL', 'E-commerce', 'Business'],
