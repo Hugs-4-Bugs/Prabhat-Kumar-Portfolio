@@ -341,6 +341,14 @@ Role & Responsibilities:
       link: 'https://github.com/Hugs-4-Bugs/LinkedIn-Application.git',
       image: '/linkedinapp.png',
       imageAiHint: 'linkedin clone ui'
+    },
+    {
+      name: 'ArogyaSagar Application',
+      description: 'ArogyaSagar is an Ayurveda-based healthcare and wellness platform offering authentic medicines, expert doctor consultations, and personalized treatment programs.',
+      tags:  ['Spring Boot', 'Microservices', 'API Gateway', 'React', 'Typescript', 'API', 'database', 'AI Chatbot'],
+      link: 'https://arogyasagar.lovable.app/',
+      image: '/arogyasagar.png',
+      imageAiHint: 'ArogyaSagar service web application'
     }
   ] as Project[],
 
