@@ -225,7 +225,7 @@
 //                     <div className="flex-shrink-0 text-center pb-8 sticky top-0 bg-background/80 backdrop-blur-sm z-10 pt-4 -mt-4">
 //                         <h1 className="text-4xl md:text-6xl font-bold font-headline tracking-tighter">
 //                             <Balancer>
-//                                 <span className="text-primary">Sharma</span> AI
+//                                 <span className="text-primary">QuantumAI</span>
 //                             </Balancer>
 //                         </h1>
 //                         <p className="text-muted-foreground mt-2">
@@ -302,7 +302,7 @@
 //                             >
 //                                 <Sparkles className="w-6 h-6 text-primary shrink-0 mt-1 animate-pulse" />
 //                                 <div className="flex items-center gap-2">
-//                                      <p className="text-muted-foreground">Sharma AI is thinking...</p>
+//                                      <p className="text-muted-foreground">QuantumAI is thinking...</p>
 //                                 </div>
 //                             </motion.div>
 //                         )}
@@ -655,7 +655,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                         >
                             <Balancer>
                                 <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-                                    Sharma AI
+                                    QuantumAI
                                 </span>
                             </Balancer>
                         </motion.h1>
@@ -945,7 +945,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                          ease: "easeInOut"
                                        }}
                                      >
-                                       Sharma AI is thinking...
+                                       QuantumAI is thinking...
                                      </motion.p>
                                 </div>
                             </motion.div>
