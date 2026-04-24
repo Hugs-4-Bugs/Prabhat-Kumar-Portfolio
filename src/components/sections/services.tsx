@@ -329,7 +329,7 @@ export function Services() {
             >
               <BrainCircuit className="text-primary w-8 h-8 md:w-10 md:h-10"/>
             </motion.div>
-            AI Feature Showcase
+            AI Lab
           </h3>
           
           <motion.p 
