@@ -438,21 +438,21 @@ export function Contact() {
           </p>
         </div>
 
-        <div className="max-w-8xl mx-auto px-4">
+        <div className="max-w-8xl mx-auto">
           {/* Quantum Grid */}
-          <div className="grid xl:grid-cols-12 gap-6 sm:gap-8 items-start mb-16">
+          <div className="grid xl:grid-cols-12 gap-6 sm:gap-8 items-start justify-items-center mb-16 w-full px-2 sm:px-4">
             {/* Contact Portal - Left */}
-            <div className="xl:col-span-5 space-y-6 sm:space-y-8">
+            <div className="xl:col-span-5 w-full space-y-6 sm:space-y-8">
               <div 
                 data-quantum-magnetic
-                className="quantum-card group relative"
+                className="quantum-card group relative w-full max-w-full mx-auto"
               >
                 {/* Multi-dimensional Border */}
                 <div className="quantum-gradient absolute -inset-1 bg-gradient-to-r from-purple-600/60 via-pink-500/50 to-cyan-600/60 rounded-3xl opacity-70 group-hover:opacity-100 transition-all duration-1000 blur-[2px]" />
                 <div className="absolute -inset-2 bg-gradient-to-r from-transparent via-white/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
                 
                 {/* Card Content */}
-                <div className="relative bg-background/90 backdrop-blur-2xl rounded-2xl p-6 sm:p-8 border border-white/10 transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-primary/20">
+                <div className="relative bg-background/90 backdrop-blur-2xl rounded-2xl p-5 sm:p-8 border border-white/10 transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-primary/20">
                   <div className="flex items-center gap-3 mb-6">
                     <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                     <h3 className="text-2xl sm:text-3xl font-bold font-headline">
@@ -475,7 +475,7 @@ export function Contact() {
                       <div
                         key={index}
                         data-quantum-magnetic
-                        className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-gradient-to-r from-secondary/30 to-transparent hover:from-secondary/50 transition-all duration-500 group/item transform-gpu hover:scale-105 border border-white/5 hover:border-white/10 overflow-hidden"
+                        className="flex items-start gap-2 sm:gap-4 p-2 sm:p-4 rounded-xl bg-gradient-to-r from-secondary/30 to-transparent hover:from-secondary/50 transition-all duration-500 group/item transform-gpu hover:scale-105 border border-white/5 hover:border-white/10 overflow-hidden"
                       >
                         <div className="relative mt-1 shrink-0">
                           <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary transform-gpu group-hover/item:scale-110 transition-transform duration-300" />
@@ -485,16 +485,16 @@ export function Contact() {
                           {item.href ? (
                             <a 
                               href={item.href}
-                              className="text-base sm:text-lg font-semibold text-foreground/90 hover:text-primary transition-all duration-300 block truncate sm:whitespace-normal"
+                              className="text-sm sm:text-lg font-semibold text-foreground/90 hover:text-primary transition-all duration-300 block truncate sm:whitespace-normal break-all sm:break-normal"
                             >
                               {item.text}
                             </a>
                           ) : (
-                            <p className="text-base sm:text-lg font-semibold text-foreground/90 break-words">
+                            <p className="text-sm sm:text-lg font-semibold text-foreground/90 break-words">
                               {item.text}
                             </p>
                           )}
-                          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                          <p className="text-[10px] sm:text-sm text-muted-foreground mt-1">
                             {item.description}
                           </p>
                         </div>
@@ -506,22 +506,22 @@ export function Contact() {
             </div>
 
             {/* Visual Quantum Portal - Right */}
-            <div className="xl:col-span-7">
+            <div className="xl:col-span-7 w-full">
               <div 
                 data-quantum-magnetic
-                className="quantum-card group relative h-full min-h-[400px] sm:min-h-[600px]"
+                className="quantum-card group relative h-full min-h-[350px] sm:min-h-[600px] w-full max-w-full mx-auto"
               >
                 {/* 4D Portal Effect */}
                 <div className="quantum-gradient absolute -inset-2 bg-gradient-to-br from-primary/40 via-transparent to-accent/30 rounded-3xl transform rotate-3 scale-105 group-hover:rotate-0 group-hover:scale-100 transition-all duration-1000" />
                 <div className="absolute -inset-3 bg-gradient-to-tr from-transparent via-white/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl" />
                 
                 {/* Portal Content */}
-                <div className="relative bg-gradient-to-br from-background/95 to-secondary/10 backdrop-blur-2xl rounded-2xl p-6 sm:p-12 border border-white/10 h-full flex flex-col justify-center items-center text-center transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-cyan-500/10">
+                <div className="relative bg-gradient-to-br from-background/95 to-secondary/10 backdrop-blur-2xl rounded-2xl p-5 sm:p-12 border border-white/10 h-full flex flex-col justify-center items-center text-center transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-cyan-500/10">
                   
                   {/* Quantum Core */}
                   <div className="relative mb-6 sm:mb-8">
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-primary via-purple-600 to-cyan-500 rounded-3xl flex items-center justify-center transform-gpu group-hover:scale-110 group-hover:rotate-180 transition-all duration-1000 shadow-2xl">
-                      <Send className="w-10 h-10 sm:w-12 sm:h-12 text-white transform-gpu group-hover:scale-125 transition-transform duration-500" />
+                    <div className="w-20 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-primary via-purple-600 to-cyan-500 rounded-3xl flex items-center justify-center transform-gpu group-hover:scale-110 group-hover:rotate-180 transition-all duration-1000 shadow-2xl">
+                      <Send className="w-8 h-8 sm:w-12 sm:h-12 text-white transform-gpu group-hover:scale-125 transition-transform duration-500" />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-br from-primary to-cyan-500 rounded-3xl blur-2xl opacity-50 group-hover:opacity-70 transition-opacity duration-500" />
                     
@@ -532,18 +532,18 @@ export function Contact() {
                     </div>
                   </div>
 
-                  <h4 className="text-xl sm:text-2xl font-bold font-headline mb-4 px-2">
+                  <h4 className="text-lg sm:text-2xl font-bold font-headline mb-4 px-2">
                     <span className="bg-gradient-to-r from-primary via-purple-500 to-cyan-500 bg-clip-text text-transparent">
                       Initiate Quantum Handshake
                     </span>
                   </h4>
                   
-                  <p className="text-muted-foreground text-base sm:text-lg mb-6 sm:mb-8 max-w-md leading-relaxed px-2">
+                  <p className="text-muted-foreground text-sm sm:text-lg mb-6 sm:mb-8 max-w-md leading-relaxed px-2">
                     Your message travels through encrypted quantum channels, ensuring zero latency and maximum impact upon arrival.
                   </p>
 
                   {/* Quantum Status */}
-                  <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                  <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
                     {[
                       { color: "bg-green-500", label: "Quantum Online" },
                       { color: "bg-blue-500", label: "Channels Open" },
@@ -551,7 +551,7 @@ export function Contact() {
                     ].map((status, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <div className={`w-2 h-2 sm:w-3 sm:h-3 ${status.color} rounded-full animate-pulse`} />
-                        <span className="text-xs sm:text-sm text-muted-foreground">{status.label}</span>
+                        <span className="text-[10px] sm:text-sm text-muted-foreground">{status.label}</span>
                       </div>
                     ))}
                   </div>
@@ -561,24 +561,24 @@ export function Contact() {
           </div>
 
           {/* Quantum Form Interface */}
-          <div className="form-quantum">
+          <div className="form-quantum px-2 sm:px-4">
             <div 
               data-quantum-magnetic
-              className="group relative max-w-6xl mx-auto"
+              className="group relative max-w-6xl mx-auto w-full"
             >
               {/* Form Portal Border */}
               <div className="quantum-gradient absolute -inset-2 bg-gradient-to-r from-purple-600/50 via-pink-500/40 to-cyan-600/50 rounded-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-1000 blur-[2px]" />
               <div className="absolute -inset-3 bg-gradient-to-r from-purple-600/20 via-pink-500/20 to-cyan-600/20 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-1000" />
               
               {/* Form Container */}
-              <div className="relative bg-background/90 backdrop-blur-2xl rounded-2xl p-6 sm:p-8 border border-white/10 transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-purple-500/10">
+              <div className="relative bg-background/90 backdrop-blur-2xl rounded-2xl p-5 sm:p-8 border border-white/10 transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-purple-500/10 w-full">
                 <div className="text-center mb-8">
-                  <h3 className="text-xl sm:text-2xl font-bold font-headline mb-2">
+                  <h3 className="text-lg sm:text-2xl font-bold font-headline mb-2">
                     <span className="bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">
                       Quantum Message Transmission
                     </span>
                   </h3>
-                  <p className="text-sm sm:text-base text-muted-foreground">
+                  <p className="text-xs sm:text-base text-muted-foreground">
                     Encode your message in the quantum field for instant delivery
                   </p>
                 </div>
