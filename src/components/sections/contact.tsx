@@ -419,30 +419,30 @@ export function Contact() {
 
       <div className="relative z-10">
         {/* Orbital Header */}
-        <div className="text-center mb-20 relative">
+        <div className="text-center mb-12 sm:mb-20 relative px-4">
           <div className="orbital-element absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-primary/20 rounded-full" />
           <div className="orbital-element absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-accent/15 rounded-full" />
           
-          <SectionHeading className="section-heading-master mb-8">
-            <span className="inline-flex items-center gap-4">
-              <Orbit className="w-8 h-8 text-primary animate-spin-slow" />
-              <span className="bg-gradient-to-r from-primary via-purple-600 to-cyan-500 bg-clip-text text-transparent">
+          <SectionHeading className="section-heading-master mb-6 sm:mb-8">
+            <span className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+              <Orbit className="w-6 h-6 sm:w-8 sm:h-8 text-primary animate-spin-slow" />
+              <span className="bg-gradient-to-r from-primary via-purple-600 to-cyan-500 bg-clip-text text-transparent text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
                 Quantum Connection
               </span>
-              <Zap className="w-8 h-8 text-cyan-500 animate-pulse" />
+              <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-500 animate-pulse" />
             </span>
           </SectionHeading>
           
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto parallax-layer-1">
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto parallax-layer-1 px-2">
             Let's transcend digital boundaries and create experiences that defy expectations
           </p>
         </div>
 
         <div className="max-w-8xl mx-auto px-4">
           {/* Quantum Grid */}
-          <div className="grid xl:grid-cols-12 gap-8 items-start mb-16">
+          <div className="grid xl:grid-cols-12 gap-6 sm:gap-8 items-start mb-16">
             {/* Contact Portal - Left */}
-            <div className="xl:col-span-5 space-y-8">
+            <div className="xl:col-span-5 space-y-6 sm:space-y-8">
               <div 
                 data-quantum-magnetic
                 className="quantum-card group relative"
@@ -452,21 +452,21 @@ export function Contact() {
                 <div className="absolute -inset-2 bg-gradient-to-r from-transparent via-white/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
                 
                 {/* Card Content */}
-                <div className="relative bg-background/90 backdrop-blur-2xl rounded-2xl p-8 border border-white/10 transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-primary/20">
+                <div className="relative bg-background/90 backdrop-blur-2xl rounded-2xl p-6 sm:p-8 border border-white/10 transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-primary/20">
                   <div className="flex items-center gap-3 mb-6">
-                    <Brain className="w-8 h-8 text-primary" />
-                    <h3 className="text-3xl font-bold font-headline">
+                    <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+                    <h3 className="text-2xl sm:text-3xl font-bold font-headline">
                       <span className="bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">
                         Neural Interface
                       </span>
                     </h3>
                   </div>
                   
-                  <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                  <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
                     Connect with me through multiple quantum channels. Each interaction is optimized for maximum resonance and minimal entropy.
                   </p>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {[
                       { icon: Mail, href: `mailto:${email}`, text: email, description: "Primary quantum channel" },
                       { icon: Phone, href: `tel:${phone}`, text: phone, description: "Vocal frequency transmission" },
@@ -475,26 +475,26 @@ export function Contact() {
                       <div
                         key={index}
                         data-quantum-magnetic
-                        className="flex items-start gap-4 p-4 rounded-xl bg-gradient-to-r from-secondary/30 to-transparent hover:from-secondary/50 transition-all duration-500 group/item transform-gpu hover:scale-105 border border-white/5 hover:border-white/10"
+                        className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-gradient-to-r from-secondary/30 to-transparent hover:from-secondary/50 transition-all duration-500 group/item transform-gpu hover:scale-105 border border-white/5 hover:border-white/10 overflow-hidden"
                       >
-                        <div className="relative mt-1">
-                          <item.icon className="w-5 h-5 text-primary transform-gpu group-hover/item:scale-110 transition-transform duration-300" />
+                        <div className="relative mt-1 shrink-0">
+                          <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary transform-gpu group-hover/item:scale-110 transition-transform duration-300" />
                           <div className="absolute inset-0 bg-primary/20 rounded-full scale-0 group-hover/item:scale-100 transition-transform duration-300" />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           {item.href ? (
                             <a 
                               href={item.href}
-                              className="text-lg font-semibold text-foreground/90 hover:text-primary transition-all duration-300 block"
+                              className="text-base sm:text-lg font-semibold text-foreground/90 hover:text-primary transition-all duration-300 block truncate sm:whitespace-normal"
                             >
                               {item.text}
                             </a>
                           ) : (
-                            <p className="text-lg font-semibold text-foreground/90">
+                            <p className="text-base sm:text-lg font-semibold text-foreground/90 break-words">
                               {item.text}
                             </p>
                           )}
-                          <p className="text-sm text-muted-foreground mt-1">
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                             {item.description}
                           </p>
                         </div>
@@ -509,49 +509,49 @@ export function Contact() {
             <div className="xl:col-span-7">
               <div 
                 data-quantum-magnetic
-                className="quantum-card group relative h-full min-h-[600px]"
+                className="quantum-card group relative h-full min-h-[400px] sm:min-h-[600px]"
               >
                 {/* 4D Portal Effect */}
                 <div className="quantum-gradient absolute -inset-2 bg-gradient-to-br from-primary/40 via-transparent to-accent/30 rounded-3xl transform rotate-3 scale-105 group-hover:rotate-0 group-hover:scale-100 transition-all duration-1000" />
                 <div className="absolute -inset-3 bg-gradient-to-tr from-transparent via-white/10 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl" />
                 
                 {/* Portal Content */}
-                <div className="relative bg-gradient-to-br from-background/95 to-secondary/10 backdrop-blur-2xl rounded-2xl p-12 border border-white/10 h-full flex flex-col justify-center items-center text-center transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-cyan-500/10">
+                <div className="relative bg-gradient-to-br from-background/95 to-secondary/10 backdrop-blur-2xl rounded-2xl p-6 sm:p-12 border border-white/10 h-full flex flex-col justify-center items-center text-center transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-cyan-500/10">
                   
                   {/* Quantum Core */}
-                  <div className="relative mb-8">
-                    <div className="w-32 h-32 bg-gradient-to-br from-primary via-purple-600 to-cyan-500 rounded-3xl flex items-center justify-center transform-gpu group-hover:scale-110 group-hover:rotate-180 transition-all duration-1000 shadow-2xl">
-                      <Send className="w-12 h-12 text-white transform-gpu group-hover:scale-125 transition-transform duration-500" />
+                  <div className="relative mb-6 sm:mb-8">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-primary via-purple-600 to-cyan-500 rounded-3xl flex items-center justify-center transform-gpu group-hover:scale-110 group-hover:rotate-180 transition-all duration-1000 shadow-2xl">
+                      <Send className="w-10 h-10 sm:w-12 sm:h-12 text-white transform-gpu group-hover:scale-125 transition-transform duration-500" />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-br from-primary to-cyan-500 rounded-3xl blur-2xl opacity-50 group-hover:opacity-70 transition-opacity duration-500" />
                     
                     {/* Orbiting elements */}
                     <div className="absolute -inset-4">
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-purple-500/30 rounded-full blur-sm group-hover:scale-150 transition-transform duration-1000" />
-                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-4 h-4 bg-cyan-400/40 rounded-full blur group-hover:scale-200 transition-transform duration-1200" />
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 sm:w-6 sm:h-6 bg-purple-500/30 rounded-full blur-sm group-hover:scale-150 transition-transform duration-1000" />
+                      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 bg-cyan-400/40 rounded-full blur group-hover:scale-200 transition-transform duration-1200" />
                     </div>
                   </div>
 
-                  <h4 className="text-2xl font-bold font-headline mb-4">
+                  <h4 className="text-xl sm:text-2xl font-bold font-headline mb-4 px-2">
                     <span className="bg-gradient-to-r from-primary via-purple-500 to-cyan-500 bg-clip-text text-transparent">
                       Initiate Quantum Handshake
                     </span>
                   </h4>
                   
-                  <p className="text-muted-foreground text-lg mb-8 max-w-md leading-relaxed">
+                  <p className="text-muted-foreground text-base sm:text-lg mb-6 sm:mb-8 max-w-md leading-relaxed px-2">
                     Your message travels through encrypted quantum channels, ensuring zero latency and maximum impact upon arrival.
                   </p>
 
                   {/* Quantum Status */}
-                  <div className="flex items-center justify-center gap-6">
+                  <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
                     {[
                       { color: "bg-green-500", label: "Quantum Online" },
                       { color: "bg-blue-500", label: "Channels Open" },
                       { color: "bg-purple-500", label: "Ready" }
                     ].map((status, index) => (
                       <div key={index} className="flex items-center gap-2">
-                        <div className={`w-3 h-3 ${status.color} rounded-full animate-pulse`} />
-                        <span className="text-sm text-muted-foreground">{status.label}</span>
+                        <div className={`w-2 h-2 sm:w-3 sm:h-3 ${status.color} rounded-full animate-pulse`} />
+                        <span className="text-xs sm:text-sm text-muted-foreground">{status.label}</span>
                       </div>
                     ))}
                   </div>
@@ -571,14 +571,14 @@ export function Contact() {
               <div className="absolute -inset-3 bg-gradient-to-r from-purple-600/20 via-pink-500/20 to-cyan-600/20 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-1000" />
               
               {/* Form Container */}
-              <div className="relative bg-background/90 backdrop-blur-2xl rounded-2xl p-8 border border-white/10 transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-purple-500/10">
+              <div className="relative bg-background/90 backdrop-blur-2xl rounded-2xl p-6 sm:p-8 border border-white/10 transform-gpu transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-purple-500/10">
                 <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold font-headline mb-2">
+                  <h3 className="text-xl sm:text-2xl font-bold font-headline mb-2">
                     <span className="bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">
                       Quantum Message Transmission
                     </span>
                   </h3>
-                  <p className="text-muted-foreground">
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     Encode your message in the quantum field for instant delivery
                   </p>
                 </div>
@@ -639,504 +639,3 @@ export function Contact() {
     </Section>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // src/components/sections/contact.tsx
-// "use client";
-
-// import { siteConfig } from "@/lib/data";
-// import { Section } from "@/components/section-wrapper";
-// import { SectionHeading } from "@/components/section-heading";
-// import { Mail, Phone, MapPin, Send, Sparkles } from "lucide-react";
-// import { ContactFormHandler } from "@/components/contact-form-handler";
-// import { useEffect, useRef, useState } from "react";
-// import gsap from "gsap";
-// import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-// // Only register on client side
-// if (typeof window !== "undefined") {
-//   gsap.registerPlugin(ScrollTrigger);
-// }
-
-// interface Particle {
-//   id: number;
-//   x: number;
-//   y: number;
-//   size: number;
-//   duration: number;
-// }
-
-// export function Contact() {
-//   const { email, phone, location } = siteConfig;
-//   const sectionRef = useRef<HTMLElement>(null);
-//   const [mounted, setMounted] = useState(false);
-//   const [particles, setParticles] = useState<Particle[]>([]);
-
-//   // Initialize on mount
-//   useEffect(() => {
-//     setMounted(true);
-    
-//     // Create particles
-//     const initialParticles = Array.from({ length: 8 }, (_, i) => ({
-//       id: i,
-//       x: Math.random() * 100,
-//       y: Math.random() * 100,
-//       size: Math.random() * 3 + 1,
-//       duration: Math.random() * 15 + 10,
-//     }));
-//     setParticles(initialParticles);
-//   }, []);
-
-//   useEffect(() => {
-//     if (!mounted || !sectionRef.current) return;
-
-//     const ctx = gsap.context(() => {
-//       // Master timeline for scroll-triggered animations
-//       const masterTL = gsap.timeline({
-//         scrollTrigger: {
-//           trigger: sectionRef.current,
-//           start: "top 75%",
-//           end: "bottom 25%",
-//           toggleActions: "play none none reverse",
-//         },
-//       });
-
-//       // Section entrance sequence
-//       masterTL
-//         .fromTo(".section-heading-contact", 
-//           { 
-//             opacity: 0, 
-//             y: 60,
-//             rotationX: 30 
-//           },
-//           { 
-//             opacity: 1, 
-//             y: 0, 
-//             rotationX: 0,
-//             duration: 1.2,
-//             ease: "power3.out"
-//           }
-//         )
-//         .fromTo(".contact-card-left",
-//           {
-//             opacity: 0,
-//             x: -50,
-//             rotationY: -10,
-//           },
-//           {
-//             opacity: 1,
-//             x: 0,
-//             rotationY: 0,
-//             duration: 1,
-//             ease: "power2.out"
-//           },
-//           "-=0.6"
-//         )
-//         .fromTo(".contact-card-right",
-//           {
-//             opacity: 0,
-//             x: 50,
-//             rotationY: 10,
-//           },
-//           {
-//             opacity: 1,
-//             x: 0,
-//             rotationY: 0,
-//             duration: 1,
-//             ease: "power2.out"
-//           },
-//           "-=0.8"
-//         )
-//         .fromTo(".contact-form-container",
-//           {
-//             opacity: 0,
-//             y: 40,
-//             scale: 0.98
-//           },
-//           {
-//             opacity: 1,
-//             y: 0,
-//             scale: 1,
-//             duration: 0.8,
-//             ease: "back.out(1.2)"
-//           },
-//           "-=0.4"
-//         );
-
-//       // Particle animations
-//       particles.forEach((particle) => {
-//         gsap.to(`.particle-${particle.id}`, {
-//           y: `+=${Math.random() * 100 - 50}`,
-//           x: `+=${Math.random() * 60 - 30}`,
-//           rotation: Math.random() * 360,
-//           duration: particle.duration,
-//           repeat: -1,
-//           yoyo: true,
-//           ease: "sine.inOut",
-//         });
-//       });
-
-//       // Holographic beams animation
-//       gsap.to(".holographic-beam", {
-//         y: -30,
-//         rotation: "+=5",
-//         duration: 3,
-//         repeat: -1,
-//         yoyo: true,
-//         stagger: 0.3,
-//         ease: "sine.inOut"
-//       });
-
-//       // Magnetic effect setup
-//       const setupMagneticEffects = () => {
-//         const magneticElements = document.querySelectorAll("[data-magnetic]");
-        
-//         magneticElements.forEach((element: Element) => {
-//           const el = element as HTMLElement;
-          
-//           el.addEventListener("mousemove", (e: MouseEvent) => {
-//             const rect = el.getBoundingClientRect();
-//             const x = e.clientX - rect.left - rect.width / 2;
-//             const y = e.clientY - rect.top - rect.height / 2;
-            
-//             const distance = Math.sqrt(x * x + y * y);
-//             const power = Math.min(1, 25 / distance);
-            
-//             gsap.to(el, {
-//               x: x * power * 0.2,
-//               y: y * power * 0.2,
-//               rotationY: x * power * 0.05,
-//               rotationX: -y * power * 0.05,
-//               duration: 0.8,
-//               ease: "power2.out"
-//             });
-//           });
-
-//           el.addEventListener("mouseleave", () => {
-//             gsap.to(el, {
-//               x: 0,
-//               y: 0,
-//               rotationY: 0,
-//               rotationX: 0,
-//               duration: 1.2,
-//               ease: "elastic.out(1, 0.6)"
-//             });
-//           });
-//         });
-//       };
-
-//       setupMagneticEffects();
-
-//     }, sectionRef);
-
-//     return () => ctx.revert();
-//   }, [mounted, particles]);
-
-//   // Dynamic gradient animation
-//   useEffect(() => {
-//     if (!mounted) return;
-
-//     const gradientAnimation = gsap.to(".dynamic-gradient", {
-//       backgroundPosition: "200% 0%",
-//       duration: 6,
-//       repeat: -1,
-//       ease: "linear"
-//     });
-
-//     return () => {
-//       gradientAnimation.kill();
-//     };
-//   }, [mounted]);
-
-//   if (!mounted) {
-//     return (
-//       <Section id="contact" className="bg-secondary/20">
-//         <div className="max-w-6xl mx-auto">
-//           <SectionHeading>Contact Me</SectionHeading>
-//           {/* Simple fallback */}
-//           <div className="grid md:grid-cols-2 gap-8">
-//             <div className="space-y-4">
-//               <div className="h-6 bg-muted rounded animate-pulse"></div>
-//               <div className="h-4 bg-muted rounded animate-pulse"></div>
-//             </div>
-//             <div className="hidden md:block">
-//               <div className="h-64 bg-muted rounded animate-pulse"></div>
-//             </div>
-//           </div>
-//         </div>
-//       </Section>
-//     );
-//   }
-
-//   return (
-//     <Section 
-//       id="contact" 
-//       ref={sectionRef}
-//       className="relative overflow-hidden bg-gradient-to-b from-secondary/10 to-background/50"
-//     >
-//       {/* Animated Background */}
-//       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-//         {/* Floating Particles */}
-//         {particles.map((particle) => (
-//           <div
-//             key={particle.id}
-//             className={`absolute rounded-full particle-${particle.id}
-//               bg-gradient-to-r from-primary/20 to-accent/10 
-//               border border-white/5 backdrop-blur-sm`}
-//             style={{
-//               left: `${particle.x}%`,
-//               top: `${particle.y}%`,
-//               width: `${particle.size}px`,
-//               height: `${particle.size}px`,
-//             }}
-//           />
-//         ))}
-
-//         {/* Holographic Beams */}
-//         <div className="holographic-beam absolute top-1/4 left-1/4 w-0.5 h-24 bg-gradient-to-b from-purple-400/20 via-transparent to-transparent transform rotate-45" />
-//         <div className="holographic-beam absolute top-1/3 right-1/4 w-0.5 h-20 bg-gradient-to-b from-blue-400/15 via-transparent to-transparent transform -rotate-12" />
-//         <div className="holographic-beam absolute bottom-1/4 left-1/3 w-0.5 h-28 bg-gradient-to-t from-green-400/15 via-transparent to-transparent transform rotate-20" />
-//         <div className="holographic-beam absolute bottom-1/3 right-1/3 w-0.5 h-22 bg-gradient-to-t from-cyan-400/15 via-transparent to-transparent transform -rotate-30" />
-//       </div>
-
-//       <div className="relative z-10">
-//         <SectionHeading className="section-heading-contact text-center mb-12">
-//           <span className="inline-flex items-center gap-3 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-//             <Sparkles className="w-6 h-6 text-primary" />
-//             Let's Create Together
-//             <Sparkles className="w-6 h-6 text-primary" />
-//           </span>
-//         </SectionHeading>
-
-//         <div className="max-w-7xl mx-auto px-4">
-//           {/* Main Content Grid */}
-//           <div className="grid lg:grid-cols-2 gap-8 items-start mb-12">
-//             {/* Contact Info Card */}
-//             <div className="contact-card-left group relative">
-//               {/* Animated Border */}
-//               <div className="dynamic-gradient absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 rounded-2xl opacity-60 group-hover:opacity-80 transition-all duration-500 blur-[1px]" />
-              
-//               {/* Card Content */}
-//               <div className="relative bg-background/80 backdrop-blur-md rounded-xl p-6 border border-border/50 transform-gpu transition-all duration-500 group-hover:shadow-xl">
-//                 <h3 className="text-2xl font-bold font-headline mb-4">
-//                   <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-//                     Get In Touch
-//                   </span>
-//                 </h3>
-                
-//                 <p className="text-muted-foreground mb-6 leading-relaxed">
-//                   I'm always excited to discuss new projects, creative ideas, and opportunities to bring your vision to life.
-//                 </p>
-
-//                 <div className="space-y-3">
-//                   {[
-//                     { icon: Mail, href: `mailto:${email}`, text: email },
-//                     { icon: Phone, href: `tel:${phone}`, text: phone },
-//                     { icon: MapPin, href: null, text: location }
-//                   ].map((item, index) => (
-//                     <div
-//                       key={index}
-//                       data-magnetic
-//                       className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-all duration-300 group/item transform-gpu hover:scale-105 border border-border/30"
-//                     >
-//                       <div className="relative">
-//                         <item.icon className="w-5 h-5 text-primary" />
-//                       </div>
-//                       {item.href ? (
-//                         <a 
-//                           href={item.href}
-//                           className="text-foreground/90 hover:text-primary transition-colors duration-300"
-//                         >
-//                           {item.text}
-//                         </a>
-//                       ) : (
-//                         <p className="text-foreground/90">
-//                           {item.text}
-//                         </p>
-//                       )}
-//                     </div>
-//                   ))}
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* Visual Card */}
-//             <div className="contact-card-right group relative hidden lg:block">
-//               <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 via-transparent to-accent/20 rounded-2xl transform rotate-1 scale-105 group-hover:rotate-0 group-hover:scale-100 transition-all duration-500" />
-              
-//               <div className="relative bg-gradient-to-br from-background/80 to-secondary/20 backdrop-blur-md rounded-xl p-8 border border-border/50 h-full flex flex-col justify-center items-center text-center transform-gpu transition-all duration-500 group-hover:shadow-xl">
-//                 <div className="relative mb-6">
-//                   <div className="w-16 h-16 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center transform-gpu group-hover:scale-110 transition-transform duration-500">
-//                     <Send className="w-6 h-6 text-white" />
-//                   </div>
-//                 </div>
-
-//                 <h4 className="text-xl font-bold font-headline mb-3">
-//                   <span className="bg-gradient-to-r from-primary to-cyan-500 bg-clip-text text-transparent">
-//                     Ready to Start?
-//                   </span>
-//                 </h4>
-                
-//                 <p className="text-muted-foreground mb-6">
-//                   Let's discuss your project and create something amazing together.
-//                 </p>
-
-//                 <div className="flex justify-center space-x-2">
-//                   {[...Array(3)].map((_, i) => (
-//                     <div
-//                       key={i}
-//                       className="w-2 h-2 bg-primary rounded-full opacity-60 animate-bounce"
-//                       style={{ 
-//                         animationDelay: `${i * 0.2}s`,
-//                         animationDuration: '1.2s'
-//                       }}
-//                     />
-//                   ))}
-//                 </div>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Contact Form */}
-//           <div className="contact-form-container">
-//             <div className="group relative max-w-4xl mx-auto">
-//               <div className="dynamic-gradient absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-pink-500 to-cyan-600 rounded-xl opacity-50 group-hover:opacity-70 transition-opacity duration-500 blur-[1px]" />
-              
-//               <div className="relative bg-background/80 backdrop-blur-md rounded-lg p-6 border border-border/50 transform-gpu transition-all duration-500 group-hover:shadow-xl">
-//                 <ContactFormHandler />
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Inline styles to avoid CSS chunk issues */}
-//       <style jsx>{`
-//         .dynamic-gradient {
-//           background-size: 200% 200%;
-//           animation: gradientShift 6s ease infinite;
-//         }
-
-//         @keyframes gradientShift {
-//           0% { background-position: 0% 50%; }
-//           50% { background-position: 100% 50%; }
-//           100% { background-position: 0% 50%; }
-//         }
-//       `}</style>
-//     </Section>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// // src/components/sections/contact.tsx
-// import { siteConfig } from "@/lib/data";
-// import { Section } from "@/components/section-wrapper";
-// import { SectionHeading } from "@/components/section-heading";
-// import { Mail, Phone, MapPin } from "lucide-react";
-// import { ContactFormHandler } from "@/components/contact-form-handler";
-
-// export function Contact() {
-//   const { email, phone, location } = siteConfig;
-
-//   return (
-//     <Section id="contact" className="bg-secondary/30">
-//       <SectionHeading>Contact Me</SectionHeading>
-//       <div className="max-w-6xl mx-auto">
-//         <div className="grid md:grid-cols-2 gap-12 items-start mb-12">
-//             <div>
-//                  <h3 className="text-2xl font-bold font-headline mb-4">Let's Connect</h3>
-//                 <p className="text-muted-foreground mb-8">
-//                     I'm always open to discussing new projects, creative ideas, or opportunities to be part of your visions. Feel free to reach out using the form, or connect with me through my other channels.
-//                 </p>
-//                 <div className="space-y-4">
-//                     <div className="flex items-center gap-4" data-cursor-hover>
-//                         <Mail className="w-6 h-6 text-primary" />
-//                         <a href={`mailto:${email}`} className="text-lg hover:text-primary transition-colors">{email}</a>
-//                     </div>
-//                     <div className="flex items-center gap-4" data-cursor-hover>
-//                         <Phone className="w-6 h-6 text-primary" />
-//                         <a href={`tel:${phone}`} className="text-lg hover:text-primary transition-colors">{phone}</a>
-//                     </div>
-//                     <div className="flex items-center gap-4">
-//                         <MapPin className="w-6 h-6 text-primary" />
-//                         <p className="text-lg">{location}</p>
-//                     </div>
-//                 </div>
-//             </div>
-//             <div className="hidden md:block">
-//                  {/* This space is intentionally left for the form on the right side on larger screens */}
-//             </div>
-//         </div>
-//         <ContactFormHandler />
-//       </div>
-//     </Section>
-//   );
-// }
