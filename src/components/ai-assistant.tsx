@@ -241,7 +241,7 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
               <CardHeader className="flex flex-row items-center justify-between border-b">
                 <div className="flex items-center gap-3">
                   <Bot className="text-primary" />
-                  <CardTitle className="font-headline text-xl">Sharma AI</CardTitle>
+                  <CardTitle className="font-headline text-xl">QuantumAI</CardTitle>
                 </div>
                 <Button variant="ghost" size="icon" onClick={toggleOpen} data-cursor-hover>
                   <X size={20} />
