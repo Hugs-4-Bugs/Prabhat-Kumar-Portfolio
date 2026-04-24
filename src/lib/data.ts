@@ -48,7 +48,7 @@ export const siteConfig = {
     { href: "#experience", label: "Experience" },
     { href: "#projects", label: "Projects" },
     { href: "#skills", label: "Skills" },
-    { href: "#blogs", label: "Blogs" },
+    { href: "https://prabhatblogs.lovable.app/", label: "Blogs" },
     { href: "#contact", label: "Contact" },
   ] as NavLink[],
 
@@ -121,8 +121,6 @@ Role & Responsibilities:
 `,
       tags: ["Java","Spring Boot","Hibernate","Microservices","MySQL","SQL","REST APIs","AWS","EC2","RDS","S3","Scalable Systems","Agile","Maven","Postman"]
     },
-    // { date: "June 2025 – Present", title: "Technical Support Engineer", company: "Startek Technology Private Limited", description: "Provided technical support for Acer systems, troubleshot hardware/software/network issues, and handled incident management. Collaborated with cross-functional teams to ensure smooth service delivery.", tags: ["Windows", "Linux", "Networking", "Remote Support", "Ticketing Systems"] },
-    // { date: "Jan 2023 – April 2025", title: "Backend Developer", company: "JMR Infotech Pvt Ltd", description: "Developed login/signup systems with Spring Security & JWT. Built scalable backend services for Supply Chain & Real Estate projects and created blog APIs. Collaborated with frontend and QA teams.", tags: ["Java", "Spring Boot", "Hibernate", "MySQL", "JWT", "Postman"] },
     { date: "Oct 2022 – Dec 2022", title: "Java Software Engineer Intern", company: "CodeSpeedy Technology Pvt Ltd", description: "Built authentication modules using Spring Boot & JWT. Managed entity relationships via Hibernate ORM and streamlined error handling with custom exceptions.", tags: ["Java", "Spring Boot", "Hibernate", "JWT", "MySQL"] },
     { date: "2022", title: "Remote Job Simulation", company: "Walmart USA", description: "Completed Advanced Software Engineering simulations. Built custom Java heap for logistics and created UML/ER diagrams for scalable system design.", tags: ["Java", "System Design", "UML", "Logistics"] },
   ] as TimelineEvent[],

@@ -1,3 +1,4 @@
+
 // src/components/header.tsx
 "use client";
 
@@ -38,7 +39,12 @@ export function Header({ onSearchClick }: HeaderProps) {
 
 
   useEffect(() => {
-    const sections = siteConfig.navLinks.map((link) => document.getElementById(link.href.substring(1))).filter(Boolean);
+    const sections = siteConfig.navLinks
+      .map((link) => {
+        if (link.href.startsWith("http")) return null;
+        return document.getElementById(link.href.substring(1));
+      })
+      .filter(Boolean);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -75,25 +81,42 @@ export function Header({ onSearchClick }: HeaderProps) {
         <div className="container flex items-center justify-between h-16">
           <Logo />
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            {siteConfig.navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "transition-colors hover:text-primary relative",
-                  activeSection === link.href.substring(1) ? "text-primary" : ""
-                )}
-                data-cursor-hover
-              >
-                {link.label}
-                {activeSection === link.href.substring(1) && (
-                  <motion.span
-                    className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"
-                    layoutId="underline"
-                  />
-                )}
-              </Link>
-            ))}
+            {siteConfig.navLinks.map((link) => {
+              const isExternal = link.href.startsWith("http");
+              if (isExternal) {
+                return (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="transition-colors hover:text-primary relative"
+                    data-cursor-hover
+                  >
+                    {link.label}
+                  </a>
+                );
+              }
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    "transition-colors hover:text-primary relative",
+                    activeSection === link.href.substring(1) ? "text-primary" : ""
+                  )}
+                  data-cursor-hover
+                >
+                  {link.label}
+                  {activeSection === link.href.substring(1) && (
+                    <motion.span
+                      className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"
+                      layoutId="underline"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
           <div className="flex items-center space-x-2">
              <div className="hidden md:flex items-center space-x-1">
@@ -137,16 +160,33 @@ export function Header({ onSearchClick }: HeaderProps) {
           className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm md:hidden"
         >
           <div className="flex flex-col items-center justify-center h-full space-y-6 text-lg font-medium">
-            {siteConfig.navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="transition-colors hover:text-primary"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {siteConfig.navLinks.map((link) => {
+              const isExternal = link.href.startsWith("http");
+              if (isExternal) {
+                return (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="transition-colors hover:text-primary"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                );
+              }
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="transition-colors hover:text-primary"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
             <div className="border-t w-1/2 my-4"></div>
             <Button variant="ghost" onClick={() => { onSearchClick(); setIsMobileMenuOpen(false); }} className="text-lg">
                 <Search className="mr-2"/> AI Search
