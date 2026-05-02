@@ -16,10 +16,12 @@ const VOICE_AGENTS = [
     pitch: 0.78, rate: 0.85, greeting: "Greetings. I am Sage. How may I assist you today?" },
   { id: 'aria', name: 'Aria', tagline: 'Energetic & Upbeat', color: '#FF6B35',
     pitch: 1.2, rate: 1.08, greeting: "Hey hey! Aria here! Super ready to help. Go ahead!" },
-  { id: 'heera', name: 'Heera', tagline: 'Local & Warm', color: '#FFD700',
-    pitch: 1.05, rate: 1.0, greeting: "Namaste! I'm Heera. I can help you in Hindi, English, or any language you like." },
-  { id: 'ravi', name: 'Ravi', tagline: 'Clear & Direct', color: '#8B4513',
-    pitch: 0.95, rate: 1.05, greeting: "Hello! Ravi here. Let's talk about Prabhat's journey and projects." }
+  { id: 'echo', name: 'Echo', tagline: 'Neutral & Clear', color: '#00BCD4',
+    pitch: 1.0, rate: 0.97, greeting: "Hello. I'm Echo. I'm here to answer your questions about Prabhat." },
+  { id: 'orion', name: 'Orion', tagline: 'Young & Enthused', color: '#4CAF50',
+    pitch: 1.08, rate: 1.05, greeting: "What's up! Orion here. Let's talk about Prabhat's projects!" },
+  { id: 'luna', name: 'Luna', tagline: 'Warm & Helpful', color: '#FFD700',
+    pitch: 1.05, rate: 1.0, greeting: "Hi, I'm Luna. I can help you in any language you prefer. What's on your mind?" }
 ];
 
 interface VoiceAgentProps {
@@ -49,12 +51,10 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     };
   }, []);
 
-  // Sync ref with state for speech loop to catch mid-conversation changes
   useEffect(() => {
     selectedAgentRef.current = selectedAgent;
   }, [selectedAgent]);
 
-  // Load persisted voice
   useEffect(() => {
     const saved = localStorage.getItem('quantumai_selected_voice');
     if (saved) {
@@ -78,8 +78,9 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       nova:    ['Google US English Female', 'Microsoft Zira', 'Samantha', 'Victoria'],
       sage:    ['Microsoft David', 'Google UK English Male', 'Daniel', 'Arthur'],
       aria:    ['Google US English Female', 'Microsoft Cortana', 'Victoria', 'Karen'],
-      heera:   ['Google Hindi', 'Microsoft Heera', 'Google UK English Female', 'Aditi'],
-      ravi:    ['Microsoft Ravi', 'Google UK English Male', 'Google US English Male', 'Arjun']
+      echo:    ['Karen', 'Moira', 'Google US English', 'Microsoft Eva'],
+      orion:   ['Microsoft Mark', 'Google US English Male', 'Tom', 'Fred'],
+      luna:    ['Google Hindi', 'Microsoft Heera', 'Google UK English Female', 'Aditi']
     };
     
     const priorities = priorityMap[agent.id];
