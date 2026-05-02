@@ -34,17 +34,26 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   const [transcript, setTranscript] = useState('');
   const [lastExchange, setLastExchange] = useState({ user: '', ai: '' });
   const [isReady, setIsReady] = useState(false);
-  const [sessionStarted, setSessionSessionStarted] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
   
   const recognitionRef = useRef<any>(null);
   const speakingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const selectedAgentRef = useRef(VOICE_AGENTS[0]);
+
+  // Sync ref with state for speech loop to catch mid-conversation changes
+  useEffect(() => {
+    selectedAgentRef.current = selectedAgent;
+  }, [selectedAgent]);
 
   // Load persisted voice
   useEffect(() => {
     const saved = localStorage.getItem('quantumai_selected_voice');
     if (saved) {
       const agent = VOICE_AGENTS.find(a => a.id === saved);
-      if (agent) setSelectedAgent(agent);
+      if (agent) {
+        setSelectedAgent(agent);
+        selectedAgentRef.current = agent;
+      }
     }
   }, []);
 
@@ -75,7 +84,11 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
 
   const speakNaturally = useCallback((text: string, agent: typeof VOICE_AGENTS[0], onEnd?: () => void) => {
     console.log('[VoiceAgent] Preparing to speak:', text.substring(0, 50) + '...');
+    
+    // Only cancel if it's a new call from the outside, not our loop
+    // But for simplicity in "preview", we cancel.
     window.speechSynthesis.cancel();
+    
     if (!text.trim()) {
       onEnd?.();
       return;
@@ -100,11 +113,14 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       }
       
       const utterance = new SpeechSynthesisUtterance(sentences[index].trim());
-      const voice = getBestVoice(agent);
+      // Read the LATEST voice from the Ref so mid-conversation changes work
+      const currentAgent = selectedAgentRef.current;
+      const voice = getBestVoice(currentAgent);
+      
       if (voice) utterance.voice = voice;
       
-      utterance.pitch = agent.pitch + (Math.random() * 0.06 - 0.03);
-      utterance.rate = agent.rate + (Math.random() * 0.04 - 0.02);
+      utterance.pitch = currentAgent.pitch + (Math.random() * 0.06 - 0.03);
+      utterance.rate = currentAgent.rate + (Math.random() * 0.04 - 0.02);
       utterance.volume = 1;
       
       utterance.onstart = () => {
@@ -182,6 +198,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
 
     recognition.onend = () => {
       console.log('[VoiceAgent] Recognition ended.');
+      // If we're still in listening state but it ended (e.g. timeout), reset to idle
       if (state === 'listening') setState('idle');
     };
 
@@ -223,7 +240,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
 
   const startSession = () => {
     console.log('[VoiceAgent] Starting session...');
-    setSessionSessionStarted(true);
+    setSessionStarted(true);
     speakNaturally(selectedAgent.greeting, selectedAgent, () => {
       setState('idle');
       startListening();

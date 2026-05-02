@@ -74,8 +74,8 @@ export function Projects() {
     }
 
     const animate = () => {
-      ctx.fillStyle = 'transparent';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx!.fillStyle = 'transparent';
+      ctx!.fillRect(0, 0, canvas.width, canvas.height);
 
       canvasParticles.forEach(particle => {
         particle.x += particle.vx;
@@ -86,11 +86,11 @@ export function Projects() {
         if (particle.y <= 0 || particle.y >= canvas.height) particle.vy *= -1;
 
         // Draw particle
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = particle.color;
-        ctx.globalAlpha = particle.alpha;
-        ctx.fill();
+        ctx!.beginPath();
+        ctx!.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+        ctx!.fillStyle = particle.color;
+        ctx!.globalAlpha = particle.alpha;
+        ctx!.fill();
 
         // Draw connections
         canvasParticles.forEach(otherParticle => {
@@ -99,13 +99,13 @@ export function Projects() {
           const distance = Math.sqrt(dx * dx + dy * dy);
 
           if (distance < 100) {
-            ctx.beginPath();
-            ctx.strokeStyle = particle.color;
-            ctx.globalAlpha = (100 - distance) / 100 * 0.1;
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(otherParticle.x, otherParticle.y);
-            ctx.stroke();
+            ctx!.beginPath();
+            ctx!.strokeStyle = particle.color;
+            ctx!.globalAlpha = (100 - distance) / 100 * 0.1;
+            ctx!.lineWidth = 0.5;
+            ctx!.moveTo(particle.x, particle.y);
+            ctx!.lineTo(otherParticle.x, otherParticle.y);
+            ctx!.stroke();
           }
         });
       });
@@ -116,8 +116,10 @@ export function Projects() {
     animate();
 
     const handleResize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      if (canvas && sectionRef.current) {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+      }
     };
 
     window.addEventListener('resize', handleResize);
