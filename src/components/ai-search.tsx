@@ -234,7 +234,6 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   }, [conversation, isPending]);
 
   return (
-    <>
     <AnimatePresence>
         {isVisible && (
             <motion.div
@@ -271,7 +270,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                       key={p.id}
                       className="absolute rounded-full"
                       style={{
-                        background: `radial-gradient(circle, ${p.bg})`,
+                        backgroundImage: `radial-gradient(circle, ${p.bg})`,
                         filter: 'blur(8px)',
                         width: `${p.width}px`,
                         height: `${p.height}px`,
@@ -412,7 +411,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                         <motion.div 
                                           className="p-4 text-primary-foreground rounded-2xl rounded-br-none max-w-2xl relative overflow-hidden"
                                           style={{
-                                            background: `
+                                            backgroundImage: `
                                               linear-gradient(135deg, 
                                                 rgba(120, 119, 198, 0.9) 0%, 
                                                 rgba(255, 119, 198, 0.8) 50%, 
@@ -441,7 +440,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                           whileHover={{ scale: 1.1 }}
                                           className="w-8 h-8 shrink-0 mt-1 flex items-center justify-center rounded-full"
                                           style={{
-                                            background: `
+                                            backgroundImage: `
                                               radial-gradient(circle at 30% 30%, 
                                                 rgba(120, 119, 198, 0.9) 0%, 
                                                 rgba(255, 119, 198, 0.8) 50%, 
@@ -471,7 +470,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                             <motion.div 
                                               className="w-8 h-8 shrink-0 mt-1 flex items-center justify-center rounded-full"
                                               style={{
-                                                background: `
+                                                backgroundImage: `
                                                   radial-gradient(circle at 30% 30%, 
                                                     rgba(120, 119, 198, 0.9) 0%, 
                                                     rgba(255, 119, 198, 0.8) 30%, 
@@ -495,7 +494,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                             <motion.div 
                                                 className="whitespace-pre-wrap p-6 rounded-2xl relative overflow-hidden"
                                                 style={{
-                                                  background: `
+                                                  backgroundImage: `
                                                     radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
                                                     radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.12) 0%, transparent 50%),
                                                     radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.10) 0%, transparent 50%),
@@ -540,7 +539,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                 exit={{ opacity: 0, height: 0 }}
                                 className="flex flex-col items-center justify-center text-center p-12 space-y-4"
                                 style={{
-                                  background: `
+                                  backgroundImage: `
                                     radial-gradient(circle at 50% 50%, rgba(120, 119, 198, 0.25) 0%, transparent 70%),
                                     radial-gradient(circle at 30% 70%, rgba(255, 119, 198, 0.20) 0%, transparent 70%),
                                     radial-gradient(circle at 70% 30%, rgba(120, 219, 255, 0.22) 0%, transparent 70%)
@@ -589,7 +588,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                 exit={{ opacity: 0, height: 0 }}
                                 className="flex items-start gap-4 text-center p-8"
                                 style={{
-                                  background: `
+                                  backgroundImage: `
                                     radial-gradient(circle at 50% 50%, rgba(120, 219, 255, 0.20) 0%, transparent 70%),
                                     radial-gradient(circle at 70% 30%, rgba(255, 219, 120, 0.15) 0%, transparent 70%),
                                     radial-gradient(circle at 30% 70%, rgba(167, 120, 255, 0.18) 0%, transparent 70%)
@@ -602,7 +601,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                 <motion.div 
                                   className="w-8 h-8 shrink-0 mt-1 flex items-center justify-center rounded-full"
                                   style={{
-                                    background: `
+                                    backgroundImage: `
                                       radial-gradient(circle at 30% 30%, 
                                         rgba(120, 119, 198, 0.9) 0%, 
                                         rgba(255, 119, 198, 0.8) 30%, 
@@ -656,7 +655,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                         <motion.div 
                           className="absolute inset-0 rounded-full"
                           style={{
-                            background: `
+                            backgroundImage: `
                               radial-gradient(circle at 30% 50%, rgba(120, 119, 198, 0.25) 0%, transparent 50%),
                               radial-gradient(circle at 70% 50%, rgba(255, 119, 198, 0.20) 0%, transparent 50%),
                               radial-gradient(circle at 50% 30%, rgba(120, 219, 255, 0.22) 0%, transparent 50%),
@@ -702,7 +701,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                 disabled={isPending || !recognitionRef.current}
                                 className="rounded-full backdrop-blur-md border border-white/20"
                                 style={{
-                                  background: isListening ? `
+                                  backgroundImage: isListening ? `
                                     radial-gradient(circle at 30% 30%, 
                                       rgba(239, 68, 68, 0.9) 0%, 
                                       rgba(220, 38, 38, 0.8) 50%, 
@@ -738,13 +737,13 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                 disabled={isPending || isListening || !query.trim()}
                                 className="rounded-full backdrop-blur-md border border-white/20"
                                 style={{
-                                  background: !isPending && !isListening && query.trim() ? `
+                                  backgroundImage: !isPending && !isListening && query.trim() ? `
                                     radial-gradient(circle at 30% 30%, 
                                       rgba(120, 219, 255, 0.4) 0%, 
                                       rgba(255, 219, 120, 0.35) 50%, 
                                       rgba(120, 255, 187, 0.3) 100%
                                     )
-                                  ` : 'transparent',
+                                  ` : 'none',
                                   boxShadow: !isPending && !isListening && query.trim() ? `
                                     0 4px 20px rgba(120, 219, 255, 0.5),
                                     0 2px 10px rgba(255, 219, 120, 0.4)
@@ -774,6 +773,5 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
             </motion.div>
         )}
     </AnimatePresence>
-    </>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mic, Play, Volume2 } from 'lucide-react';
+import { X, Mic, Play, Volume2, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getVoiceAIResponse } from '@/app/actions';
 
@@ -34,6 +34,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   const [transcript, setTranscript] = useState('');
   const [lastExchange, setLastExchange] = useState({ user: '', ai: '' });
   const [isReady, setIsReady] = useState(false);
+  const [sessionStarted, setSessionSessionStarted] = useState(false);
   
   const recognitionRef = useRef<any>(null);
   const speakingIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -48,6 +49,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   }, []);
 
   const handleVoiceChange = (agent: typeof VOICE_AGENTS[0]) => {
+    console.log('[VoiceAgent] Changing voice to:', agent.name);
     setSelectedAgent(agent);
     localStorage.setItem('quantumai_selected_voice', agent.id);
   };
@@ -72,6 +74,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   }, []);
 
   const speakNaturally = useCallback((text: string, agent: typeof VOICE_AGENTS[0], onEnd?: () => void) => {
+    console.log('[VoiceAgent] Preparing to speak:', text.substring(0, 50) + '...');
     window.speechSynthesis.cancel();
     if (!text.trim()) {
       onEnd?.();
@@ -90,6 +93,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     
     const speakNext = () => {
       if (index >= sentences.length) {
+        console.log('[VoiceAgent] Finished speaking all sentences.');
         if (speakingIntervalRef.current) clearInterval(speakingIntervalRef.current);
         onEnd?.();
         return;
@@ -104,10 +108,12 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       utterance.volume = 1;
       
       utterance.onstart = () => {
+        console.log('[VoiceAgent] Sentence start:', index);
         setState('speaking');
       };
 
       utterance.onend = () => {
+        console.log('[VoiceAgent] Sentence end:', index);
         index++;
         setTimeout(speakNext, 250 + Math.random() * 150);
       };
@@ -126,9 +132,11 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   }, [getBestVoice]);
 
   const startListening = useCallback(() => {
+    console.log('[VoiceAgent] Initializing SpeechRecognition...');
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
+      console.warn('[VoiceAgent] SpeechRecognition not supported.');
       setTranscript('Speech recognition not supported.');
       return;
     }
@@ -143,6 +151,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     recognition.lang = 'en-US';
     
     recognition.onstart = () => {
+      console.log('[VoiceAgent] Recognition started.');
       setState('listening');
       setTranscript('');
     };
@@ -153,8 +162,10 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
         current += event.results[i][0].transcript;
       }
       setTranscript(current);
+      console.log('[VoiceAgent] Transcript update:', current);
       
       if (event.results[event.results.length - 1].isFinal) {
+        console.log('[VoiceAgent] Final result received:', current);
         handleUserInput(current);
       }
     };
@@ -170,6 +181,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     };
 
     recognition.onend = () => {
+      console.log('[VoiceAgent] Recognition ended.');
       if (state === 'listening') setState('idle');
     };
 
@@ -184,12 +196,14 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   const handleUserInput = async (input: string) => {
     if (!input.trim()) return;
     
+    console.log('[VoiceAgent] Processing input for AI:', input);
     setState('thinking');
     setLastExchange(prev => ({ ...prev, user: input }));
 
     try {
       const result = await getVoiceAIResponse(input, conversationHistory);
       if (result.success && result.answer) {
+        console.log('[VoiceAgent] AI Response received:', result.answer.substring(0, 50));
         setLastExchange(prev => ({ ...prev, ai: result.answer as string }));
         onAddMessage(input, result.answer as string);
         speakNaturally(result.answer as string, selectedAgent, () => {
@@ -197,6 +211,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
           setTimeout(() => startListening(), 500);
         });
       } else {
+        console.error('[VoiceAgent] AI call returned failure.');
         setTranscript('Failed to connect. Tap mic to retry.');
         setState('idle');
       }
@@ -204,6 +219,15 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       console.error('[VoiceAgent] handleUserInput error:', err);
       setState('idle');
     }
+  };
+
+  const startSession = () => {
+    console.log('[VoiceAgent] Starting session...');
+    setSessionSessionStarted(true);
+    speakNaturally(selectedAgent.greeting, selectedAgent, () => {
+      setState('idle');
+      startListening();
+    });
   };
 
   const toggleMic = () => {
@@ -219,6 +243,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   };
 
   const handleClose = () => {
+    console.log('[VoiceAgent] Closing VoiceAgent...');
     window.speechSynthesis.cancel();
     recognitionRef.current?.stop();
     onClose();
@@ -228,25 +253,13 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   useEffect(() => {
     const checkVoices = () => {
       if (window.speechSynthesis.getVoices().length > 0) {
+        console.log('[VoiceAgent] Voices loaded and ready.');
         setIsReady(true);
       }
     };
     window.speechSynthesis.onvoiceschanged = checkVoices;
     checkVoices();
   }, []);
-
-  // Play greeting when visible and ready
-  useEffect(() => {
-    if (isVisible && isReady) {
-      const timer = setTimeout(() => {
-        speakNaturally(selectedAgent.greeting, selectedAgent, () => {
-          setState('idle');
-          startListening();
-        });
-      }, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [isVisible, isReady, selectedAgent.id, speakNaturally, startListening]);
 
   return (
     <AnimatePresence>
@@ -264,120 +277,144 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
             </Button>
           </div>
 
-          <div className="flex flex-col items-center justify-center gap-8 mb-12">
-            <div className="relative">
-              <AnimatePresence>
-                {state === 'listening' && (
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1.5, opacity: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ repeat: Infinity, duration: 1.5 }}
-                    className="absolute inset-0 rounded-full border-2 border-blue-400/50"
-                  />
-                )}
-                {state === 'speaking' && (
-                   <motion.div
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-                    transition={{ repeat: Infinity, duration: 0.8 }}
-                    className="absolute inset-[-20px] rounded-full bg-cyan-400/10 blur-xl"
-                   />
-                )}
-              </AnimatePresence>
-
-              <div 
-                className={`relative w-48 h-48 rounded-full shadow-2xl transition-all duration-500 overflow-hidden ${
-                  state === 'listening' ? 'scale-110 shadow-blue-500/50' :
-                  state === 'thinking' ? 'shadow-purple-500/50' :
-                  state === 'speaking' ? 'shadow-cyan-400/50 scale-105' :
-                  'shadow-blue-900/30'
-                }`}
-                style={{
-                  background: state === 'thinking' 
-                    ? 'conic-gradient(from 0deg, #1e3a8a, #9333ea, #1e3a8a)' 
-                    : 'radial-gradient(circle at 30% 30%, #4a90d9, #1e3a8a)',
-                  animation: state === 'idle' ? 'orb-pulse 3s infinite ease-in-out' : 
-                             state === 'thinking' ? 'orb-rotate 2s infinite linear' :
-                             state === 'listening' ? 'orb-listen 1s infinite ease-in-out' :
-                             'none'
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/20 pointer-events-none" />
+          {!sessionStarted ? (
+            <div className="flex flex-col items-center gap-8 text-center px-6">
+              <div className="w-32 h-32 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary animate-pulse">
+                <AudioWaveform size={64} className="text-primary" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold font-headline mb-4">Voice Mode</h2>
+                <p className="text-gray-400 max-w-sm mb-8">
+                  Talk naturally to QuantumAI about Prabhat's skills, experience, and projects.
+                </p>
+                <Button 
+                  size="lg" 
+                  onClick={startSession}
+                  className="rounded-full px-12 py-6 text-lg font-bold gap-3 shadow-xl shadow-primary/20"
+                >
+                  <Power size={20} />
+                  Start Conversation
+                </Button>
               </div>
             </div>
+          ) : (
+            <>
+              <div className="flex flex-col items-center justify-center gap-8 mb-12">
+                <div className="relative">
+                  <AnimatePresence>
+                    {state === 'listening' && (
+                      <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1.5, opacity: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ repeat: Infinity, duration: 1.5 }}
+                        className="absolute inset-0 rounded-full border-2 border-blue-400/50"
+                      />
+                    )}
+                    {state === 'speaking' && (
+                       <motion.div
+                        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                        transition={{ repeat: Infinity, duration: 0.8 }}
+                        className="absolute inset-[-20px] rounded-full bg-cyan-400/10 blur-xl"
+                       />
+                    )}
+                  </AnimatePresence>
 
-            <div className="text-center px-6 max-w-lg">
-              <motion.h2 
-                key={state}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-3xl font-bold font-headline mb-2"
-              >
-                {state === 'listening' ? 'Listening...' : 
-                 state === 'thinking' ? 'Thinking...' : 
-                 state === 'speaking' ? 'Speaking...' : 'Ready to chat'}
-              </motion.h2>
-              <p className="text-sm text-gray-400 line-clamp-2 min-h-[2.5rem]">
-                {transcript || (state === 'speaking' ? lastExchange.ai : state === 'idle' ? 'Tap the mic to start conversation.' : '')}
-              </p>
-            </div>
-          </div>
-
-          <div className="w-full overflow-x-auto no-scrollbar py-4 px-6 mb-8 flex justify-center">
-            <div className="flex gap-4 min-w-max">
-              {VOICE_AGENTS.map((agent) => (
-                <motion.div
-                  key={agent.id}
-                  whileHover={{ y: -5 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleVoiceChange(agent)}
-                  className={`relative p-4 rounded-2xl bg-white/5 border-2 transition-all cursor-pointer w-36 text-center ${
-                    selectedAgent.id === agent.id ? 'border-primary shadow-[0_0_15px_rgba(74,144,217,0.3)]' : 'border-transparent'
-                  }`}
-                >
                   <div 
-                    className="w-10 h-10 rounded-full mx-auto mb-3 flex items-center justify-center"
-                    style={{ backgroundColor: agent.color }}
-                  >
-                    <Volume2 size={18} />
-                  </div>
-                  <h3 className="font-bold text-sm mb-1">{agent.name}</h3>
-                  <p className="text-[10px] text-gray-400 mb-3">{agent.tagline}</p>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="h-7 w-7 p-0 rounded-full bg-white/10 hover:bg-white/20"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      speakNaturally(agent.greeting, agent);
+                    className={`relative w-48 h-48 rounded-full shadow-2xl transition-all duration-500 overflow-hidden ${
+                      state === 'listening' ? 'scale-110 shadow-blue-500/50' :
+                      state === 'thinking' ? 'shadow-purple-500/50' :
+                      state === 'speaking' ? 'shadow-cyan-400/50 scale-105' :
+                      'shadow-blue-900/30'
+                    }`}
+                    style={{
+                      background: state === 'thinking' 
+                        ? 'conic-gradient(from 0deg, #1e3a8a, #9333ea, #1e3a8a)' 
+                        : 'radial-gradient(circle at 30% 30%, #4a90d9, #1e3a8a)',
+                      animation: state === 'idle' ? 'orb-pulse 3s infinite ease-in-out' : 
+                                state === 'thinking' ? 'orb-rotate 2s infinite linear' :
+                                state === 'listening' ? 'orb-listen 1s infinite ease-in-out' :
+                                'none'
                     }}
                   >
-                    <Play size={12} fill="currentColor" />
-                  </Button>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/20 pointer-events-none" />
+                  </div>
+                </div>
 
-          <div className="flex flex-col items-center gap-6">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={toggleMic}
-              className={`w-20 h-20 rounded-full flex items-center justify-center shadow-2xl transition-colors ${
-                state === 'listening' ? 'bg-red-500' : 'bg-white text-black'
-              }`}
-            >
-              {state === 'listening' ? <X size={36} /> : <Mic size={36} />}
-            </motion.button>
-            
-            <button 
-              onClick={handleClose}
-              className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
-            >
-              Exit Voice Agent
-            </button>
-          </div>
+                <div className="text-center px-6 max-w-lg">
+                  <motion.h2 
+                    key={state}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-3xl font-bold font-headline mb-2"
+                  >
+                    {state === 'listening' ? 'Listening...' : 
+                     state === 'thinking' ? 'Thinking...' : 
+                     state === 'speaking' ? 'Speaking...' : 'Ready to chat'}
+                  </motion.h2>
+                  <p className="text-sm text-gray-400 line-clamp-2 min-h-[2.5rem]">
+                    {transcript || (state === 'speaking' ? lastExchange.ai : state === 'idle' ? 'Tap the mic to talk.' : '')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-full overflow-x-auto no-scrollbar py-4 px-6 mb-8 flex justify-center">
+                <div className="flex gap-4 min-w-max">
+                  {VOICE_AGENTS.map((agent) => (
+                    <motion.div
+                      key={agent.id}
+                      whileHover={{ y: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleVoiceChange(agent)}
+                      className={`relative p-4 rounded-2xl bg-white/5 border-2 transition-all cursor-pointer w-36 text-center ${
+                        selectedAgent.id === agent.id ? 'border-primary shadow-[0_0_15px_rgba(74,144,217,0.3)]' : 'border-transparent'
+                      }`}
+                    >
+                      <div 
+                        className="w-10 h-10 rounded-full mx-auto mb-3 flex items-center justify-center"
+                        style={{ backgroundColor: agent.color }}
+                      >
+                        <Volume2 size={18} />
+                      </div>
+                      <h3 className="font-bold text-sm mb-1">{agent.name}</h3>
+                      <p className="text-[10px] text-gray-400 mb-3">{agent.tagline}</p>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-7 w-7 p-0 rounded-full bg-white/10 hover:bg-white/20"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          speakNaturally(agent.greeting, agent);
+                        }}
+                      >
+                        <Play size={12} fill="currentColor" />
+                      </Button>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center gap-6">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={toggleMic}
+                  className={`w-20 h-20 rounded-full flex items-center justify-center shadow-2xl transition-colors ${
+                    state === 'listening' ? 'bg-red-500' : 'bg-white text-black'
+                  }`}
+                >
+                  {state === 'listening' ? <X size={36} /> : <Mic size={36} />}
+                </motion.button>
+                
+                <button 
+                  onClick={handleClose}
+                  className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+                >
+                  Exit Session
+                </button>
+              </div>
+            </>
+          )}
 
           <style jsx>{`
             @keyframes orb-pulse {
@@ -403,5 +440,33 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+interface AudioWaveformProps {
+  size?: number;
+  className?: string;
+}
+
+function AudioWaveform({ size = 24, className }: AudioWaveformProps) {
+  return (
+    <svg 
+      width={size} 
+      height={size} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+    >
+      <path d="M2 10v3" />
+      <path d="M6 6v11" />
+      <path d="M10 3v18" />
+      <path d="M14 8v7" />
+      <path d="M18 5v13" />
+      <path d="M22 10v3" />
+    </svg>
   );
 }

@@ -1,4 +1,3 @@
-// src/components/sections/services.tsx
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
@@ -159,14 +158,19 @@ export function Services() {
     });
   };
 
-  // Floating beams component
+  // Floating beams component - Fixed to generate beams on client to avoid hydration error
   const FloatingBeams = () => {
-    const beams = Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      delay: Math.random() * 4,
-      duration: 2 + Math.random() * 2,
-    }));
+    const [beams, setBeams] = useState<{ id: number; x: number; delay: number; duration: number }[]>([]);
+
+    useEffect(() => {
+      const generatedBeams = Array.from({ length: 8 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        delay: Math.random() * 4,
+        duration: 2 + Math.random() * 2,
+      }));
+      setBeams(generatedBeams);
+    }, []);
 
     return (
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -292,28 +296,8 @@ export function Services() {
           transition={{ duration: 0.8 }}
           className="mt-24 relative"
         >
-          {/* Floating particles */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 bg-primary/30 rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
-                animate={{
-                  y: [0, -30, 0],
-                  opacity: [0, 1, 0],
-                }}
-                transition={{
-                  duration: 3 + Math.random() * 2,
-                  repeat: Infinity,
-                  delay: Math.random() * 2,
-                }}
-              />
-            ))}
-          </div>
+          {/* Floating particles - Fixed with separate component to avoid hydration errors */}
+          <AIParticles />
 
           <h3 className="text-2xl md:text-4xl font-bold font-headline text-center mb-6 flex items-center justify-center gap-4">
             <motion.div
@@ -455,5 +439,44 @@ export function Services() {
         </motion.div>
       </div>
     </Section>
+  );
+}
+
+// Sub-component for particles to handle its own hydration-safe state
+function AIParticles() {
+  const [parts, setParts] = useState<{ id: number; left: number; top: number; delay: number }[]>([]);
+
+  useEffect(() => {
+    const generated = [...Array(20)].map((_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      delay: Math.random() * 2,
+    }));
+    setParts(generated);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {parts.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute w-1 h-1 bg-primary/30 rounded-full"
+          style={{
+            left: `${p.left}%`,
+            top: `${p.top}%`,
+          }}
+          animate={{
+            y: [0, -30, 0],
+            opacity: [0, 1, 0],
+          }}
+          transition={{
+            duration: 3 + Math.random() * 2,
+            repeat: Infinity,
+            delay: p.delay,
+          }}
+        />
+      ))}
+    </div>
   );
 }
