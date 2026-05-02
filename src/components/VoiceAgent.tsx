@@ -9,19 +9,19 @@ import { getVoiceAIResponse } from '@/app/actions';
 
 const VOICE_AGENTS = [
   { id: 'quantum', name: 'Quantum', tagline: 'Deep & Calm', color: '#4A90D9',
-    pitch: 0.85, rate: 0.92, greeting: "Hey. I'm Quantum. Ask me anything about Prabhat." },
+    pitch: 0.75, rate: 0.9, greeting: "Hey. I'm Quantum. Ask me anything about Prabhat." },
   { id: 'nova', name: 'Nova', tagline: 'Warm & Friendly', color: '#E91E8C',
-    pitch: 1.15, rate: 1.0, greeting: "Hi there! I'm Nova. What would you like to know?" },
+    pitch: 1.25, rate: 1.05, greeting: "Hi there! I'm Nova. What would you like to know?" },
   { id: 'sage', name: 'Sage', tagline: 'Wise & Measured', color: '#9B59B6',
-    pitch: 0.78, rate: 0.85, greeting: "Greetings. I am Sage. How may I assist you today?" },
+    pitch: 0.65, rate: 0.8, greeting: "Greetings. I am Sage. How may I assist you today?" },
   { id: 'aria', name: 'Aria', tagline: 'Energetic & Upbeat', color: '#FF6B35',
-    pitch: 1.2, rate: 1.08, greeting: "Hey hey! Aria here! Super ready to help. Go ahead!" },
+    pitch: 1.35, rate: 1.15, greeting: "Hey hey! Aria here! Super ready to help. Go ahead!" },
   { id: 'echo', name: 'Echo', tagline: 'Neutral & Clear', color: '#00BCD4',
-    pitch: 1.0, rate: 0.97, greeting: "Hello. I'm Echo. I'm here to answer your questions about Prabhat." },
+    pitch: 1.0, rate: 1.0, greeting: "Hello. I'm Echo. I'm here to answer your questions about Prabhat." },
   { id: 'orion', name: 'Orion', tagline: 'Young & Enthused', color: '#4CAF50',
-    pitch: 1.08, rate: 1.05, greeting: "What's up! Orion here. Let's talk about Prabhat's projects!" },
+    pitch: 1.1, rate: 1.1, greeting: "What's up! Orion here. Let's talk about Prabhat's projects!" },
   { id: 'luna', name: 'Luna', tagline: 'Warm & Helpful', color: '#FFD700',
-    pitch: 1.05, rate: 1.0, greeting: "Hi, I'm Luna. I can help you in any language you prefer. What's on your mind?" }
+    pitch: 1.15, rate: 0.95, greeting: "Hi, I'm Luna. I can help you in any language you prefer. What's on your mind?" }
 ];
 
 interface VoiceAgentProps {
@@ -41,9 +41,18 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   const recognitionRef = useRef<any>(null);
   const selectedAgentRef = useRef(VOICE_AGENTS[0]);
   const isComponentMounted = useRef(true);
+  const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
     isComponentMounted.current = true;
+    
+    const loadVoices = () => {
+      voicesRef.current = window.speechSynthesis.getVoices();
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
     return () => {
       isComponentMounted.current = false;
       window.speechSynthesis.cancel();
@@ -72,7 +81,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   };
 
   const getBestVoice = useCallback((agent: typeof VOICE_AGENTS[0]) => {
-    const voices = window.speechSynthesis.getVoices();
+    const voices = voicesRef.current.length > 0 ? voicesRef.current : window.speechSynthesis.getVoices();
     const priorityMap: Record<string, string[]> = {
       quantum: ['Google UK English Male', 'Microsoft George', 'Daniel', 'Alex'],
       nova:    ['Google US English Female', 'Microsoft Zira', 'Samantha', 'Victoria'],
@@ -92,6 +101,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   }, []);
 
   const speakNaturally = useCallback((text: string, agent?: typeof VOICE_AGENTS[0], onEnd?: () => void) => {
+    console.log('[VoiceAgent] Speaking:', text);
     window.speechSynthesis.cancel();
     
     if (!text.trim()) {
@@ -113,6 +123,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     const speakNext = () => {
       if (!isComponentMounted.current) return;
       if (index >= sentences.length) {
+        console.log('[VoiceAgent] Finished speaking');
         onEnd?.();
         return;
       }
@@ -123,6 +134,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       
       if (voice) utterance.voice = voice;
       
+      // Use wider variance for more distinct sound
       utterance.pitch = currentAgent.pitch + (Math.random() * 0.04 - 0.02);
       utterance.rate = currentAgent.rate + (Math.random() * 0.04 - 0.02);
       utterance.volume = 1;
@@ -152,6 +164,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   }, [getBestVoice]);
 
   const startListening = useCallback(() => {
+    console.log('[VoiceAgent] Starting listening...');
     if (!isComponentMounted.current) return;
     
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -185,6 +198,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       setTranscript(current);
       
       if (event.results[event.results.length - 1].isFinal) {
+        console.log('[VoiceAgent] Final result:', current);
         handleUserInput(current);
       }
     };
@@ -192,9 +206,10 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     recognition.onerror = (event: any) => {
       console.log('[VoiceAgent] Recognition error:', event.error);
       if (isComponentMounted.current) {
-        setState('idle');
         if (event.error === 'no-speech') {
-          // If no speech, just go back to idle silently
+          setState('idle');
+        } else {
+          setState('idle');
         }
       }
     };
@@ -216,12 +231,14 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   const handleUserInput = async (input: string) => {
     if (!input.trim() || !isComponentMounted.current) return;
     
+    console.log('[VoiceAgent] Processing input...');
     setState('thinking');
     setLastExchange(prev => ({ ...prev, user: input }));
 
     try {
       const result = await getVoiceAIResponse(input, conversationHistory);
       if (isComponentMounted.current && result.success && result.answer) {
+        console.log('[VoiceAgent] AI Response received');
         setLastExchange(prev => ({ ...prev, ai: result.answer as string }));
         onAddMessage(input, result.answer as string);
         speakNaturally(result.answer as string, undefined, () => {
@@ -231,9 +248,11 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
           }
         });
       } else {
+        console.error('[VoiceAgent] AI call failed:', result.message);
         if (isComponentMounted.current) setState('idle');
       }
     } catch (err) {
+      console.error('[VoiceAgent] Fatal error:', err);
       if (isComponentMounted.current) setState('idle');
     }
   };
@@ -284,18 +303,18 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
 
           {!sessionStarted ? (
             <div className="flex flex-col items-center gap-8 text-center px-6">
-              <div className="w-32 h-32 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary animate-pulse">
-                <AudioWaveform size={64} className="text-primary" />
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-primary/20 flex items-center justify-center border-2 border-primary animate-pulse">
+                <AudioWaveform size={48} className="text-primary md:w-16 md:h-16" />
               </div>
               <div>
-                <h2 className="text-3xl font-bold font-headline mb-4">Voice Mode</h2>
-                <p className="text-gray-400 max-w-sm mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold font-headline mb-4">Voice Mode</h2>
+                <p className="text-gray-400 max-w-sm mb-8 text-sm md:text-base">
                   Talk naturally in any language to QuantumAI about Prabhat's skills, experience, and projects.
                 </p>
                 <Button 
                   size="lg" 
                   onClick={startSession}
-                  className="rounded-full px-12 py-6 text-lg font-bold gap-3 shadow-xl shadow-primary/20"
+                  className="rounded-full px-8 py-5 md:px-12 md:py-6 text-base md:text-lg font-bold gap-3 shadow-xl shadow-primary/20"
                 >
                   <Power size={20} />
                   Start Conversation
@@ -304,7 +323,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
             </div>
           ) : (
             <>
-              <div className="flex flex-col items-center justify-center gap-8 mb-12">
+              <div className="flex flex-col items-center justify-center gap-6 md:gap-8 mb-8 md:mb-12">
                 <div className="relative">
                   <AnimatePresence>
                     {state === 'listening' && (
@@ -326,7 +345,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
                   </AnimatePresence>
 
                   <div 
-                    className={`relative w-48 h-48 rounded-full shadow-2xl transition-all duration-500 overflow-hidden ${
+                    className={`relative w-32 h-32 md:w-48 md:h-48 rounded-full shadow-2xl transition-all duration-500 overflow-hidden ${
                       state === 'listening' ? 'scale-110 shadow-blue-500/50' :
                       state === 'thinking' ? 'shadow-purple-500/50' :
                       state === 'speaking' ? 'shadow-cyan-400/50 scale-105' :
@@ -351,70 +370,70 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
                     key={state}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-3xl font-bold font-headline mb-2"
+                    className="text-xl md:text-3xl font-bold font-headline mb-2"
                   >
                     {state === 'listening' ? 'Listening...' : 
                      state === 'thinking' ? 'Thinking...' : 
                      state === 'speaking' ? 'Speaking...' : 'Ready to chat'}
                   </motion.h2>
-                  <p className="text-sm text-gray-400 line-clamp-2 min-h-[2.5rem]">
+                  <p className="text-xs md:text-sm text-gray-400 line-clamp-2 min-h-[2rem] md:min-h-[2.5rem]">
                     {transcript || (state === 'speaking' ? lastExchange.ai : state === 'idle' ? 'Tap the mic to talk.' : '')}
                   </p>
                 </div>
               </div>
 
-              <div className="w-full overflow-x-auto no-scrollbar py-4 px-6 mb-8 flex justify-center">
-                <div className="flex gap-4 min-w-max">
+              <div className="w-full overflow-x-auto no-scrollbar py-4 px-6 mb-6 md:mb-8 flex justify-center">
+                <div className="flex gap-3 md:gap-4 min-w-max">
                   {VOICE_AGENTS.map((agent) => (
                     <motion.div
                       key={agent.id}
                       whileHover={{ y: -5 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleVoiceChange(agent)}
-                      className={`relative p-4 rounded-2xl bg-white/5 border-2 transition-all cursor-pointer w-36 text-center ${
+                      className={`relative p-3 md:p-4 rounded-xl md:rounded-2xl bg-white/5 border-2 transition-all cursor-pointer w-28 md:w-36 text-center ${
                         selectedAgent.id === agent.id ? 'border-primary shadow-[0_0_15px_rgba(74,144,217,0.3)]' : 'border-transparent'
                       }`}
                     >
                       <div 
-                        className="w-10 h-10 rounded-full mx-auto mb-3 flex items-center justify-center"
+                        className="w-8 h-8 md:w-10 md:h-10 rounded-full mx-auto mb-2 md:mb-3 flex items-center justify-center"
                         style={{ backgroundColor: agent.color }}
                       >
-                        <Volume2 size={18} />
+                        <Volume2 size={16} className="md:w-[18px] md:h-[18px]" />
                       </div>
-                      <h3 className="font-bold text-sm mb-1">{agent.name}</h3>
-                      <p className="text-[10px] text-gray-400 mb-3">{agent.tagline}</p>
+                      <h3 className="font-bold text-xs md:text-sm mb-1">{agent.name}</h3>
+                      <p className="text-[9px] md:text-[10px] text-gray-400 mb-2 md:mb-3">{agent.tagline}</p>
                       <Button 
                         size="sm" 
                         variant="ghost" 
-                        className="h-7 w-7 p-0 rounded-full bg-white/10 hover:bg-white/20"
+                        className="h-6 w-6 md:h-7 md:w-7 p-0 rounded-full bg-white/10 hover:bg-white/20"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleVoiceChange(agent);
-                          speakNaturally(agent.greeting);
+                          speakNaturally(agent.greeting, agent);
                         }}
                       >
-                        <Play size={12} fill="currentColor" />
+                        <Play size={10} className="md:w-3 md:h-3" fill="currentColor" />
                       </Button>
                     </motion.div>
                   ))}
                 </div>
               </div>
 
-              <div className="flex flex-col items-center gap-6">
+              <div className="flex flex-col items-center gap-4 md:gap-6 pb-6">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={toggleMic}
-                  className={`w-20 h-20 rounded-full flex items-center justify-center shadow-2xl transition-colors ${
+                  className={`w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-2xl transition-colors ${
                     state === 'listening' ? 'bg-red-500' : 'bg-white text-black'
                   }`}
                 >
-                  {state === 'listening' ? <X size={36} /> : <Mic size={36} />}
+                  {state === 'listening' ? <X size={28} className="md:w-9 md:h-9" /> : <Mic size={28} className="md:w-9 md:h-9" />}
                 </motion.button>
                 
                 <button 
                   onClick={handleClose}
-                  className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+                  className="text-gray-400 hover:text-white transition-colors text-xs md:text-sm font-medium"
                 >
                   Exit Session
                 </button>
