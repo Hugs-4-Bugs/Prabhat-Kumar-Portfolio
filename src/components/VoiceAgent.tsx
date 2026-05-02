@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -134,7 +133,6 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       
       if (voice) utterance.voice = voice;
       
-      // Use wider variance for more distinct sound
       utterance.pitch = currentAgent.pitch + (Math.random() * 0.04 - 0.02);
       utterance.rate = currentAgent.rate + (Math.random() * 0.04 - 0.02);
       utterance.volume = 1;
@@ -206,11 +204,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     recognition.onerror = (event: any) => {
       console.log('[VoiceAgent] Recognition error:', event.error);
       if (isComponentMounted.current) {
-        if (event.error === 'no-speech') {
-          setState('idle');
-        } else {
-          setState('idle');
-        }
+        setState('idle');
       }
     };
 

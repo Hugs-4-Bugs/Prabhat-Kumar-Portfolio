@@ -80,7 +80,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   }, [isVisible]);
 
   useEffect(() => {
-    localStorage.setItem('ai-search-conversation', JSON.stringify(conversation));
+    localStorage.setItem(' ai-search-conversation', JSON.stringify(conversation));
   }, [conversation]);
 
   const stopAudio = useCallback(() => {
@@ -481,8 +481,8 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                                   )
                                                 `,
                                                 boxShadow: `
-                                                  0 4px 20px rgba(120, 119, 198, 0.5),
-                                                  0 2px 10px rgba(255, 119, 198, 0.4),
+                                                  0 4px 20px rgba(120, 119, 198, 0.6),
+                                                  0 2px 10px rgba(255, 119, 198, 0.5),
                                                   0 0 0 1px rgba(255, 255, 255, 0.1)
                                                 `
                                               }}

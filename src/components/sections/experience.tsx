@@ -128,18 +128,10 @@ export function Experience() {
       update() {
         this.y -= this.speed;
         this.pulsePhase += 0.02;
-        
-        // Cinematic sway
         this.x += Math.sin(this.pulsePhase) * 0.1;
-        
-        // Add trail point
         this.trail.push({x: this.x, y: this.y, opacity: this.opacity});
         if (this.trail.length > 5) this.trail.shift();
-        
-        // Fade trail
         this.trail.forEach(point => point.opacity *= 0.8);
-
-        // Reset when off screen
         if (this.y < -10) {
           this.y = canvas.height + 10;
           this.x = Math.random() * canvas.width;
@@ -148,11 +140,8 @@ export function Experience() {
 
       draw() {
         const pulse = Math.sin(this.pulsePhase) * 0.3 + 0.7;
-        
-        // Draw trail
         ctx!.strokeStyle = theme === 'dark' ? 'rgba(139, 92, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)';
         ctx!.lineWidth = 0.5;
-        
         if (this.trail.length > 1) {
           ctx!.beginPath();
           ctx!.moveTo(this.trail[0].x, this.trail[0].y);
@@ -162,22 +151,14 @@ export function Experience() {
           }
           ctx!.stroke();
         }
-
-        // Draw particle
         ctx!.globalAlpha = this.opacity * pulse;
-        ctx!.fillStyle = theme === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(59, 130, 246, 0.6)';
-        
-        // Cinematic lens flare effect
         const gradient = ctx!.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
         gradient.addColorStop(0, theme === 'dark' ? 'rgba(139, 92, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)');
         gradient.addColorStop(1, 'transparent');
-        
         ctx!.fillStyle = gradient;
         ctx!.beginPath();
         ctx!.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
         ctx!.fill();
-
-        // Core particle
         ctx!.fillStyle = theme === 'dark' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(59, 130, 246, 0.8)';
         ctx!.beginPath();
         ctx!.arc(this.x, this.y, this.size, 0, Math.PI * 2);
@@ -196,13 +177,13 @@ export function Experience() {
     };
 
     const initParticles = () => {
+      particles.length = 0;
       for (let i = 0; i < particleCount; i++) {
         particles.push(new CinematicParticle());
       }
     };
 
     const animate = () => {
-      // Cinematic dark gradient background
       const gradient = ctx!.createLinearGradient(0, 0, canvas.width, canvas.height);
       if (theme === 'dark') {
         gradient.addColorStop(0, 'rgba(10, 5, 20, 0.8)');
@@ -211,16 +192,12 @@ export function Experience() {
         gradient.addColorStop(0, 'rgba(240, 245, 255, 0.9)');
         gradient.addColorStop(1, 'rgba(230, 235, 250, 0.7)');
       }
-      
       ctx!.fillStyle = gradient;
       ctx!.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Update and draw particles
       particles.forEach(particle => {
         particle.update();
         particle.draw();
       });
-
       animationFrame = requestAnimationFrame(animate);
     };
 
@@ -230,12 +207,10 @@ export function Experience() {
 
     const handleResize = () => {
       resizeCanvas();
-      particles.length = 0;
       initParticles();
     };
 
     window.addEventListener('resize', handleResize);
-
     return () => {
       cancelAnimationFrame(animationFrame);
       window.removeEventListener('resize', handleResize);
@@ -247,13 +222,8 @@ export function Experience() {
     if (!sectionRef.current || !timelineRef.current) return;
 
     const ctx = gsap.context(() => {
-      // Cinematic section entrance
       gsap.fromTo(sectionRef.current, 
-        { 
-          opacity: 0,
-          scale: 0.95,
-          filter: "blur(10px)"
-        },
+        { opacity: 0, scale: 0.95, filter: "blur(10px)" },
         {
           opacity: 1,
           scale: 1,
@@ -269,13 +239,8 @@ export function Experience() {
         }
       );
 
-      // Cinematic title animation
       gsap.fromTo(".cinematic-title", 
-        {
-          opacity: 0,
-          y: 100,
-          rotationX: 45
-        },
+        { opacity: 0, y: 100, rotationX: 45 },
         {
           opacity: 1,
           y: 0,
@@ -291,12 +256,8 @@ export function Experience() {
         }
       );
 
-      // Cinematic timeline line drawing
       gsap.fromTo(".timeline-line", 
-        {
-          scaleY: 0,
-          transformOrigin: "top"
-        },
+        { scaleY: 0, transformOrigin: "top" },
         {
           scaleY: 1,
           duration: 2.5,
@@ -310,7 +271,6 @@ export function Experience() {
         }
       );
 
-      // Cinematic card sequence
       workExperiences.forEach((_, index) => {
         const card = cardsRef.current[index];
         if (!card) return;
@@ -343,51 +303,14 @@ export function Experience() {
           }
         );
       });
-
-      // Cinematic metric buttons animation
-      gsap.fromTo(".cinematic-metric", 
-        {
-          opacity: 0,
-          scale: 0,
-          y: 50
-        },
-        {
-          opacity: 1,
-          scale: 1,
-          y: 0,
-          duration: 0.8,
-          stagger: 0.1,
-          ease: "back.out(2)",
-          scrollTrigger: {
-            trigger: ".timeline-item",
-            start: "top 80%",
-            end: "bottom 50%",
-            toggleActions: "play none none reverse"
-          }
-        }
-      );
-
-      // Cinematic continuous floating
-      gsap.to(".cinematic-card", {
-        y: -10,
-        rotationZ: 0.5,
-        duration: 4,
-        yoyo: true,
-        repeat: -1,
-        ease: "sine.inOut",
-        stagger: 0.2
-      });
-
     }, sectionRef);
 
     return () => ctx.revert();
   }, []);
 
-  // Cinematic card hover effects
   const handleCardHover = (index: number) => {
     const card = cardsRef.current[index];
     if (!card) return;
-
     gsap.to(card, {
       duration: 0.6,
       scale: 1.05,
@@ -401,7 +324,6 @@ export function Experience() {
   const handleCardLeave = (index: number) => {
     const card = cardsRef.current[index];
     if (!card) return;
-
     gsap.to(card, {
       duration: 0.8,
       scale: 1,
@@ -416,19 +338,9 @@ export function Experience() {
     <Section 
       id="experience" 
       ref={sectionRef}
-      className="experience-section relative overflow-hidden min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900"
+      className="experience-section relative overflow-hidden min-h-screen"
     >
-      {/* Cinematic Background Canvas */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none"
-      />
-
-      {/* Cinematic Lens Flare */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
-
-      {/* Cinematic Title */}
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
       <div className="relative z-10">
         <SectionHeading className="cinematic-title text-center mb-20">
           <span className="bg-gradient-to-r from-cyan-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent animate-gradient-x">
@@ -437,128 +349,54 @@ export function Experience() {
         </SectionHeading>
       </div>
 
-      {/* Responsive Cinematic Timeline */}
       <div ref={timelineRef} className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative">
-          {/* Responsive Timeline Line */}
           <div className="timeline-line absolute left-1/2 transform -translate-x-1/2 w-0.5 sm:w-1 h-full bg-gradient-to-b from-cyan-400/50 via-purple-500/80 to-cyan-400/50">
             <div className="absolute inset-0 bg-gradient-to-b from-cyan-400/20 to-purple-500/20 blur-sm" />
             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-2 h-2 sm:w-3 sm:h-3 bg-cyan-400 rounded-full animate-ping" />
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-cyan-400 rounded-full shadow-lg" />
           </div>
 
-          {/* Responsive Cards Container */}
           <div className="space-y-16 sm:space-y-20 lg:space-y-24 py-12 sm:py-16 lg:py-20">
             {workExperiences.map((experience, index) => {
               const isLeft = index % 2 === 0;
-              
               return (
                 <div
                   key={index}
                   ref={el => cardsRef.current[index] = el}
-                  className={`cinematic-card group relative w-full ${
-                    // Responsive width classes
-                    "lg:w-[90%] xl:w-[80%] 2xl:w-[70%]"
-                  } ${
-                    isLeft 
-                      ? "mr-auto ml-0 pr-8 sm:pr-12 lg:pr-16 xl:pr-24" 
-                      : "ml-auto mr-0 pl-8 sm:pl-12 lg:pl-16 xl:pl-24"
-                  }`}
+                  className={`cinematic-card group relative w-full lg:w-[90%] xl:w-[80%] ${isLeft ? "mr-auto ml-0 pr-8 lg:pr-24" : "ml-auto mr-0 pl-8 lg:pl-24"}`}
                   onMouseEnter={() => handleCardHover(index)}
                   onMouseLeave={() => handleCardLeave(index)}
                 >
-                  {/* Responsive Cinematic Card */}
-                  <div className="relative bg-black/40 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-cyan-400/20 shadow-2xl overflow-hidden transform-style-3d transition-all duration-700 w-full">
-                    {/* Animated Border Glow */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/10 via-purple-500/10 to-cyan-400/10 rounded-2xl sm:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
-                    {/* Responsive Card Content */}
+                  <div className="relative bg-black/40 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-cyan-400/20 shadow-2xl overflow-hidden transform-style-3d transition-all duration-700">
                     <div className="relative z-10 p-4 sm:p-6 lg:p-8">
-                      {/* Header */}
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-1 sm:mb-2 group-hover:text-cyan-300 transition-colors duration-500 truncate">
+                          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-1 group-hover:text-cyan-300 transition-colors truncate">
                             {experience.role}
                           </h3>
-                          <p className="text-base sm:text-lg lg:text-lg font-semibold text-cyan-300 truncate">
+                          <p className="text-base sm:text-lg font-semibold text-cyan-300 truncate">
                             {experience.company}
                           </p>
                         </div>
-                        <span className="text-xs sm:text-sm text-cyan-200 bg-cyan-500/20 px-3 sm:px-4 py-1 sm:py-2 rounded-full border border-cyan-400/30 backdrop-blur-sm whitespace-nowrap flex-shrink-0 mt-2 sm:mt-0">
+                        <span className="text-xs sm:text-sm text-cyan-200 bg-cyan-500/20 px-3 py-1 rounded-full border border-cyan-400/30 whitespace-nowrap">
                           {experience.duration}
                         </span>
                       </div>
-
-                      {/* Responsive Experience Details */}
-                      <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+                      <div className="space-y-2 mb-4 sm:mb-6">
                         {experience.details.map((detail, detailIndex) => (
-                          <p 
-                            key={detailIndex} 
-                            className="text-gray-300 leading-relaxed text-xs sm:text-sm border-l-2 border-cyan-400/50 pl-3 sm:pl-4 py-1 sm:py-1"
-                          >
+                          <p key={detailIndex} className="text-gray-300 text-xs sm:text-sm border-l-2 border-cyan-400/50 pl-3 py-1">
                             {detail}
                           </p>
                         ))}
                       </div>
-
-                      {/* Responsive Cinematic Metrics */}
-                      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
-                        {experience.metrics.map((metric, metricIndex) => (
-                          <button
-                            key={metricIndex}
-                            className="cinematic-metric group/metric relative bg-gradient-to-br from-cyan-500/10 to-purple-500/10 hover:from-cyan-500/20 hover:to-purple-500/20 border border-cyan-400/30 hover:border-cyan-400/60 rounded-lg sm:rounded-xl px-2 sm:px-4 py-2 sm:py-3 backdrop-blur-sm transition-all duration-500 transform-style-3d hover:scale-105 hover:rotate-1 w-full sm:w-auto"
-                          >
-                            <div className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start">
-                              <span className="text-base sm:text-xl transform-gpu">{metric.icon}</span>
-                              <div className="text-left hidden sm:block">
-                                <div className="text-xs font-medium text-cyan-200/80 transform-gpu">
-                                  {metric.label}
-                                </div>
-                                <div className="text-sm font-bold text-cyan-300 transform-gpu">
-                                  {metric.value}
-                                </div>
-                              </div>
-                              <div className="text-center sm:hidden">
-                                <div className="text-[10px] font-medium text-cyan-200/80">
-                                  {metric.label.split(' ')[0]}
-                                </div>
-                                <div className="text-xs font-bold text-cyan-300">
-                                  {metric.value}
-                                </div>
-                              </div>
-                            </div>
-                            {/* Hover Glow */}
-                            <div className="absolute inset-0 rounded-lg sm:rounded-xl bg-gradient-to-r from-transparent via-cyan-400/5 to-transparent opacity-0 group-hover/metric:opacity-100 transition-opacity duration-300" />
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Responsive Tech Stack */}
                       <div className="flex flex-wrap gap-1 sm:gap-2">
                         {experience.tech.map((skill, skillIndex) => (
-                          <span
-                            key={skillIndex}
-                            className="px-2 sm:px-3 py-1 sm:py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/30 hover:border-cyan-400/60 text-cyan-200 rounded-md sm:rounded-lg text-xs sm:text-sm backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:-rotate-1 cursor-pointer whitespace-nowrap"
-                          >
+                          <span key={skillIndex} className="px-2 py-1 bg-cyan-500/10 border border-cyan-400/30 text-cyan-200 rounded-md text-xs sm:text-sm backdrop-blur-sm">
                             {skill}
                           </span>
                         ))}
                       </div>
                     </div>
-
-                    {/* Responsive Cinematic Corner Accents */}
-                    <div className="absolute top-0 left-0 w-3 h-3 sm:w-4 sm:h-4 border-t-2 border-l-2 border-cyan-400/50 rounded-tl-lg" />
-                    <div className="absolute top-0 right-0 w-3 h-3 sm:w-4 sm:h-4 border-t-2 border-r-2 border-cyan-400/50 rounded-tr-lg" />
-                    <div className="absolute bottom-0 left-0 w-3 h-3 sm:w-4 sm:h-4 border-b-2 border-l-2 border-cyan-400/50 rounded-bl-lg" />
-                    <div className="absolute bottom-0 right-0 w-3 h-3 sm:w-4 sm:h-4 border-b-2 border-r-2 border-cyan-400/50 rounded-br-lg" />
-                  </div>
-
-                  {/* Responsive Cinematic Connection Node */}
-                  <div className={`absolute top-6 sm:top-8 w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-gradient-to-br from-cyan-400 to-purple-500 border-2 border-black shadow-2xl transform group-hover:scale-125 sm:group-hover:scale-150 group-hover:rotate-180 transition-all duration-700 flex items-center justify-center
-                    ${isLeft ? 'right-0 translate-x-1/2' : 'left-0 -translate-x-1/2'}`}
-                  >
-                    <div className="w-1 h-1 sm:w-2 sm:h-2 bg-black rounded-full" />
-                    <div className="absolute inset-0 rounded-full bg-cyan-400/30 animate-ping" />
                   </div>
                 </div>
               );
@@ -567,7 +405,6 @@ export function Experience() {
         </div>
       </div>
 
-      {/* Cinematic Floating Elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {floatingParticles.map((p, i) => (
           <div
@@ -585,86 +422,14 @@ export function Experience() {
 
       <style jsx>{`
         .experience-section {
-          background: linear-gradient(
-            135deg,
-            hsl(220, 60%, 5%) 0%,
-            hsl(270, 60%, 15%) 50%,
-            hsl(220, 60%, 5%) 100%
-          );
+          background: linear-gradient(135deg, hsl(220, 60%, 5%) 0%, hsl(270, 60%, 15%) 50%, hsl(220, 60%, 5%) 100%);
         }
-
         @keyframes float-cinematic {
-          0%, 100% {
-            transform: translateY(0px) translateX(0px) rotate(0deg);
-            opacity: 0.3;
-          }
-          25% {
-            transform: translateY(-20px) translateX(10px) rotate(90deg);
-            opacity: 0.6;
-          }
-          50% {
-            transform: translateY(-40px) translateX(-5px) rotate(180deg);
-            opacity: 0.8;
-          }
-          75% {
-            transform: translateY(-20px) translateX(-10px) rotate(270deg);
-            opacity: 0.6;
-          }
+          0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
+          50% { transform: translateY(-40px) translateX(-5px); opacity: 0.8; }
         }
-
         .animate-float-cinematic {
           animation: float-cinematic 15s ease-in-out infinite;
-        }
-
-        @keyframes gradient-x {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-
-        .animate-gradient-x {
-          background-size: 200% 200%;
-          animation: gradient-x 3s ease infinite;
-        }
-
-        .transform-style-3d {
-          transform-style: preserve-3d;
-        }
-
-        /* Responsive container queries for extra large screens */
-        @media (min-width: 1536px) {
-          .experience-section {
-            padding-left: 2rem;
-            padding-right: 2rem;
-          }
-        }
-
-        @media (min-width: 1920px) {
-          .experience-section {
-            padding-left: 4rem;
-            padding-right: 4rem;
-          }
-        }
-
-        /* Cinematic scrollbar */
-        ::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-          background: rgba(139, 92, 246, 0.1);
-        }
-
-        ::-webkit-scrollbar-thumb {
-          background: linear-gradient(45deg, #06b6d4, #8b5cf6);
-          border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(45deg, #0891b2, #7c3aed);
         }
       `}</style>
     </Section>
