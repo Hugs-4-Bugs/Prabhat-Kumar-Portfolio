@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -15,10 +16,10 @@ const VOICE_AGENTS = [
     pitch: 0.78, rate: 0.85, greeting: "Greetings. I am Sage. How may I assist you today?" },
   { id: 'aria', name: 'Aria', tagline: 'Energetic & Upbeat', color: '#FF6B35',
     pitch: 1.2, rate: 1.08, greeting: "Hey hey! Aria here! Super ready to help. Go ahead!" },
-  { id: 'echo', name: 'Echo', tagline: 'Neutral & Clear', color: '#00BCD4',
-    pitch: 1.0, rate: 0.97, greeting: "Hello. I'm Echo. I'm here to answer your questions." },
-  { id: 'orion', name: 'Orion', tagline: 'Young & Enthusiastic', color: '#4CAF50',
-    pitch: 1.08, rate: 1.05, greeting: "What's up! I'm Orion. Let's talk about Prabhat!" }
+  { id: 'heera', name: 'Heera', tagline: 'Local & Warm', color: '#FFD700',
+    pitch: 1.05, rate: 1.0, greeting: "Namaste! I'm Heera. I can help you in Hindi, English, or any language you like." },
+  { id: 'ravi', name: 'Ravi', tagline: 'Clear & Direct', color: '#8B4513',
+    pitch: 0.95, rate: 1.05, greeting: "Hello! Ravi here. Let's talk about Prabhat's journey and projects." }
 ];
 
 interface VoiceAgentProps {
@@ -37,6 +38,16 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   
   const recognitionRef = useRef<any>(null);
   const selectedAgentRef = useRef(VOICE_AGENTS[0]);
+  const isComponentMounted = useRef(true);
+
+  useEffect(() => {
+    isComponentMounted.current = true;
+    return () => {
+      isComponentMounted.current = false;
+      window.speechSynthesis.cancel();
+      if (recognitionRef.current) recognitionRef.current.stop();
+    };
+  }, []);
 
   // Sync ref with state for speech loop to catch mid-conversation changes
   useEffect(() => {
@@ -56,7 +67,6 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   }, []);
 
   const handleVoiceChange = (agent: typeof VOICE_AGENTS[0]) => {
-    console.log('[VoiceAgent] Changing voice to:', agent.name);
     setSelectedAgent(agent);
     localStorage.setItem('quantumai_selected_voice', agent.id);
   };
@@ -68,8 +78,8 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       nova:    ['Google US English Female', 'Microsoft Zira', 'Samantha', 'Victoria'],
       sage:    ['Microsoft David', 'Google UK English Male', 'Daniel', 'Arthur'],
       aria:    ['Google US English Female', 'Microsoft Cortana', 'Victoria', 'Karen'],
-      echo:    ['Karen', 'Moira', 'Google US English', 'Microsoft Eva'],
-      orion:   ['Microsoft Mark', 'Google US English Male', 'Tom', 'Fred']
+      heera:   ['Google Hindi', 'Microsoft Heera', 'Google UK English Female', 'Aditi'],
+      ravi:    ['Microsoft Ravi', 'Google UK English Male', 'Google US English Male', 'Arjun']
     };
     
     const priorities = priorityMap[agent.id];
@@ -89,6 +99,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     }
     
     const cleaned = text
+      .replace(/Prabhat/g, 'Pra-bhaat')
       .replace(/\*\*/g, '').replace(/\*/g, '').replace(/#{1,6}\s/g, '')
       .replace(/`[^`]*`/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
       .replace(/AWS/g, 'A W S').replace(/API/g, 'A P I')
@@ -99,26 +110,31 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     let index = 0;
     
     const speakNext = () => {
+      if (!isComponentMounted.current) return;
       if (index >= sentences.length) {
         onEnd?.();
         return;
       }
       
       const utterance = new SpeechSynthesisUtterance(sentences[index].trim());
-      // Use the REF to ensure we pick up mid-conversation voice changes
       const currentAgent = selectedAgentRef.current;
       const voice = getBestVoice(currentAgent);
       
       if (voice) utterance.voice = voice;
       
-      utterance.pitch = currentAgent.pitch + (Math.random() * 0.06 - 0.03);
+      utterance.pitch = currentAgent.pitch + (Math.random() * 0.04 - 0.02);
       utterance.rate = currentAgent.rate + (Math.random() * 0.04 - 0.02);
       utterance.volume = 1;
       
-      utterance.onstart = () => setState('speaking');
+      utterance.onstart = () => {
+        if (isComponentMounted.current) setState('speaking');
+      };
+      
       utterance.onend = () => {
         index++;
-        setTimeout(speakNext, 250 + Math.random() * 150);
+        if (isComponentMounted.current) {
+          setTimeout(speakNext, 300 + Math.random() * 200);
+        }
       };
       
       utterance.onerror = (e) => {
@@ -135,6 +151,8 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   }, [getBestVoice]);
 
   const startListening = useCallback(() => {
+    if (!isComponentMounted.current) return;
+    
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
@@ -152,8 +170,10 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     recognition.lang = 'en-US';
     
     recognition.onstart = () => {
-      setState('listening');
-      setTranscript('');
+      if (isComponentMounted.current) {
+        setState('listening');
+        setTranscript('');
+      }
     };
 
     recognition.onresult = (event: any) => {
@@ -169,51 +189,61 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     };
 
     recognition.onerror = (event: any) => {
-      if (event.error === 'no-speech') {
+      console.log('[VoiceAgent] Recognition error:', event.error);
+      if (isComponentMounted.current) {
         setState('idle');
-      } else {
-        setState('idle');
+        if (event.error === 'no-speech') {
+          // If no speech, just go back to idle silently
+        }
       }
     };
 
     recognition.onend = () => {
-      if (state === 'listening') setState('idle');
+      if (isComponentMounted.current && state === 'listening') {
+        setState('idle');
+      }
     };
 
     try {
       recognition.start();
       recognitionRef.current = recognition;
-    } catch(e) {}
+    } catch(e) {
+      console.error('[VoiceAgent] Start error:', e);
+    }
   }, [state]);
 
   const handleUserInput = async (input: string) => {
-    if (!input.trim()) return;
+    if (!input.trim() || !isComponentMounted.current) return;
     
     setState('thinking');
     setLastExchange(prev => ({ ...prev, user: input }));
 
     try {
       const result = await getVoiceAIResponse(input, conversationHistory);
-      if (result.success && result.answer) {
+      if (isComponentMounted.current && result.success && result.answer) {
         setLastExchange(prev => ({ ...prev, ai: result.answer as string }));
         onAddMessage(input, result.answer as string);
         speakNaturally(result.answer as string, undefined, () => {
-          setState('idle');
-          setTimeout(() => startListening(), 500);
+          if (isComponentMounted.current) {
+            setState('idle');
+            setTimeout(() => startListening(), 600);
+          }
         });
       } else {
-        setState('idle');
+        if (isComponentMounted.current) setState('idle');
       }
     } catch (err) {
-      setState('idle');
+      if (isComponentMounted.current) setState('idle');
     }
   };
 
   const startSession = () => {
     setSessionStarted(true);
     speakNaturally(selectedAgent.greeting, undefined, () => {
-      setState('idle');
-      startListening();
+      if (isComponentMounted.current) {
+        setState('idle');
+        startListening();
+      }
     });
   };
 
@@ -231,7 +261,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
 
   const handleClose = () => {
     window.speechSynthesis.cancel();
-    recognitionRef.current?.stop();
+    if (recognitionRef.current) recognitionRef.current.stop();
     onClose();
   };
 
@@ -259,7 +289,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
               <div>
                 <h2 className="text-3xl font-bold font-headline mb-4">Voice Mode</h2>
                 <p className="text-gray-400 max-w-sm mb-8">
-                  Talk naturally to QuantumAI about Prabhat's skills, experience, and projects.
+                  Talk naturally in any language to QuantumAI about Prabhat's skills, experience, and projects.
                 </p>
                 <Button 
                   size="lg" 

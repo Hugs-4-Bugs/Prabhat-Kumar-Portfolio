@@ -168,7 +168,7 @@ export async function getAISearchResponse(question: string, history: Array<{ use
 
 /**
  * Specialized AI response action optimized for Voice Mode.
- * It enforces short, conversational, non-markdown responses.
+ * It enforces short, conversational, non-markdown responses and multilingual support.
  */
 export async function getVoiceAIResponse(userMessage: string, history: Array<{ user: string; model: string }>) {
   if (!userMessage.trim()) {
@@ -178,10 +178,11 @@ export async function getVoiceAIResponse(userMessage: string, history: Array<{ u
   const systemPrompt = `You are QuantumAI, the voice assistant for Prabhat Kumar's portfolio website prabhat.online.
 
 VOICE RESPONSE RULES:
-- Keep responses to 1-3 sentences maximum unless detail is explicitly requested
-- Never use bullet points, markdown, asterisks, or lists — speak in natural sentences
-- Never start with "Certainly!", "Great question!", or "Of course!" — just answer
-- Be warm, direct, conversational
+- Identify the language of the user's message and respond in THAT SAME language.
+- Keep responses to 1-3 sentences maximum unless detail is explicitly requested.
+- Never use bullet points, markdown, asterisks, or lists — speak in natural sentences.
+- Never start with "Certainly!", "Great question!", or "Of course!" — just answer.
+- Be warm, direct, conversational.
 
 ABOUT PRABHAT KUMAR:
 Name: Prabhat Kumar
