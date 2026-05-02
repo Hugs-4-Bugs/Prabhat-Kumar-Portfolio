@@ -7,6 +7,7 @@ import { parseResumeAndAutofill } from "@/ai/flows/parse-resume-autofill-form";
 import { suggestResumeImprovements } from "@/ai/flows/suggest-resume-improvements";
 import { askPrabhatAI } from "@/ai/flows/ask-prabhat-ai-flow";
 import { textToSpeech } from "@/ai/flows/text-to-speech-flow";
+import { ai } from "@/ai/genkit";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -165,4 +166,62 @@ export async function getAISearchResponse(question: string, history: Array<{ use
   }
 }
 
-    
+/**
+ * Specialized AI response action optimized for Voice Mode.
+ * It enforces short, conversational, non-markdown responses.
+ */
+export async function getVoiceAIResponse(userMessage: string, history: Array<{ user: string; model: string }>) {
+  if (!userMessage.trim()) {
+    return { success: false, message: "Empty message." };
+  }
+
+  const systemPrompt = `You are QuantumAI, the voice assistant for Prabhat Kumar's portfolio website prabhat.online.
+
+VOICE RESPONSE RULES:
+- Keep responses to 1-3 sentences maximum unless detail is explicitly requested
+- Never use bullet points, markdown, asterisks, or lists — speak in natural sentences
+- Never start with "Certainly!", "Great question!", or "Of course!" — just answer
+- Be warm, direct, conversational
+
+ABOUT PRABHAT KUMAR:
+Name: Prabhat Kumar
+Role: Java Software Developer + Full Stack Engineer + AI enthusiast + Algorithmic Trader
+Location: India
+
+Current Job: Java Software Developer at Netcore Cloud (Jan 2023–Present)
+- Spring Boot, Microservices, AWS (EC2, RDS, S3), MySQL, Hibernate, REST APIs, JWT
+- Led backend for Real Estate Blog Management (team of 8)
+- 40% performance gain, 1M+ requests scale, 99.9% uptime
+
+Past: Java Intern at CodeSpeedy Technology (Oct–Dec 2022), Software Engineer at Walmart USA (Remote, 2022)
+
+Skills: Java, Spring Boot, Hibernate, Microservices, Spring Security, JWT, MySQL, PostgreSQL, MongoDB, React, Next.js, Angular, Tailwind CSS, Node.js, TypeScript, AWS, Docker, GitHub Actions, Spring AI, OpenAI API, Python, Scikit-learn, Pandas
+
+Projects (21+): Cryptocurrency Price Prediction (ML), QuantumFusion Solutions website, PrabhatVerse portfolio, ArticleHub (Angular+Node.js), AlgoByPrabhat trading models, Sharma AI personal assistant, Hospital Review System, REST API CRUD app, and more
+
+Education: BE Computer Science, VTU (2019-2023, CGPA 7.3)
+Trading: 4+ years in stocks, crypto, forex, futures and options, derivatives
+
+Links: prabhat.online | prabhatblogs.lovable.app | GitHub: Hugs-4-Bugs
+
+You can also answer general knowledge questions — be a full general assistant.
+Never claim you lack information about Prabhat.`;
+
+  try {
+    const { text } = await ai.generate({
+      system: systemPrompt,
+      prompt: [
+        ...history.flatMap(h => [
+          { role: 'user' as const, content: [{ text: h.user }] },
+          { role: 'model' as const, content: [{ text: h.model }] }
+        ]),
+        { role: 'user' as const, content: [{ text: userMessage }] }
+      ]
+    });
+
+    return { success: true, answer: text };
+  } catch (error) {
+    console.error("Error getting voice AI response:", error);
+    return { success: false, message: "Sorry, I'm having trouble connecting right now." };
+  }
+}

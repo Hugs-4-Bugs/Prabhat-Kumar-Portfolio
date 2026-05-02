@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Balancer from "react-wrap-balancer";
-import { Sparkles, X, Search, Mic, MicOff, Keyboard, User, Trash2 } from "lucide-react";
+import { Sparkles, X, Search, Mic, MicOff, Keyboard, User, Trash2, AudioWaveform } from "lucide-react";
 import Lottie from "lottie-react";
 
 import { getAISearchResponse, getAIAudio } from "@/app/actions";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import listeningAnimation from "@/lib/listening-animation.json";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { VoiceAgent } from "@/components/VoiceAgent";
 
 interface Message {
   role: 'user' | 'model';
@@ -29,6 +31,8 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   const [conversation, setConversation] = useState<Message[]>([]);
   const [isPending, startTransition] = useTransition();
   const [isListening, setIsListening] = useState(false);
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -115,7 +119,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       console.warn("Speech Recognition not supported by this browser.");
       return;
@@ -124,18 +128,22 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     if (!recognitionRef.current) {
         const recognition = new SpeechRecognition();
         recognition.continuous = false;
-        recognition.interimResults = false;
+        recognition.interimResults = true;
         recognition.lang = 'en-US';
 
-        recognition.onresult = (event) => {
+        recognition.onresult = (event: any) => {
             const transcript = event.results[0][0].transcript;
             setQuery(transcript);
-            setIsListening(false);
+            if (event.results[0].isFinal) {
+               setIsListening(false);
+            }
         };
 
-        recognition.onerror = (event) => {
+        recognition.onerror = (event: any) => {
             console.error("Speech recognition error:", event.error);
-            toast({ title: 'Voice Error', description: `Could not recognize speech: ${event.error}`, variant: 'destructive'});
+            if (event.error !== 'no-speech') {
+              toast({ title: 'Voice Error', description: `Could not recognize speech: ${event.error}`, variant: 'destructive'});
+            }
             setIsListening(false);
         };
         
@@ -172,6 +180,14 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     onClose();
   }
 
+  const handleAddMessage = (user: string, model: string) => {
+    setConversation(prev => [
+      ...prev, 
+      { role: 'user', content: user },
+      { role: 'model', content: model }
+    ]);
+  };
+
   useEffect(() => {
     const overlay = overlayRef.current;
     if (overlay) {
@@ -191,6 +207,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   }, [conversation, isPending]);
 
   return (
+    <>
     <AnimatePresence>
         {isVisible && (
             <motion.div
@@ -253,6 +270,16 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                 </div>
 
                 <div className="absolute top-4 right-4 z-20 flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsVoiceMode(true)}
+                      className="backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20"
+                      data-cursor-hover
+                    >
+                      <AudioWaveform className="h-5 w-5" />
+                      <span className="sr-only">Open Voice Mode</span>
+                    </Button>
                     {conversation.length > 0 && (
                       <Button 
                         variant="ghost" 
@@ -707,8 +734,22 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                     </form>
 
                 </motion.div>
+
+                {/* Voice Agent Overlay */}
+                <VoiceAgent 
+                  isVisible={isVoiceMode} 
+                  onClose={() => setIsVoiceMode(false)}
+                  conversationHistory={conversation.reduce((acc: Array<{ user: string; model: string }>, message, index) => {
+                    if (message.role === 'user' && conversation[index + 1]?.role === 'model') {
+                      acc.push({ user: message.content, model: conversation[index + 1].content });
+                    }
+                    return acc;
+                  }, [])}
+                  onAddMessage={handleAddMessage}
+                />
             </motion.div>
         )}
     </AnimatePresence>
+    </>
   );
 }
