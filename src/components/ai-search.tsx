@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Balancer from "react-wrap-balancer";
-import { Sparkles, X, Search, Mic, MicOff, Keyboard, User, Trash2, AudioWaveform } from "lucide-react";
+import { Sparkles, X, Search, Mic, MicOff, User, Trash2, AudioWaveform, SendHorizontal } from "lucide-react";
 import Lottie from "lottie-react";
 
 import { getAISearchResponse, getAIAudio } from "@/app/actions";
@@ -232,6 +232,8 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
       scrollViewport.scrollTo({ top: scrollViewport.scrollHeight, behavior: 'smooth' });
     }
   }, [conversation, isPending]);
+
+  const canSubmit = !isPending && !isListening && query.trim().length > 0;
 
   return (
     <AnimatePresence>
@@ -666,14 +668,14 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                             boxShadow: `
                               inset 0 1px 0 rgba(255, 255, 255, 0.1),
                               0 8px 32px rgba(120, 119, 198, 0.3),
-                              0 4px 16px rgba(255, 119, 198, 0.2)
+                              0 4px 16px rgba(120, 119, 198, 0.2)
                             `
                           }}
                           whileFocus={{
                             boxShadow: `
                               inset 0 1px 0 rgba(255, 255, 255, 0.2),
                               0 12px 40px rgba(120, 119, 198, 0.5),
-                              0 6px 20px rgba(255, 119, 198, 0.4),
+                              0 6px 20px rgba(120, 119, 198, 0.4),
                               0 0 0 2px rgba(120, 219, 255, 0.3)
                             `
                           }}
@@ -727,30 +729,31 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                               </Button>
                             </motion.div>
                             <motion.div
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
+                              whileHover={canSubmit ? { scale: 1.1 } : {}}
+                              whileTap={canSubmit ? { scale: 0.95 } : {}}
                             >
                               <Button 
                                 type="submit" 
                                 size="icon" 
                                 variant="ghost" 
-                                disabled={isPending || isListening || !query.trim()}
+                                disabled={!canSubmit}
                                 className="rounded-full backdrop-blur-md border border-white/20"
                                 style={{
-                                  backgroundImage: !isPending && !isListening && query.trim() ? `
+                                  backgroundImage: canSubmit ? `
                                     radial-gradient(circle at 30% 30%, 
                                       rgba(120, 219, 255, 0.4) 0%, 
                                       rgba(255, 219, 120, 0.35) 50%, 
                                       rgba(120, 255, 187, 0.3) 100%
                                     )
                                   ` : 'none',
-                                  boxShadow: !isPending && !isListening && query.trim() ? `
+                                  boxShadow: canSubmit ? `
                                     0 4px 20px rgba(120, 219, 255, 0.5),
                                     0 2px 10px rgba(255, 219, 120, 0.4)
-                                  ` : 'none'
+                                  ` : 'none',
+                                  opacity: canSubmit ? 1 : 0.4
                                 }}
                               >
-                                <Keyboard className="w-5 h-5" />
+                                <SendHorizontal className="w-5 h-5" />
                               </Button>
                             </motion.div>
                         </div>
