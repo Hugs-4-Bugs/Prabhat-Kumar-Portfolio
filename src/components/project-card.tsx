@@ -1,214 +1,9 @@
-// // src/components/project-card.tsx
-// import Image from "next/image";
-// import Link from "next/link";
-// import { ExternalLink } from "lucide-react";
-
-// import type { Project } from "@/lib/types";
-// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Badge } from "@/components/ui/badge";
-// import { ScrollArea } from "@/components/ui/scroll-area";
-// import { Button } from "@/components/ui/button";
-
-// interface ProjectCardProps {
-//   project: Project;
-// }
-
-// export function ProjectCard({ project }: ProjectCardProps) {
-//   return (
-//     <Card className="group flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:border-primary/20 hover:-translate-y-2 dark:hover:shadow-primary/10">
-//        <CardHeader className="p-4">
-//          <div className="aspect-video w-full overflow-hidden rounded-md mb-4 border">
-//             <Image
-//                 src={project.image}
-//                 alt={project.name}
-//                 width={600}
-//                 height={400}
-//                 className="object-cover w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-105"
-//                 data-ai-hint={project.imageAiHint}
-//             />
-//         </div>
-//         <CardTitle className="text-xl font-headline">{project.name}</CardTitle>
-//       </CardHeader>
-//       <CardContent className="flex-grow flex flex-col p-4 pt-0">
-//         <ScrollArea className="h-24 pr-4 mb-4">
-//           <CardDescription className="text-sm">{project.description}</CardDescription>
-//         </ScrollArea>
-//         <div className="flex flex-wrap gap-2 mt-auto">
-//           {project.tags.slice(0, 4).map((tag) => (
-//             <Badge key={tag} variant="secondary" className="font-normal">{tag}</Badge>
-//           ))}
-//         </div>
-//       </CardContent>
-//       <CardFooter className="p-4">
-//         <Button asChild variant="outline" className="w-full" data-cursor-hover>
-//           <a href={project.link} target="_blank" rel="noopener noreferrer">
-//             Project Link
-//             <ExternalLink className="ml-2 h-4 w-4" />
-//           </a>
-//         </Button>
-//       </CardFooter>
-//     </Card>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-// import Image from "next/image";
-// import Link from "next/link";
-// import { ExternalLink } from "lucide-react";
-// import { useEffect, useRef } from "react";
-
-// import type { Project } from "@/lib/types";
-// import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Badge } from "@/components/ui/badge";
-// import { ScrollArea } from "@/components/ui/scroll-area";
-// import { Button } from "@/components/ui/button";
-
-// interface ProjectCardProps {
-//   project: Project;
-//   index: number;
-// }
-
-// export function ProjectCard({ project, index }: ProjectCardProps) {
-//   const cardRef = useRef<HTMLDivElement>(null);
-//   const swarmRef = useRef<HTMLDivElement>(null);
-
-//   // Quantum Tunnel Entry (Client-Side Only)
-//   useEffect(() => {
-//     if (typeof window === 'undefined') return; // SSR Safety
-
-//     if (!cardRef.current) return;
-//     cardRef.current.style.clipPath = 'polygon(50% 0%, 50% 0%, 50% 100%, 50% 100%)';
-//     setTimeout(() => {
-//       cardRef.current!.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';
-//       cardRef.current!.style.transition = 'clip-path 1s ease-out';
-//     }, 300 + index * 150);
-//   }, [index]);
-
-//   // Quantum Particle Swarm on Hover (Client-Side Only)
-//   useEffect(() => {
-//     if (typeof window === 'undefined') return; // SSR Safety
-
-//     if (!swarmRef.current) return;
-//     const particles = swarmRef.current.children;
-//     for (let i = 0; i < particles.length; i++) {
-//       const particle = particles[i] as HTMLElement;
-//       particle.style.animationDelay = `${i * 0.1}s`;
-//     }
-//   }, []);
-
-//   return (
-//     <Card
-//       ref={cardRef}
-//       className="group flex flex-col h-full overflow-hidden transition-all duration-700 hover:shadow-2xl hover:border-cyan-400/30 hover:-translate-y-4 dark:hover:shadow-cyan-400/20 relative backdrop-blur-sm bg-background/80 dark:bg-slate-900/50 border border-cyan-400/10 dark:border-cyan-400/20"
-//       style={{
-//         filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))',
-//       }}
-//     >
-//       {/* Quantum Particle Swarm */}
-//       <div ref={swarmRef} className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-//         {Array.from({ length: 12 }).map((_, i) => (
-//           <div
-//             key={i}
-//             className="absolute w-1 h-1 bg-cyan-400 dark:bg-cyan-300 rounded-full animate-swarm"
-//             style={{
-//               top: `${Math.random() * 100}%`,
-//               left: `${Math.random() * 100}%`,
-//               animation: `swarm 2s ease-in-out infinite`,
-//             }}
-//           />
-//         ))}
-//       </div>
-
-//       <CardHeader className="p-4 relative z-10">
-//         <div className="aspect-video w-full overflow-hidden rounded-md mb-4 border border-cyan-400/20">
-//           <Image
-//             src={project.image}
-//             alt={project.name}
-//             width={600}
-//             height={400}
-//             className="object-cover w-full h-full transition-transform duration-700 ease-out group-hover:scale-105"
-//             data-ai-hint={project.imageAiHint}
-//           />
-//         </div>
-//         <CardTitle className="text-xl font-headline text-foreground dark:text-white">{project.name}</CardTitle>
-//       </CardHeader>
-
-//       <CardContent className="flex-grow flex flex-col p-4 pt-0 relative z-10">
-//         <ScrollArea className="h-24 pr-4 mb-4">
-//           <CardDescription className="text-sm text-muted-foreground dark:text-slate-300">{project.description}</CardDescription>
-//         </ScrollArea>
-//         <div className="flex flex-wrap gap-2 mt-auto">
-//           {project.tags.slice(0, 4).map((tag) => (
-//             <Badge key={tag} variant="secondary" className="font-normal bg-cyan-400/10 dark:bg-cyan-400/20 text-cyan-600 dark:text-cyan-300">{tag}</Badge>
-//           ))}
-//         </div>
-//       </CardContent>
-
-//       <CardFooter className="p-4 relative z-10">
-//         <Button asChild variant="outline" className="w-full transition-all duration-300 hover:scale-105 hover:bg-cyan-400/10 dark:hover:bg-cyan-400/20" data-cursor-hover>
-//           <a href={project.link} target="_blank" rel="noopener noreferrer">
-//             Project Link
-//             <ExternalLink className="ml-2 h-4 w-4" />
-//           </a>
-//         </Button>
-//       </CardFooter>
-
-//       <style jsx>{`
-//         @keyframes swarm {
-//           0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
-//           50% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px) scale(1.5); opacity: 1; }
-//         }
-//       `}</style>
-//     </Card>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // src/components/project-card.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, Github, Star } from "lucide-react";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 import type { Project } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -222,6 +17,16 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
+  const [particles, setParticles] = useState<{x: string, y: string, duration: number}[]>([]);
+
+  useEffect(() => {
+    setParticles([...Array(8)].map(() => ({
+      x: Math.random() * 100 + '%',
+      y: Math.random() * 100 + '%',
+      duration: Math.random() * 5 + 3
+    })));
+  }, []);
+
   return (
     <motion.div
       whileHover="hover"
@@ -247,20 +52,20 @@ export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
           
           {/* FLOATING PARTICLES */}
           <div className="absolute inset-0 overflow-hidden rounded-3xl">
-            {[...Array(8)].map((_, i) => (
+            {particles.map((p, i) => (
               <motion.div
                 key={i}
                 className="absolute w-1 h-1 bg-cyan-400 rounded-full blur-sm"
                 initial={{
-                  x: Math.random() * 100 + '%',
-                  y: Math.random() * 100 + '%',
+                  x: p.x,
+                  y: p.y,
                 }}
                 animate={{
-                  x: Math.random() * 100 + '%',
-                  y: Math.random() * 100 + '%',
+                  x: [p.x, (parseFloat(p.x) + 10) % 100 + '%'],
+                  y: [p.y, (parseFloat(p.y) + 10) % 100 + '%'],
                 }}
                 transition={{
-                  duration: Math.random() * 5 + 3,
+                  duration: p.duration,
                   repeat: Infinity,
                   repeatType: "reverse"
                 }}
@@ -367,7 +172,6 @@ export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
                     data-cursor-hover
                   >
                     <a href={project.link} target="_blank" rel="noopener noreferrer">
-                      {/* BUTTON SHINE */}
                       <div className="absolute inset-0 overflow-hidden rounded-xl">
                         <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                       </div>
@@ -390,7 +194,6 @@ export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
                     className="w-full relative overflow-hidden group/github backdrop-blur-sm border-2 border-purple-400/30 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400/50 hover:text-white transition-all duration-300"
                     data-cursor-hover
                   >
-                    {/* BUTTON SHINE */}
                     <div className="absolute inset-0 overflow-hidden rounded-xl">
                       <div className="absolute inset-0 -translate-x-full group-hover/github:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                     </div>

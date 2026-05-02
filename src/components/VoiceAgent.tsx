@@ -33,11 +33,9 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   const [selectedAgent, setSelectedAgent] = useState(VOICE_AGENTS[0]);
   const [transcript, setTranscript] = useState('');
   const [lastExchange, setLastExchange] = useState({ user: '', ai: '' });
-  const [isReady, setIsReady] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   
   const recognitionRef = useRef<any>(null);
-  const speakingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const selectedAgentRef = useRef(VOICE_AGENTS[0]);
 
   // Sync ref with state for speech loop to catch mid-conversation changes
@@ -82,11 +80,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     return voices.find(v => v.lang.startsWith('en')) || voices[0];
   }, []);
 
-  const speakNaturally = useCallback((text: string, agent: typeof VOICE_AGENTS[0], onEnd?: () => void) => {
-    console.log('[VoiceAgent] Preparing to speak:', text.substring(0, 50) + '...');
-    
-    // Only cancel if it's a new call from the outside, not our loop
-    // But for simplicity in "preview", we cancel.
+  const speakNaturally = useCallback((text: string, agent?: typeof VOICE_AGENTS[0], onEnd?: () => void) => {
     window.speechSynthesis.cancel();
     
     if (!text.trim()) {
@@ -106,14 +100,12 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     
     const speakNext = () => {
       if (index >= sentences.length) {
-        console.log('[VoiceAgent] Finished speaking all sentences.');
-        if (speakingIntervalRef.current) clearInterval(speakingIntervalRef.current);
         onEnd?.();
         return;
       }
       
       const utterance = new SpeechSynthesisUtterance(sentences[index].trim());
-      // Read the LATEST voice from the Ref so mid-conversation changes work
+      // Use the REF to ensure we pick up mid-conversation voice changes
       const currentAgent = selectedAgentRef.current;
       const voice = getBestVoice(currentAgent);
       
@@ -123,13 +115,8 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       utterance.rate = currentAgent.rate + (Math.random() * 0.04 - 0.02);
       utterance.volume = 1;
       
-      utterance.onstart = () => {
-        console.log('[VoiceAgent] Sentence start:', index);
-        setState('speaking');
-      };
-
+      utterance.onstart = () => setState('speaking');
       utterance.onend = () => {
-        console.log('[VoiceAgent] Sentence end:', index);
         index++;
         setTimeout(speakNext, 250 + Math.random() * 150);
       };
@@ -148,11 +135,9 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   }, [getBestVoice]);
 
   const startListening = useCallback(() => {
-    console.log('[VoiceAgent] Initializing SpeechRecognition...');
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      console.warn('[VoiceAgent] SpeechRecognition not supported.');
       setTranscript('Speech recognition not supported.');
       return;
     }
@@ -167,7 +152,6 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     recognition.lang = 'en-US';
     
     recognition.onstart = () => {
-      console.log('[VoiceAgent] Recognition started.');
       setState('listening');
       setTranscript('');
     };
@@ -178,70 +162,56 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
         current += event.results[i][0].transcript;
       }
       setTranscript(current);
-      console.log('[VoiceAgent] Transcript update:', current);
       
       if (event.results[event.results.length - 1].isFinal) {
-        console.log('[VoiceAgent] Final result received:', current);
         handleUserInput(current);
       }
     };
 
     recognition.onerror = (event: any) => {
-      console.error('[VoiceAgent] Recognition error:', event.error);
       if (event.error === 'no-speech') {
         setState('idle');
-        setTranscript('I didn\'t catch that. Tap to try again.');
       } else {
         setState('idle');
       }
     };
 
     recognition.onend = () => {
-      console.log('[VoiceAgent] Recognition ended.');
-      // If we're still in listening state but it ended (e.g. timeout), reset to idle
       if (state === 'listening') setState('idle');
     };
 
     try {
       recognition.start();
       recognitionRef.current = recognition;
-    } catch(e) {
-      console.error('[VoiceAgent] Could not start recognition:', e);
-    }
+    } catch(e) {}
   }, [state]);
 
   const handleUserInput = async (input: string) => {
     if (!input.trim()) return;
     
-    console.log('[VoiceAgent] Processing input for AI:', input);
     setState('thinking');
     setLastExchange(prev => ({ ...prev, user: input }));
 
     try {
       const result = await getVoiceAIResponse(input, conversationHistory);
       if (result.success && result.answer) {
-        console.log('[VoiceAgent] AI Response received:', result.answer.substring(0, 50));
         setLastExchange(prev => ({ ...prev, ai: result.answer as string }));
         onAddMessage(input, result.answer as string);
-        speakNaturally(result.answer as string, selectedAgent, () => {
+        speakNaturally(result.answer as string, undefined, () => {
           setState('idle');
           setTimeout(() => startListening(), 500);
         });
       } else {
-        console.error('[VoiceAgent] AI call returned failure.');
-        setTranscript('Failed to connect. Tap mic to retry.');
         setState('idle');
       }
     } catch (err) {
-      console.error('[VoiceAgent] handleUserInput error:', err);
       setState('idle');
     }
   };
 
   const startSession = () => {
-    console.log('[VoiceAgent] Starting session...');
     setSessionStarted(true);
-    speakNaturally(selectedAgent.greeting, selectedAgent, () => {
+    speakNaturally(selectedAgent.greeting, undefined, () => {
       setState('idle');
       startListening();
     });
@@ -260,23 +230,10 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   };
 
   const handleClose = () => {
-    console.log('[VoiceAgent] Closing VoiceAgent...');
     window.speechSynthesis.cancel();
     recognitionRef.current?.stop();
     onClose();
   };
-
-  // Pre-load voices
-  useEffect(() => {
-    const checkVoices = () => {
-      if (window.speechSynthesis.getVoices().length > 0) {
-        console.log('[VoiceAgent] Voices loaded and ready.');
-        setIsReady(true);
-      }
-    };
-    window.speechSynthesis.onvoiceschanged = checkVoices;
-    checkVoices();
-  }, []);
 
   return (
     <AnimatePresence>
@@ -401,7 +358,8 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
                         className="h-7 w-7 p-0 rounded-full bg-white/10 hover:bg-white/20"
                         onClick={(e) => {
                           e.stopPropagation();
-                          speakNaturally(agent.greeting, agent);
+                          handleVoiceChange(agent);
+                          speakNaturally(agent.greeting);
                         }}
                       >
                         <Play size={12} fill="currentColor" />
