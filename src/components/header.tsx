@@ -1,4 +1,3 @@
-
 // src/components/header.tsx
 "use client";
 
@@ -13,6 +12,7 @@ import { siteConfig } from "@/lib/data";
 import { Button } from "./ui/button";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
+import { QuantumAIIcon } from "./QuantumAIIcon";
 
 interface HeaderProps {
   onSearchClick: () => void;
@@ -121,7 +121,7 @@ export function Header({ onSearchClick }: HeaderProps) {
           <div className="flex items-center space-x-2">
              <div className="hidden md:flex items-center space-x-1">
                <Button variant="ghost" size="icon" onClick={onSearchClick} aria-label="AI Search" data-cursor-hover>
-                  <Search size={18}/>
+                  <QuantumAIIcon />
                </Button>
                <Button variant="ghost" size="icon" asChild>
                  <a href={siteConfig.socials.instagram} target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
@@ -189,7 +189,7 @@ export function Header({ onSearchClick }: HeaderProps) {
             })}
             <div className="border-t w-1/2 my-4"></div>
             <Button variant="ghost" onClick={() => { onSearchClick(); setIsMobileMenuOpen(false); }} className="text-lg">
-                <Search className="mr-2"/> AI Search
+                <QuantumAIIcon /> <span className="ml-2">AI Search</span>
             </Button>
           </div>
         </motion.div>

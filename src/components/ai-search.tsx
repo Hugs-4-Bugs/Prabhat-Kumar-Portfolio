@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useTransition, useEffect, useRef, useCallback } from "react";
@@ -25,6 +24,18 @@ interface AISearchProps {
   onClose: () => void;
 }
 
+interface Particle {
+  id: number;
+  bg: string;
+  width: number;
+  height: number;
+  left: number;
+  top: number;
+  duration: number;
+  xRange: number;
+  yRange: number;
+}
+
 export function AISearch({ isVisible, onClose }: AISearchProps) {
   const { toast } = useToast();
   const [query, setQuery] = useState("");
@@ -32,6 +43,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   const [isPending, startTransition] = useTransition();
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [particles, setParticles] = useState<Particle[]>([]);
   
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -41,6 +53,21 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
   useEffect(() => {
     audioRef.current = new Audio();
+    // Initialize particles only on client to avoid hydration mismatch
+    const newParticles = [...Array(15)].map((_, i) => ({
+      id: i,
+      bg: i % 3 === 0 ? 'rgba(120, 119, 198, 0.4)' : 
+          i % 3 === 1 ? 'rgba(255, 119, 198, 0.3)' : 
+          'rgba(120, 219, 255, 0.35)',
+      width: Math.random() * 100 + 50,
+      height: Math.random() * 100 + 50,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      duration: Math.random() * 10 + 10,
+      xRange: (Math.random() - 0.5) * 100,
+      yRange: (Math.random() - 0.5) * 100,
+    }));
+    setParticles(newParticles);
   }, []);
 
   useEffect(() => {
@@ -239,29 +266,26 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                 }}
             >
                 <div className="absolute inset-0 overflow-hidden">
-                  {[...Array(15)].map((_, i) => (
+                  {particles.map((p) => (
                     <motion.div
-                      key={i}
+                      key={p.id}
                       className="absolute rounded-full"
                       style={{
-                        background: `radial-gradient(circle, 
-                          ${i % 3 === 0 ? 'rgba(120, 119, 198, 0.4)' : 
-                            i % 3 === 1 ? 'rgba(255, 119, 198, 0.3)' : 
-                            'rgba(120, 219, 255, 0.35)'})`,
+                        background: `radial-gradient(circle, ${p.bg})`,
                         filter: 'blur(8px)',
-                        width: `${Math.random() * 100 + 50}px`,
-                        height: `${Math.random() * 100 + 50}px`,
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 100}%`,
+                        width: `${p.width}px`,
+                        height: `${p.height}px`,
+                        left: `${p.left}%`,
+                        top: `${p.top}%`,
                       }}
                       animate={{
-                        x: [0, (Math.random() - 0.5) * 100],
-                        y: [0, (Math.random() - 0.5) * 100],
+                        x: [0, p.xRange],
+                        y: [0, p.yRange],
                         scale: [1, 1.2, 1],
                         opacity: [0.3, 0.6, 0.3],
                       }}
                       transition={{
-                        duration: Math.random() * 10 + 10,
+                        duration: p.duration,
                         repeat: Infinity,
                         ease: "easeInOut",
                       }}

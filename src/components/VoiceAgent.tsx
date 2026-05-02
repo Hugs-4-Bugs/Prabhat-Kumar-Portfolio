@@ -1,9 +1,8 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mic, Play, Volume2, Info } from 'lucide-react';
+import { X, Mic, Play, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getVoiceAIResponse } from '@/app/actions';
 
@@ -34,9 +33,9 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   const [selectedAgent, setSelectedAgent] = useState(VOICE_AGENTS[0]);
   const [transcript, setTranscript] = useState('');
   const [lastExchange, setLastExchange] = useState({ user: '', ai: '' });
+  const [isReady, setIsReady] = useState(false);
   
   const recognitionRef = useRef<any>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const speakingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load persisted voice
@@ -74,6 +73,10 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
 
   const speakNaturally = useCallback((text: string, agent: typeof VOICE_AGENTS[0], onEnd?: () => void) => {
     window.speechSynthesis.cancel();
+    if (!text.trim()) {
+      onEnd?.();
+      return;
+    }
     
     const cleaned = text
       .replace(/\*\*/g, '').replace(/\*/g, '').replace(/#{1,6}\s/g, '')
@@ -119,18 +122,14 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       window.speechSynthesis.speak(utterance);
     };
     
-    if (window.speechSynthesis.getVoices().length === 0) {
-      window.speechSynthesis.onvoiceschanged = () => speakNext();
-    } else {
-      speakNext();
-    }
+    speakNext();
   }, [getBestVoice]);
 
   const startListening = useCallback(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      setTranscript('Speech recognition not supported in this browser.');
+      setTranscript('Speech recognition not supported.');
       return;
     }
 
@@ -161,17 +160,16 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     };
 
     recognition.onerror = (event: any) => {
+      console.error('[VoiceAgent] Recognition error:', event.error);
       if (event.error === 'no-speech') {
         setState('idle');
         setTranscript('I didn\'t catch that. Tap to try again.');
       } else {
-        console.error('[VoiceAgent] Recognition error:', event.error);
         setState('idle');
       }
     };
 
     recognition.onend = () => {
-      // If we didn't get a final result, go back to idle
       if (state === 'listening') setState('idle');
     };
 
@@ -189,18 +187,21 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     setState('thinking');
     setLastExchange(prev => ({ ...prev, user: input }));
 
-    const result = await getVoiceAIResponse(input, conversationHistory);
-
-    if (result.success && result.answer) {
-      setLastExchange(prev => ({ ...prev, ai: result.answer as string }));
-      onAddMessage(input, result.answer as string);
-      speakNaturally(result.answer as string, selectedAgent, () => {
-        // Continuous mode: restart listening after AI finishes speaking
+    try {
+      const result = await getVoiceAIResponse(input, conversationHistory);
+      if (result.success && result.answer) {
+        setLastExchange(prev => ({ ...prev, ai: result.answer as string }));
+        onAddMessage(input, result.answer as string);
+        speakNaturally(result.answer as string, selectedAgent, () => {
+          setState('idle');
+          setTimeout(() => startListening(), 500);
+        });
+      } else {
+        setTranscript('Failed to connect. Tap mic to retry.');
         setState('idle');
-        setTimeout(() => startListening(), 500);
-      });
-    } else {
-      setTranscript('Sorry, I couldn\'t connect to my brain. Please try again.');
+      }
+    } catch (err) {
+      console.error('[VoiceAgent] handleUserInput error:', err);
       setState('idle');
     }
   };
@@ -223,18 +224,29 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     onClose();
   };
 
-  // Play greeting when visible
+  // Pre-load voices
   useEffect(() => {
-    if (isVisible) {
-      setTimeout(() => {
+    const checkVoices = () => {
+      if (window.speechSynthesis.getVoices().length > 0) {
+        setIsReady(true);
+      }
+    };
+    window.speechSynthesis.onvoiceschanged = checkVoices;
+    checkVoices();
+  }, []);
+
+  // Play greeting when visible and ready
+  useEffect(() => {
+    if (isVisible && isReady) {
+      const timer = setTimeout(() => {
         speakNaturally(selectedAgent.greeting, selectedAgent, () => {
           setState('idle');
           startListening();
         });
-      }, 500);
+      }, 800);
+      return () => clearTimeout(timer);
     }
-    return () => window.speechSynthesis.cancel();
-  }, [isVisible, selectedAgent.id, speakNaturally, startListening]);
+  }, [isVisible, isReady, selectedAgent.id, speakNaturally, startListening]);
 
   return (
     <AnimatePresence>
@@ -246,17 +258,14 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/95 text-white"
         >
-          {/* Top Header */}
           <div className="absolute top-6 right-6">
             <Button variant="ghost" size="icon" onClick={handleClose} className="rounded-full hover:bg-white/10 text-white">
               <X size={28} />
             </Button>
           </div>
 
-          {/* Center Content: The Orb */}
           <div className="flex flex-col items-center justify-center gap-8 mb-12">
             <div className="relative">
-              {/* Animation Rings for Speaking/Listening */}
               <AnimatePresence>
                 {state === 'listening' && (
                   <motion.div
@@ -276,7 +285,6 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
                 )}
               </AnimatePresence>
 
-              {/* The Main Orb */}
               <div 
                 className={`relative w-48 h-48 rounded-full shadow-2xl transition-all duration-500 overflow-hidden ${
                   state === 'listening' ? 'scale-110 shadow-blue-500/50' :
@@ -294,12 +302,10 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
                              'none'
                 }}
               >
-                {/* Surface Reflection */}
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/20 pointer-events-none" />
               </div>
             </div>
 
-            {/* Status & Transcript */}
             <div className="text-center px-6 max-w-lg">
               <motion.h2 
                 key={state}
@@ -309,15 +315,14 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
               >
                 {state === 'listening' ? 'Listening...' : 
                  state === 'thinking' ? 'Thinking...' : 
-                 state === 'speaking' ? 'Speaking...' : 'Tap to speak'}
+                 state === 'speaking' ? 'Speaking...' : 'Ready to chat'}
               </motion.h2>
               <p className="text-sm text-gray-400 line-clamp-2 min-h-[2.5rem]">
-                {transcript || (state === 'speaking' ? lastExchange.ai : state === 'idle' ? 'I\'m ready when you are.' : '')}
+                {transcript || (state === 'speaking' ? lastExchange.ai : state === 'idle' ? 'Tap the mic to start conversation.' : '')}
               </p>
             </div>
           </div>
 
-          {/* Voice Selector Row */}
           <div className="w-full overflow-x-auto no-scrollbar py-4 px-6 mb-8 flex justify-center">
             <div className="flex gap-4 min-w-max">
               {VOICE_AGENTS.map((agent) => (
@@ -354,7 +359,6 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
             </div>
           </div>
 
-          {/* Bottom Controls */}
           <div className="flex flex-col items-center gap-6">
             <motion.button
               whileHover={{ scale: 1.1 }}
@@ -371,7 +375,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
               onClick={handleClose}
               className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
             >
-              End Voice Session
+              Exit Voice Agent
             </button>
           </div>
 
