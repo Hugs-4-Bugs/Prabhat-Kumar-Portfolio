@@ -16,6 +16,7 @@ export function QuantumAIIcon() {
           transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
         />
       </div>
+      
 
       {/* Main Icon Container */}
       <motion.div
