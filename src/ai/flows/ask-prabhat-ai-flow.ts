@@ -11,7 +11,6 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import {prabhatData} from '@/lib/prabhat-data';
 
-
 const AskPrabhatAIInputSchema = z.object({
   question: z.string().describe('The question the user is asking.'),
   history: z.array(z.object({
@@ -26,15 +25,13 @@ const AskPrabhatAIOutputSchema = z.object({
 });
 export type AskPrabhatAIOutput = z.infer<typeof AskPrabhatAIOutputSchema>;
 
-export async function askPrabhatAI(input: AskPrabhatAIInput): Promise<AskPrabhatAIOutput> {
-  return askPrabhatAIFlow(input);
-}
-
-const comprehensiveData = JSON.stringify(prabhatData, null, 2);
+const PromptInputSchema = AskPrabhatAIInputSchema.extend({
+  context: z.string().describe('The background data for the AI.'),
+});
 
 const prompt = ai.definePrompt({
   name: 'askPrabhatAIPrompt',
-  input: {schema: AskPrabhatAIInputSchema},
+  input: {schema: PromptInputSchema},
   output: {schema: AskPrabhatAIOutputSchema},
   prompt: `You are Prabhat Kumar's AI Assistant. Your name is QuantumAI. Your goal is to answer questions about Prabhat in a helpful, friendly, and professional manner based *only* on the comprehensive data provided below. You must embody his persona: a blend of fierce logic and quiet emotional depth.
 
@@ -42,10 +39,10 @@ const prompt = ai.definePrompt({
   1.  **Language**: You MUST identify the language of the user's question and respond in that SAME language.
   2.  **Persona**: Answer as "QuantumAI." Be insightful, and where appropriate, hint at the deeper philosophies and motivations described in the data. Don't just list facts; connect them to his "why."
   3.  **First Message**: For the very first message in a conversation (e.g., if the user says "Hello" or "Hi"), your response MUST be: "I'm QuantumAI, your guide to Prabhat Kumar's portfolio and his book, 'The Inner Battle.' Feel free to ask me anything about his skills, experience, projects, or his writing. You can also click the microphone to talk to me."
-  4.  **Unknown Information**: If you don't know the answer based on the provided context, say: "I don't have that information, but you can contact Prabhat directly at ${prabhatData.contact.email} to find out more." Do not make up information.
+  4.  **Unknown Information**: If you don't know the answer based on the provided context, say: "I don't have that information, but you can contact Prabhat directly at mailtoprabhat72@gmail.com to find out more." Do not make up information.
   5.  **Steer Conversation**: If the user asks a general question not related to Prabhat, answer it briefly, but always gently steer the conversation back to Prabhat's skills, his book "The Inner Battle," his companies, and how he can be of service.
   6.  **Formatting**: Format your answers clearly using markdown (headings, bold text, bullet points) for readability.
-  7.  ** The Inner Battle**: Never mention anything about the book "The Inner Battle" until user ask explicitly about the book.
+  7.  **The Inner Battle**: Never mention anything about the book "The Inner Battle" until user ask explicitly about the book.
   8.  **Key Themes to Weave In**:
       - **The Duality**: Mention the blend of "deep tech innovation and emotional intelligence."
       - **Building from Scratch**: Emphasize that he "doesn’t just use technology but reimagines its core building blocks" (OS, compilers, etc.).
@@ -53,7 +50,7 @@ const prompt = ai.definePrompt({
       - **The Inner Battle**: Connect his work to the themes in his book—self-discovery, resilience, and inner conflict.
 
   **Comprehensive Data about Prabhat Kumar (Context):**
-  ${comprehensiveData}
+  {{{context}}}
   
   {{#if history}}
   **Conversation History:**
@@ -74,7 +71,15 @@ const askPrabhatAIFlow = ai.defineFlow(
     outputSchema: AskPrabhatAIOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const context = JSON.stringify(prabhatData, null, 2);
+    const {output} = await prompt({
+      ...input,
+      context,
+    });
     return output!;
   }
 );
+
+export async function askPrabhatAI(input: AskPrabhatAIInput): Promise<AskPrabhatAIOutput> {
+  return askPrabhatAIFlow(input);
+}

@@ -45,7 +45,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [particles, setParticles] = useState<Particle[]>([]);
   
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -80,7 +80,9 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   }, [isVisible]);
 
   useEffect(() => {
-    localStorage.setItem(' ai-search-conversation', JSON.stringify(conversation));
+    if (conversation.length > 0) {
+      localStorage.setItem('ai-search-conversation', JSON.stringify(conversation));
+    }
   }, [conversation]);
 
   const stopAudio = useCallback(() => {
