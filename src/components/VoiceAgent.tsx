@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mic, Play, Volume2, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getVoiceAIResponse } from '@/app/actions';
+import { getBrowserStorage } from '@/lib/browser-storage';
 
 const VOICE_AGENTS = [
   { id: 'quantum', name: 'Quantum', tagline: 'Deep & Calm', color: '#4A90D9',
@@ -64,7 +65,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   }, [selectedAgent]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('quantumai_selected_voice');
+    const saved = getBrowserStorage()?.getItem('quantumai_selected_voice');
     if (saved) {
       const agent = VOICE_AGENTS.find(a => a.id === saved);
       if (agent) {
@@ -76,7 +77,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
 
   const handleVoiceChange = (agent: typeof VOICE_AGENTS[0]) => {
     setSelectedAgent(agent);
-    localStorage.setItem('quantumai_selected_voice', agent.id);
+    getBrowserStorage()?.setItem('quantumai_selected_voice', agent.id);
   };
 
   const getBestVoice = useCallback((agent: typeof VOICE_AGENTS[0]) => {

@@ -34,8 +34,8 @@ import type { Project, Service, SkillCategory, SocialLink, TimelineEvent, Educat
 
 export const siteConfig = {
   name: "Prabhat Kumar",
-  title: "Prabhat Kumar - Software Alchemist",
-  description: "Hi! I'm Prabhat Kumar, a passionate developer fascinated by AI, web technologies, and building software that solves real-world problems.",
+  title: "Prabhat Kumar | Java Backend Engineer | Spring Boot | AI Systems | Full Stack Developer",
+  description: "Prabhat Kumar — Java Software Developer at Netcore Cloud. Expert in Spring Boot, Microservices, AI Systems, AWS, Trading Bots, and full-stack development. Building intelligent systems that solve real-world problems.",
   email: "mailtoprabhat72@gmail.com",
   phone: "+91 7250063206",
   location: "Bengaluru, India",
