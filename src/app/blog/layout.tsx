@@ -1,6 +1,7 @@
 // src/app/blog/layout.tsx
 import { ThemeProvider } from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/toaster';
+import { SmoothScroll } from '@/components/smooth-scroll';
 import { siteConfig } from '@/lib/data';
 import '../globals.css';
 
@@ -28,7 +29,9 @@ export default function BlogLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <SmoothScroll>
             <main>{children}</main>
+          </SmoothScroll>
           <Toaster />
         </ThemeProvider>
       </body>

@@ -13,7 +13,6 @@ import listeningAnimation from "@/lib/listening-animation.json";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { VoiceAgent } from "@/components/VoiceAgent";
-import { getBrowserStorage } from "@/lib/browser-storage";
 
 interface Message {
   role: 'user' | 'model';
@@ -73,7 +72,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
   useEffect(() => {
     if (isVisible) {
-      const savedConversation = getBrowserStorage()?.getItem('ai-search-conversation');
+      const savedConversation = localStorage.getItem('ai-search-conversation');
       if (savedConversation) {
         setConversation(JSON.parse(savedConversation));
       }
@@ -82,7 +81,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
   useEffect(() => {
     if (conversation.length > 0) {
-      getBrowserStorage()?.setItem('ai-search-conversation', JSON.stringify(conversation));
+      localStorage.setItem('ai-search-conversation', JSON.stringify(conversation));
     }
   }, [conversation]);
 
@@ -96,7 +95,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   const handleClearConversation = () => {
     stopAudio();
     setConversation([]);
-    getBrowserStorage()?.removeItem('ai-search-conversation');
+    localStorage.removeItem('ai-search-conversation');
     toast({
       title: "Conversation Cleared",
       description: "The chat history has been cleared.",

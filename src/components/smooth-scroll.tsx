@@ -1,6 +1,7 @@
 // src/components/smooth-scroll.tsx
 "use client";
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
+import Lenis from '@studio-freight/lenis';
 import { usePathname } from 'next/navigation';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -8,17 +9,43 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
+  const lenis = useRef<Lenis | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    if (lenis.current) {
+      lenis.current.scrollTo(0, { immediate: true });
     }
-    ScrollTrigger.refresh();
   }, [pathname]);
 
   useEffect(() => {
-    ScrollTrigger.refresh();
+    const lenisInstance = new Lenis({
+      lerp: 0.1,
+      duration: 1.2,
+      smoothWheel: true,
+    });
+
+    lenis.current = lenisInstance;
+
+    lenisInstance.on('scroll', ScrollTrigger.update);
+
+    const raf = (time: number) => {
+      lenisInstance.raf(time);
+      requestAnimationFrame(raf);
+    };
+    
+    gsap.ticker.add((time)=>{
+      lenisInstance.raf(time * 1000)
+    });
+    
+    gsap.ticker.lagSmoothing(0);
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenisInstance.destroy();
+      lenis.current = null;
+    };
   }, []);
 
   return <>{children}</>;

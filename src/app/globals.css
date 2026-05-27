@@ -78,64 +78,9 @@
   }
 }
 
-/* ── Phase 6: Global Polish ─────────────────────────────────────── */
-
-/* Smooth momentum scroll (Lenis handles JS-driven, this is CSS fallback) */
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: 4.5rem;
-  -webkit-text-size-adjust: 100%;
-}
-
-body {
-  min-height: 100svh;
-  overflow-x: hidden;
-  overscroll-behavior-y: auto;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-/* 3D tilt cards — performance hints */
-[data-tilt],
-.tilt-card {
-  will-change: transform;
-  transform-style: preserve-3d;
-}
-
-/* Gradient-x animation for animated text (used in Experience) */
-@keyframes gradient-x {
-  0%, 100% { background-position: 0% 50%; }
-  50%       { background-position: 100% 50%; }
-}
-.animate-gradient-x {
-  background-size: 200% 200%;
-  animation: gradient-x 4s ease infinite;
-}
-
-/* Section headings start visible (GSAP animates from opacity:0 via JS) */
-.section-heading {
-  opacity: 1;
-}
-
 /* Scroll-lock for modal */
 body.no-scroll {
   overflow: hidden;
-  touch-action: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-  }
 }
 
 /* Modal styles */

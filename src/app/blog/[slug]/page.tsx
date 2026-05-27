@@ -53,7 +53,7 @@ export default function BlogPage({ params }: { params: { slug: string } }) {
                 aria-label="Toggle Sidebar"
                 data-cursor-hover
             >
-              <AnimatePresence initial={false}>
+              <AnimatePresence mode="wait">
                 <motion.div
                   key={isSidebarOpen ? 'close' : 'open'}
                   initial={{ opacity: 0, rotate: -90 }}

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from "lottie-react";
 import { Mic, MicOff, Send, Bot, User, X } from 'lucide-react';
 import { useAudio, useToggle } from 'react-use';
+import Lenis from '@studio-freight/lenis';
 
 
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { getAIResponse, getAIAudio } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { getBrowserStorage } from '@/lib/browser-storage';
 
 import listeningAnimation from '@/lib/listening-animation.json';
 
@@ -48,7 +48,7 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
 
   // Load conversation from localStorage on initial render
   useEffect(() => {
-    const savedMessages = getBrowserStorage()?.getItem('assistant-conversation');
+    const savedMessages = localStorage.getItem('assistant-conversation');
     if (savedMessages) {
       setMessages(JSON.parse(savedMessages));
     }
@@ -56,7 +56,7 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
 
   // Save conversation to localStorage whenever it changes
   useEffect(() => {
-    getBrowserStorage()?.setItem('assistant-conversation', JSON.stringify(messages));
+    localStorage.setItem('assistant-conversation', JSON.stringify(messages));
   }, [messages]);
   
   // Inactivity timer logic
@@ -66,7 +66,7 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
     }
     inactivityTimerRef.current = setTimeout(() => {
       setMessages([]);
-      getBrowserStorage()?.removeItem('assistant-conversation');
+      localStorage.removeItem('assistant-conversation');
       toast({
         title: "Chat Cleared",
         description: "Your conversation has been cleared due to inactivity.",
@@ -324,7 +324,7 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
             className="fixed bottom-6 right-4 sm:right-6 md:right-8 z-[1000]"
           >
             <Button size="icon" className="rounded-full w-14 h-14 shadow-lg" onClick={toggleOpen} data-cursor-hover>
-              <AnimatePresence initial={false}>
+              <AnimatePresence mode="wait">
                 <motion.div
                   key={isOpen ? 'x' : 'bot'}
                   initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
@@ -342,3 +342,4 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
     </>
   );
 }
+
