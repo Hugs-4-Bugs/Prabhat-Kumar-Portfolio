@@ -325,3 +325,119 @@ Require stack:
  ✓ Compiled in 26.4s (2536 modules)
  GET / 200 in 2361ms
 <w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/8.pack.gz_' -> '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/8.pack.gz'
+ ✓ Compiled in 53.2s (2530 modules)
+
+warn - The class `ease-[cubic-bezier(0.34,1.2,0.64,1)]` is ambiguous and matches multiple utilities.
+warn - If this is content and not a class, replace it with `ease-&lsqb;cubic-bezier(0.34,1.2,0.64,1)&rsqb;` to silence this warning.
+<w> [webpack.cache.PackFileCacheStrategy] Restoring failed for ResolverCachePlugin|normal|default|fullySpecified=|false|alias=[|server-only$=|next/dist/compiled/server-only/index|client-only$=|next/dist/compiled/client-only/index|next/dist/compiled/client-only$=|next/dist/compiled/client-only/index|next/dist/compiled/server-only=|next/dist/compiled/server-only/index|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/head.js=|next/dist/client/components/noop-head|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/image.js=|next/dist/api/image|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/constants.js=|next/dist/api/constants|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/router.js=|next/dist/api/router|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dynamic.js=|next/dist/api/app-dynamic|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/script.js=|next/dist/api/script|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/link.js=|next/dist/client/app-dir/link|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/form.js=|next/dist/client/app-dir/form|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/navigation.js=|next/dist/api/navigation|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/headers.js=|next/dist/api/headers|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/og.js=|next/dist/api/og|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/server.js=|next/dist/api/server|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/document.js=|next/dist/api/document|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/app.js=|next/dist/api/app|react$=|next/dist/compiled/react|react/compiler-runtime$=|next/dist/compiled/react/compiler-runtime|react/jsx-dev-runtime$=|next/dist/compiled/react/jsx-dev-runtime|react/jsx-runtime$=|next/dist/compiled/react/jsx-runtime|react-dom$=|next/dist/compiled/react-dom|react-dom/client$=|next/dist/compiled/react-dom/client|react-dom/server$=|next/dist/compiled/react-dom/server.browser|react-dom/server.browser$=|next/dist/compiled/react-dom/server.browser|react-dom/server.edge$=|next/dist/build/webpack/alias/react-dom-server.js|react-dom/static$=|next/dist/compiled/react-dom/static.browser|react-dom/static.browser$=|next/dist/compiled/react-dom/static.browser|react-dom/static.edge$=|next/dist/compiled/react-dom/static.edge|react-server-dom-webpack/client$=|next/dist/compiled/react-server-dom-webpack/client.browser|react-server-dom-webpack/server$=|next/dist/compiled/react-server-dom-webpack/server.browser|react-server-dom-webpack/server.node$=|next/dist/compiled/react-server-dom-webpack/server.node|react-server-dom-webpack/static$=|next/dist/compiled/react-server-dom-webpack/static.browser|@vercel/turbopack-ecmascript-runtime/browser/dev/hmr-client/hmr-client.ts=|next/dist/client/dev/noop-turbopack-hmr|next=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next|]|mainFields=[|0=|browser|1=|module|2=|main|]|fallback=[|assert=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/assert/assert.js|buffer=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/buffer/index.js|constants=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/constants-browserify/constants.json|crypto=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/crypto-browserify/index.js|domain=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/domain-browser/index.js|http=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/stream-http/index.js|https=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/https-browserify/index.js|os=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/os-browserify/browser.js|path=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/path-browserify/index.js|punycode=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/punycode/punycode.js|process=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/polyfills/process.js|querystring=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/querystring-es3/index.js|stream=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/stream-browserify/index.js|string_decoder=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/string_decoder/string_decoder.js|sys=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/util/util.js|timers=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/timers-browserify/main.js|tty=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/tty-browserify/index.js|util=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/util/util.js|vm=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/vm-browserify/index.js|zlib=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/browserify-zlib/index.js|events=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/events/events.js|setImmediate=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/compiled/setimmediate/setImmediate.js|]|dependencyType=|esm|path=|/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/lucide-react/dist/esm/icons|request=|../createLucideIcon.js from pack: Error: invalid stored block lengths
+ ✓ Compiled in 111.3s (2538 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: invalid stored block lengths
+ ⨯ ./src/components/sections/testimonials.tsx
+Error:   [31mx[0m Expected '</', got 'numeric literal (60, 60)'
+     ,-[[36;1;4m/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/src/components/sections/testimonials.tsx[0m:157:1]
+ [2m154[0m |           <div className={`absolute inset-0 bg-gradient-to-br ${testimonial.gradient} opacity-0 dark:opacity-5 transition-opacity duration-500 ${isHovered ? 'opacity-10' : ''}`} />
+ [2m155[0m |           
+ [2m156[0m |           {/* Holographic grid overlay */}
+ [2m157[0m |           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"%3E%3Cpath d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23grid)"/%3E%3C/svg%3E')] pointer-events-none" />
+     : [35;1m                                                                                     ^^[0m
+ [2m158[0m |           
+ [2m159[0m |           {/* Dynamic glow on mouse move */}
+ [2m160[0m |           <motion.div
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/sections/testimonials.tsx
+./src/app/page.tsx
+ ⨯ ./src/components/sections/testimonials.tsx
+Error:   [31mx[0m Expected '</', got 'numeric literal (60, 60)'
+     ,-[[36;1;4m/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/src/components/sections/testimonials.tsx[0m:223:1]
+ [2m220[0m |         <div className="relative rounded-3xl overflow-hidden backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.2)] bg-white/5 dark:bg-black/20">
+ [2m221[0m |           <div className={`absolute inset-0 bg-gradient-to-br ${testimonial.gradient} opacity-0 dark:opacity-5 transition-opacity duration-500 ${isHovered ? 'opacity-15' : ''}`} />
+ [2m222[0m |           
+ [2m223[0m |           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"%3E%3Cpath d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23grid)"/%3E%3C/svg%3E')] pointer-events-none" />
+     : [35;1m                                                                                     ^^[0m
+ [2m224[0m |           
+ [2m225[0m |           <motion.div
+ [2m226[0m |             className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/sections/testimonials.tsx
+./src/app/page.tsx
+ ✓ Compiled in 3.7s (2530 modules)
+ ✓ Compiled in 28.5s (2541 modules)
+ ✓ Compiled in 8.8s (2541 modules)
+ ✓ Compiled in 27.4s (2541 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/server-development/11.pack.gz_' -> '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/server-development/11.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/2.pack.gz_' -> '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/2.pack.gz'
+ ✓ Compiled in 49.6s (2541 modules)
+ ✓ Compiled in 29.4s (2536 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 17.4s (2536 modules)
+ ✓ Compiled in 11.8s (2536 modules)
+ ✓ Compiled in 3.1s (2536 modules)
+ ✓ Compiled in 3.6s (2536 modules)
+ ✓ Compiled in 2.8s (2536 modules)
+ ✓ Compiled in 2.3s (2536 modules)
+ ✓ Compiled in 1783ms (2536 modules)
+ ✓ Compiled in 3.4s (2536 modules)
+ ✓ Compiled in 7.9s (2536 modules)
+ ✓ Compiled in 1895ms (2536 modules)
+ ✓ Compiled in 14.4s (2536 modules)
+ ✓ Compiled in 1921ms (2536 modules)
+ ⨯ ./src/components/sections/testimonials.tsx
+Error:   [31mx[0m Expression expected
+    ,-[[36;1;4m/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/src/components/sections/testimonials.tsx[0m:56:1]
+ [2m53[0m |     text: "Prabhat's AcquisitionOS system transformed how we think about lead acquisition. The AI-powered qualification alone improved our conversion rate from 2% to 8% in three months. Game changer.",
+ [2m54[0m |     metric: "4x conversion improvement (2% to 8%)"
+ [2m55[0m |   },
+ [2m56[0m |   const testimonials = [
+    : [35;1m  ^^^^^[0m
+ [2m57[0m |   {
+ [2m58[0m |     name: "Rahul Mehta",
+ [2m59[0m |     role: "CTO, FinTech Venture Labs",
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/sections/testimonials.tsx
+./src/app/page.tsx
+ ✓ Compiled in 18.7s (2536 modules)
+ ✓ Compiled in 1664ms (2536 modules)
+ ✓ Compiled in 3.2s (2536 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack failed from /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/server-development.pack.gz: Error: incorrect header check
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack failed from /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development.pack.gz: Error: incorrect header check
+ ✓ Compiled in 49.8s (2536 modules)
+ ✓ Compiled in 24.2s (2536 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/0.pack.gz_' -> '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled in 25.8s (2536 modules)
+ ✓ Compiled in 24.9s (2540 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/server-development/0.pack.gz_' -> '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/server-development/0.pack.gz'
+ ✓ Compiled in 13s (2540 modules)
+ ✓ Compiled in 14.5s (2540 modules)
+ ✓ Compiled in 15.4s (2540 modules)
+ ✓ Compiled in 4s (2530 modules)
+ ✓ Compiled in 9.9s (2530 modules)
+ ✓ Compiled in 26.7s (2540 modules)
+ ✓ Compiled in 20s (2540 modules)
+ ✓ Compiled in 62.2s (2540 modules)
+ ✓ Compiled in 15.8s (2540 modules)
+ ✓ Compiled in 1865ms (2540 modules)
+ ✓ Compiled in 2s (2540 modules)
+ ✓ Compiled in 8.3s (2540 modules)
+ ✓ Compiled in 48.9s (2540 modules)
+ ✓ Compiled in 21.3s (2540 modules)
+ ✓ Compiled in 8.7s (2540 modules)
+ ✓ Compiled in 146.1s (2540 modules)
+ ✓ Compiled in 16.7s (2540 modules)
+ ✓ Compiled in 12.1s (2540 modules)
+ ✓ Compiled in 4.9s (2540 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/server-development/1.pack.gz_' -> '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/server-development/1.pack.gz'
