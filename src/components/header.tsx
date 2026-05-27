@@ -1,10 +1,10 @@
 // src/components/header.tsx
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { Fragment, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion, useScroll } from "framer-motion";
-import { Menu, X, Github, Linkedin, Instagram, Search } from "lucide-react";
+import { Menu, X, Github, Linkedin, Instagram } from "lucide-react";
 import { ProductsLauncher } from "./products/ProductsLauncher";
 import { gsap } from "gsap";
 
@@ -14,6 +14,7 @@ import { Button } from "./ui/button";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { QuantumAIIcon } from "./QuantumAIIcon";
+import { ProductDropdown } from "./ProductDropdown";
 
 interface HeaderProps {
   onSearchClick: () => void;
@@ -84,38 +85,45 @@ export function Header({ onSearchClick }: HeaderProps) {
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             {siteConfig.navLinks.filter(link => link.label !== 'Blogs').map((link) => {
               const isExternal = link.href.startsWith("http");
+              const productDropdown = link.label === "Services" ? (
+                <ProductDropdown key="products-dropdown" />
+              ) : null;
               if (isExternal) {
                 return (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="transition-colors hover:text-primary relative"
-                    data-cursor-hover
-                  >
-                    {link.label}
-                  </a>
+                  <Fragment key={link.href}>
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="transition-colors hover:text-primary relative"
+                      data-cursor-hover
+                    >
+                      {link.label}
+                    </a>
+                    {productDropdown}
+                  </Fragment>
                 );
               }
               return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "transition-colors hover:text-primary relative",
-                    activeSection === link.href.substring(1) ? "text-primary" : ""
-                  )}
-                  data-cursor-hover
-                >
-                  {link.label}
-                  {activeSection === link.href.substring(1) && (
-                    <motion.span
-                      className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"
-                      layoutId="underline"
-                    />
-                  )}
-                </Link>
+                <Fragment key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "transition-colors hover:text-primary relative",
+                      activeSection === link.href.substring(1) ? "text-primary" : ""
+                    )}
+                    data-cursor-hover
+                  >
+                    {link.label}
+                    {activeSection === link.href.substring(1) && (
+                      <motion.span
+                        className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"
+                        layoutId="underline"
+                      />
+                    )}
+                  </Link>
+                  {productDropdown}
+                </Fragment>
               );
             })}
           </nav>
@@ -164,38 +172,38 @@ export function Header({ onSearchClick }: HeaderProps) {
           <div className="flex flex-col items-center justify-center h-full space-y-6 text-lg font-medium">
             {siteConfig.navLinks.filter(link => link.label !== 'Blogs').map((link) => {
               const isExternal = link.href.startsWith("http");
+              const productDropdown = link.label === "Services" ? (
+                <ProductDropdown key="mobile-products-dropdown" mobile onSelect={() => setIsMobileMenuOpen(false)} />
+              ) : null;
               if (isExternal) {
                 return (
-                  <a
-                    key={link.href}
+                  <Fragment key={link.href}>
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="transition-colors hover:text-primary"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </a>
+                    {productDropdown}
+                  </Fragment>
+                );
+              }
+              return (
+                <Fragment key={link.href}>
+                  <Link
                     href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
                     className="transition-colors hover:text-primary"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {link.label}
-                  </a>
-                );
-              }
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="transition-colors hover:text-primary"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
+                  </Link>
+                  {productDropdown}
+                </Fragment>
               );
             })}
-            <Link
-              href="/products"
-              className="transition-colors hover:text-primary"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Products
-            </Link>
             <div className="border-t w-1/2 my-4"></div>
             <Button variant="ghost" onClick={() => { onSearchClick(); setIsMobileMenuOpen(false); }} className="text-lg">
                 <QuantumAIIcon /> <span className="ml-2">AI Search</span>

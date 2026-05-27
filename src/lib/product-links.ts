@@ -1,0 +1,72 @@
+import {
+  BarChart3,
+  Blocks,
+  Bot,
+  BrainCircuit,
+  Code2,
+  Network,
+  ShieldCheck,
+  Target,
+} from "lucide-react";
+
+export const productLinks = [
+  {
+    label: "AcquisitionOS",
+    description: "AI customer acquisition intelligence",
+    href: "/acquisitionos",
+    status: "Building",
+    icon: BarChart3,
+  },
+  {
+    label: "SystemFoundry",
+    description: "Architecture thinking platform",
+    href: "/systemfoundry",
+    status: "Building",
+    icon: BrainCircuit,
+  },
+  {
+    label: "CodeGuard AI",
+    description: "AWS cost detection for VS Code",
+    href: "https://marketplace.visualstudio.com/items?itemName=prabhatKumar.codeguard-ai",
+    status: "Live",
+    icon: ShieldCheck,
+    external: true,
+  },
+  {
+    label: "QuantumFusion Solutions",
+    description: "Multi-agent AI company OS",
+    href: "https://quantumfusion-solutions.vercel.app/",
+    status: "Building",
+    icon: Network,
+    external: true,
+  },
+  {
+    label: "Trading Bot",
+    description: "Indian market trading architecture",
+    href: "/trading-bot-architecture",
+    status: "Live",
+    icon: Bot,
+  },
+  {
+    label: "PrabhatBlogs",
+    description: "Technical writing and deep dives",
+    href: "https://prabhatblogs.lovable.app/",
+    status: "Live",
+    icon: Code2,
+    external: true,
+  },
+  {
+    label: "Product Ecosystem",
+    description: "All products and relationships",
+    href: "/products",
+    status: "Live",
+    icon: Blocks,
+  },
+  {
+    label: "Problems Solved",
+    description: "Operational problems and solutions",
+    href: "/problems-solved",
+    status: "Research",
+    icon: Target,
+  },
+];

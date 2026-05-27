@@ -22,6 +22,13 @@ import { SeoPageLinks } from "@/components/sections/seo-page-links";
 import { Services } from "@/components/sections/services";
 import { Skills } from "@/components/sections/skills";
 import { TechStack } from "@/components/sections/tech-stack";
+import {
+  InnovationResearch,
+  OperatingProfile,
+  ProblemSolvingFramework,
+  StrategicProblems,
+  WhyDifferent,
+} from "@/components/sections/strategy-sections";
 import { PaidModal } from "@/components/blog/PaidModal";
 import { ErrorBoundary } from "@/components/error-boundary";
 
@@ -81,6 +88,22 @@ function AppContent() {
       {/* Hero has its own full animations — no ErrorBoundary needed */}
       <Hero />
 
+      <ErrorBoundary sectionName="About">
+        <About />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="StrategicProblems">
+        <StrategicProblems />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="OperatingProfile">
+        <OperatingProfile />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="WhyDifferent">
+        <WhyDifferent />
+      </ErrorBoundary>
+
       <ErrorBoundary sectionName="CurrentlyBuilding">
         <CurrentlyBuilding />
       </ErrorBoundary>
@@ -89,12 +112,12 @@ function AppContent() {
         <SeoPageLinks />
       </ErrorBoundary>
 
-      <ErrorBoundary sectionName="About">
-        <About />
-      </ErrorBoundary>
-
       <ErrorBoundary sectionName="Services">
         <Services />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="ProblemSolvingFramework">
+        <ProblemSolvingFramework />
       </ErrorBoundary>
 
       <ErrorBoundary sectionName="ContractBanner">
@@ -123,6 +146,10 @@ function AppContent() {
 
       <ErrorBoundary sectionName="Skills">
         <Skills />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="InnovationResearch">
+        <InnovationResearch />
       </ErrorBoundary>
 
       <ErrorBoundary sectionName="TechStack">

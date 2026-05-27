@@ -673,6 +673,7 @@ export function Hero() {
 
         {/* Subtitle */}
         <motion.div
+          // className="hero-subtitle text-element font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-headline tracking-tighter mb-8"
           className="hero-subtitle text-element font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-headline tracking-tighter mb-8"
           style={{
             textShadow: isDark
@@ -692,6 +693,9 @@ export function Hero() {
           }}
         >
           <Balancer>KUMAR</Balancer>
+          <div className="mt-4 text-base font-semibold tracking-normal sm:text-xl md:text-2xl">
+            Founder x Software Engineer x System Builder
+          </div>
         </motion.div>
 
         {/* Description */}
@@ -707,16 +711,15 @@ export function Hero() {
           }}
         >
           <Balancer>
-            Hi! I'm Prabhat Kumar, a passionate developer fascinated by AI, web
-            technologies, and building software that solves real-world problems.
-            I blend the art of code with the science of AI to build{" "}
+            I architect and build AI systems that solve real operational problems.
             <span
               className="font-semibold"
               style={{
                 color: isDark ? "#60a5fa" : "#2563eb",
               }}
             >
-              innovative, high-performance software solutions.
+              {" "}From autonomous lead generation to trading bots to production
+              infrastructure, I engineer solutions that scale, perform, and prove ROI.
             </span>
           </Balancer>
         </motion.p>

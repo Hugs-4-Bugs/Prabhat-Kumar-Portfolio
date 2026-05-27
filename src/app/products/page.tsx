@@ -4,7 +4,7 @@
 import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { ArrowRight, ExternalLink, Zap, Box, Brain, FlaskConical, Rocket } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, Home, Zap, Box, Brain, FlaskConical, Rocket } from "lucide-react";
 import { products, statusConfig } from "@/lib/products-data";
 import type { Product, ProductStatus } from "@/lib/products-data";
 
@@ -122,6 +122,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   }, []);
 
   const status = statusConfig[product.status];
+  const isInternalLink = product.link?.startsWith("/");
 
   const actionLabel = useMemo(() => {
     switch (product.status) {
@@ -242,7 +243,16 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
 
         {/* Action */}
         <div className="mt-4 pt-4 border-t border-white/5">
-          {product.link ? (
+          {product.link && isInternalLink ? (
+            <Link
+              href={product.link}
+              className="inline-flex items-center gap-2 text-sm font-medium transition-all group-hover:gap-3"
+              style={{ color: product.color }}
+            >
+              {actionLabel}
+              <ArrowRight size={14} />
+            </Link>
+          ) : product.link ? (
             <a
               href={product.link}
               target="_blank"
@@ -465,15 +475,25 @@ function ProductCarousel() {
                 <p className="text-[10px] text-white/30 mt-3 italic">Solves: {product.problemSolved}</p>
               )}
               {product.link && (
-                <a
-                  href={product.link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium"
-                  style={{ color: product.color }}
-                >
-                  Visit <ExternalLink size={11} />
-                </a>
+                product.link.startsWith("/") ? (
+                  <Link
+                    href={product.link}
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium"
+                    style={{ color: product.color }}
+                  >
+                    Visit <ArrowRight size={11} />
+                  </Link>
+                ) : (
+                  <a
+                    href={product.link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium"
+                    style={{ color: product.color }}
+                  >
+                    Visit <ExternalLink size={11} />
+                  </a>
+                )
               )}
             </div>
           </motion.div>
@@ -502,9 +522,25 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <ParticleField />
+      <div className="fixed left-0 right-0 top-16 z-40 border-b border-white/10 bg-slate-950/80 px-4 py-2 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 text-xs text-white/60">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/#home" className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 transition-colors hover:bg-white/10 hover:text-white">
+              <Home size={13} /> Home
+            </Link>
+            <span>/</span>
+            <a href="#products-grid" className="inline-flex min-h-9 items-center rounded-full px-3 transition-colors hover:bg-white/10 hover:text-white">
+              Products
+            </a>
+          </div>
+          <Link href="/#home" className="inline-flex min-h-9 items-center gap-2 rounded-full border border-white/10 px-3 font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white">
+            <ArrowLeft size={14} /> Back
+          </Link>
+        </div>
+      </div>
 
       {/* ── SECTION 1: Hero ─────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center justify-center px-4">
+      <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
         <motion.div style={{ opacity, y }} className="text-center max-w-4xl mx-auto relative z-10">
           {/* Badge */}
           <motion.div

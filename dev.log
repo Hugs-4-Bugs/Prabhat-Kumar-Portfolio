@@ -215,3 +215,113 @@ Require stack:
  ✓ Compiled in 15.1s (2451 modules)
  ✓ Compiled in 2.1s (1031 modules)
  ✓ Compiled in 4.9s (2437 modules)
+ ✓ Compiled in 3.9s (1031 modules)
+ ✓ Compiled in 3.8s (2457 modules)
+ ✓ Compiled in 866ms (2457 modules)
+ ✓ Compiled in 3.4s (2457 modules)
+ ✓ Compiled in 1621ms (1034 modules)
+ ✓ Compiled in 5s (2457 modules)
+ ✓ Compiled in 4s (2473 modules)
+ ✓ Compiled in 2.5s (2475 modules)
+ ✓ Compiled in 1473ms (2475 modules)
+ ✓ Compiled in 2.5s (2461 modules)
+ ✓ Compiled in 3.6s (2475 modules)
+ HEAD / 200 in 5261ms
+ ○ Compiling /problems-solved ...
+ ✓ Compiled /founder in 10.8s (2477 modules)
+ HEAD /founder 200 in 7575ms
+ HEAD /problems-solved 200 in 13224ms
+ ○ Compiling /systemfoundry ...
+ ✓ Compiled /systemfoundry in 7.1s (2528 modules)
+ HEAD /acquisitionos 200 in 8451ms
+ HEAD /products 200 in 8834ms
+ HEAD /systemfoundry 200 in 9091ms
+ HEAD / 200 in 1292ms
+ GET / 200 in 868ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 1556ms (1448 modules)
+ GET /favicon.ico 200 in 1801ms
+ GET / 200 in 3979ms
+ GET /favicon.ico 200 in 142ms
+ ○ Compiling /problems-solved ...
+ ✓ Compiled /architecture-lab in 4.8s (1457 modules)
+ ✓ Compiled in 9.8s (1054 modules)
+ GET /architecture-lab 200 in 11973ms
+ GET /problems-solved 200 in 16674ms
+ GET /problems-solved 200 in 9861ms
+ ✓ Compiled in 6.2s (2499 modules)
+ GET / 200 in 2730ms
+ GET / 200 in 3057ms
+ ✓ Compiled in 9.8s (2476 modules)
+ GET / 200 in 786ms
+ ✓ Compiled in 6.6s (2490 modules)
+ GET / 200 in 583ms
+ ✓ Compiled in 1472ms (2494 modules)
+ GET / 200 in 486ms
+ ✓ Compiled in 2.3s (2480 modules)
+ GET / 200 in 367ms
+ ✓ Compiled in 10.8s (2494 modules)
+ GET / 200 in 918ms
+ ✓ Compiled in 2.3s (1064 modules)
+ GET / 200 in 223ms
+ ✓ Compiled in 11.7s (2503 modules)
+ GET / 200 in 775ms
+ ✓ Compiled in 1620ms (2503 modules)
+ GET / 200 in 364ms
+ ✓ Compiled in 3s (2503 modules)
+ GET / 200 in 548ms
+ ✓ Compiled in 1214ms (2503 modules)
+ GET / 200 in 416ms
+ ✓ Compiled in 3.5s (2503 modules)
+ GET / 200 in 339ms
+ ✓ Compiled in 1699ms (2503 modules)
+ GET / 200 in 293ms
+ ✓ Compiled in 1412ms (2489 modules)
+ ✓ Compiled in 1904ms (1068 modules)
+ GET / 200 in 415ms
+ ✓ Compiled in 1137ms (1068 modules)
+ GET / 200 in 989ms
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+ ✓ Compiled in 9.5s (2503 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/pages/_document.js'
+}
+ ✓ Compiled in 17.9s (2489 modules)
+ GET / 500 in 40110ms
+ GET / 200 in 831ms
+ GET / 200 in 243ms
+ GET / 200 in 6377ms
+ ✓ Compiled in 24.3s (2503 modules)
+ ✓ Compiled in 2.9s (2503 modules)
+ GET / 200 in 6996ms
+ GET / 200 in 1398ms
+ ○ Compiling /problems-solved ...
+ ✓ Compiled /problems-solved in 20.3s (1445 modules)
+ ✓ Compiled in 4.4s (1055 modules)
+ HEAD / 200 in 34135ms
+ HEAD /problems-solved 200 in 37276ms
+ HEAD /products 200 in 38107ms
+ HEAD /founder 200 in 38575ms
+ GET / 200 in 18109ms
+ GET / 200 in 640ms
+ GET /problems-solved 200 in 246ms
+ ○ Compiling /acquisitionos ...
+ ✓ Compiled /acquisitionos in 1052ms (1472 modules)
+ GET /acquisitionos 200 in 1854ms
+ GET /acquisitionos 200 in 129ms
+ ○ Compiling /trading-bot-architecture ...
+ ✓ Compiled /trading-bot-architecture in 11.1s (2522 modules)
+ GET /trading-bot-architecture 200 in 12696ms
+ GET / 200 in 189ms
+ GET / 200 in 325ms
+ GET / 200 in 240ms
+ GET / 200 in 3127ms
+ ✓ Compiled in 26.4s (2536 modules)
+ GET / 200 in 2361ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/8.pack.gz_' -> '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/8.pack.gz'

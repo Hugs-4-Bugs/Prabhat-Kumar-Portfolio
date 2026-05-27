@@ -84,21 +84,21 @@ export const siteConfig = {
   ] as SocialLink[],
 
   about: {
-    p1: "Hi! I'm Prabhat Kumar, a passionate Java Software Developer driven by a vision to merge intelligence with innovation. I dive deep into AI, web technologies, and system design - crafting software that solves real-world problems. With love for Java, Spring Boot, React, and Machine Learning, I thrive on crafting scalable, high-performance apps.",
-    p2: "With 4+ years of trading experience across Stocks, Crypto, Forex & Derivatives, I specialize in combining algorithmic precision with market psychology.",
-    p3: "I am always exploring new technologies and creating innovative solutions to solve complex problems in a range of fields.",
-    interests: ["AI", "Full Stack Development", "Open Source", "System Design", "Trading", "Writing", "Innovation"],
+    p1: "Prabhat Kumar — Software Engineer & Problem Solver. I architect and build production-grade AI systems, backend infrastructure, and SaaS platforms that solve critical operational problems for startups and enterprises.",
+    p2: "My work sits at the intersection of founder thinking and production engineering: Java, Spring Boot, microservices, AI workflows, trading systems, cloud cost intelligence, and full-stack product execution.",
+    p3: "I focus on systems that prove ROI: faster lead processing, lower infrastructure spend, stronger reliability, better scalability, and cleaner architecture that teams can actually maintain.",
+    interests: ["AI Systems", "Backend Architecture", "SaaS Products", "System Design", "Trading Systems", "Automation", "Innovation"],
   },
 
   services: [
-    { icon: ScreenShare, title: "Web Application Development", description: "End-to-end responsive and performant modern web apps." },
-    { icon: Server, title: "API Design & Integration", description: "RESTful APIs and backend microservices for your apps." },
-    { icon: BrainCircuit, title: "AI/ML Implementation", description: "Machine learning models integrated into practical applications." },
-    { icon: Palette, title: "UI/UX Design", description: "Beautiful, intuitive, and modern user experiences." },
-    { icon: Cpu, title: "Java Software Development", description: "Expert Java Developer skilled in Spring Boot, Hibernate, JSP, Microservices, and database management." },
-    { icon: TrendingUp, title: "Strategic Trading Solutions", description: "4+ years in Stock, Future & Option, Crypto, and Forex trading. Offering tailored strategies and insights." },
-    { icon: Cloud, title: "Cloud Infrastructure & DevOps", description: "I architect and manage cloud-native solutions with AWS, focusing on scalability, security, and automation." },
-    { icon: Bot, title: "System Architecture & Automation", description: "Specialized in designing end-to-end system architectures and automating complex workflows." },
+    { icon: ScreenShare, title: "AcquisitionOS Implementation", description: "AI-assisted lead discovery, qualification, follow-up, and lead-to-revenue workflow automation." },
+    { icon: Server, title: "Backend Architecture Builds", description: "Production REST APIs, microservices, event flows, integrations, and scalable backend foundations." },
+    { icon: BrainCircuit, title: "SystemFoundry Architecture Consulting", description: "Turn product ideas into diagrams, trade-off decisions, technical plans, and implementation-ready system designs." },
+    { icon: Palette, title: "SaaS Product Prototyping", description: "Fast, usable product surfaces for dashboards, internal tools, AI workflows, and customer-facing platforms." },
+    { icon: Cpu, title: "Java & Spring Boot Engineering", description: "Spring Boot, Hibernate, security, microservices, database design, and production-grade Java delivery." },
+    { icon: TrendingUp, title: "Trading Bot Architecture", description: "Trading system design across Indian markets, signals, broker integration, risk controls, and monitoring." },
+    { icon: Cloud, title: "AWS Cost & Cloud Reliability", description: "Cloud architecture, AWS cost detection, FinOps workflows, budget alerts, and deployment reliability." },
+    { icon: Bot, title: "Automation & Agentic Workflows", description: "Multi-agent workflows, operational automation, AI assistants, and custom process orchestration." },
   ] as Service[],
   
   workExperience: [

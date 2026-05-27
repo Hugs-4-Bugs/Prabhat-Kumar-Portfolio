@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export function Logo() {
   return (
-    <Link href="#home" className="flex items-center gap-2" data-cursor-hover>
+    <Link href="/#home" className="flex items-center gap-2" data-cursor-hover>
       <svg
         width="32"
         height="32"

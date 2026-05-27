@@ -4,7 +4,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Grid3X3, X, Search, ExternalLink } from "lucide-react";
+import { ArrowLeft, Grid3X3, X, Search, ExternalLink, Home } from "lucide-react";
 import { products, statusConfig } from "@/lib/products-data";
 import { useTheme } from "next-themes";
 import type { Product } from "@/lib/products-data";
@@ -96,6 +96,14 @@ function ProductTile({ product, index, onClose, isDark }: { product: Product; in
       )}
     </motion.div>
   );
+
+  if (product.link?.startsWith("/")) {
+    return (
+      <Link href={product.link} className="block">
+        {content}
+      </Link>
+    );
+  }
 
   if (product.link) {
     return (
@@ -226,10 +234,18 @@ export function ProductsLauncher({ className }: ProductsLauncherProps) {
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-5 pt-4 pb-3">
-              <div>
+            <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3">
+              <button
+                onClick={() => setIsOpen(false)}
+                className={`flex min-h-9 items-center gap-2 rounded-full px-3 text-xs font-medium transition-colors ${isDark ? "text-white/60 hover:bg-white/10 hover:text-white" : "text-slate-600 hover:bg-black/5 hover:text-slate-900"}`}
+                aria-label="Back from products"
+              >
+                <ArrowLeft size={14} />
+                Back
+              </button>
+              <div className="min-w-0 flex-1 text-center">
                 <h3 className={`text-sm font-semibold font-headline ${isDark ? "text-white/90" : "text-slate-900"}`}>Products</h3>
-                <p className={`text-[10px] mt-0.5 ${isDark ? "text-white/40" : "text-slate-500"}`}>Ecosystem by Prabhat Kumar</p>
+                <p className={`truncate text-[10px] mt-0.5 ${isDark ? "text-white/40" : "text-slate-500"}`}>Home &gt; Products &gt; Ecosystem</p>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
@@ -241,6 +257,25 @@ export function ProductsLauncher({ className }: ProductsLauncherProps) {
 
             {/* Search */}
             <div className="px-5 pb-3">
+              <div className={`mb-3 flex flex-wrap items-center justify-center gap-2 border-y py-2 ${isDark ? "border-white/5" : "border-black/5"}`}>
+                {[
+                  ["Home", "/#home"],
+                  ["About", "/#about"],
+                  ["Services", "/#services"],
+                  ["Projects", "/#projects"],
+                  ["Contact", "/#contact"],
+                ].map(([label, href]) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setIsOpen(false)}
+                    className={`inline-flex min-h-8 items-center rounded-full px-3 text-[11px] font-medium transition-colors ${isDark ? "text-white/55 hover:bg-white/10 hover:text-white" : "text-slate-600 hover:bg-black/5 hover:text-slate-900"}`}
+                  >
+                    {label === "Home" && <Home size={12} className="mr-1.5" />}
+                    {label}
+                  </Link>
+                ))}
+              </div>
               <div className="relative">
                 <Search size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? "text-white/30" : "text-slate-400"}`} />
                 <input

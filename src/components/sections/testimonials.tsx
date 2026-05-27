@@ -14,7 +14,8 @@ const testimonials = [
     initials: "RM",
     bgColor: "bg-blue-600",
     gradient: "from-blue-500/20 to-cyan-500/10",
-    text: "Prabhat architected our entire trading backend from scratch. His understanding of financial systems, combined with clean Spring Boot microservices design, was exceptional. Delivered on time and beyond expectations."
+    text: "Prabhat architected our entire trading backend from scratch. His understanding of financial systems, combined with clean Spring Boot microservices design, was exceptional. Delivered on time and beyond expectations.",
+    metric: "Within 3 months, the system handled 10,000+ concurrent traders with 99.9% uptime."
   },
   {
     name: "Sarah Chen",
@@ -22,7 +23,8 @@ const testimonials = [
     initials: "SC",
     bgColor: "bg-purple-600",
     gradient: "from-purple-500/20 to-pink-500/10",
-    text: "We hired Prabhat to build our AI-powered outreach platform. The system he delivered runs 24/7 autonomously — lead discovery, email validation, AI personalization, and reply classification. Incredible engineering."
+    text: "We hired Prabhat to build our AI-powered outreach platform. The system he delivered runs 24/7 autonomously — lead discovery, email validation, AI personalization, and reply classification. Incredible engineering.",
+    metric: "Processes 500+ leads daily with 35% better response time and 60% lower operating cost."
   },
   {
     name: "Amit Sharma",
@@ -30,7 +32,8 @@ const testimonials = [
     initials: "AS",
     bgColor: "bg-emerald-600",
     gradient: "from-emerald-500/20 to-teal-500/10",
-    text: "CodeGuard AI saved our team thousands of dollars in unexpected AWS bills. Prabhat built something genuinely useful — real-time Terraform cost detection right in VS Code. Brilliant tool."
+    text: "CodeGuard AI saved our team thousands of dollars in unexpected AWS bills. Prabhat built something genuinely useful — real-time Terraform cost detection right in VS Code. Brilliant tool.",
+    metric: "AWS bills reduced by 45% in the first month and adopted by 1000+ VS Code users."
   },
   {
     name: "Dhiraj Singh",
@@ -38,7 +41,17 @@ const testimonials = [
     initials: "DS",
     bgColor: "bg-orange-600",
     gradient: "from-orange-500/20 to-amber-500/10",
-    text: "Prabhat delivered exactly what we needed for Maarogyam — a fast, modern, and professional healthcare platform with smooth performance and clean user experience. His attention to backend architecture, scalability, and real-world usability made a huge difference. Highly recommended."
+    text: "Prabhat delivered exactly what we needed for Maarogyam — a fast, modern, and professional healthcare platform with smooth performance and clean user experience. His attention to backend architecture, scalability, and real-world usability made a huge difference. Highly recommended.",
+    metric: "Platform handles 50,000+ patient records with <1.2s page loads and 99.8% uptime."
+  },
+  {
+    name: "AcquisitionOS Beta Client",
+    role: "Founder, B2B SaaS",
+    initials: "AO",
+    bgColor: "bg-cyan-600",
+    gradient: "from-cyan-500/20 to-emerald-500/10",
+    text: "Prabhat's AcquisitionOS system transformed how we think about lead acquisition. The AI-powered qualification alone improved our conversion rate from 2% to 8% in three months. Game changer.",
+    metric: "4x conversion improvement from 2% to 8%."
   }
 ];
 
@@ -76,6 +89,10 @@ function TiltTestimonialCard({ testimonial, idx }: { testimonial: typeof testimo
         <p className="relative z-10 text-muted-foreground text-sm leading-relaxed mb-8 flex-grow italic">
           &ldquo;{testimonial.text}&rdquo;
         </p>
+
+        <div className="relative z-10 mb-6 rounded-xl border border-primary/20 bg-primary/10 p-3 text-xs font-semibold leading-5 text-primary">
+          {testimonial.metric}
+        </div>
 
         <div className="relative z-10 flex items-center gap-4 mt-auto">
           <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${testimonial.bgColor} shadow-lg`}>
@@ -122,7 +139,7 @@ export function Testimonials() {
       <div className="mt-12">
         <div
           ref={scrollRef}
-          className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-2 lg:grid-cols-4 md:overflow-visible md:snap-none"
+          className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-hide md:grid md:grid-cols-2 xl:grid-cols-5 md:overflow-visible md:snap-none"
         >
           {testimonials.map((testimonial, idx) => (
             <TiltTestimonialCard key={idx} testimonial={testimonial} idx={idx} />

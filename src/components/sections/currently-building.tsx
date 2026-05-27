@@ -100,8 +100,19 @@ export function CurrentlyBuilding() {
           className="max-w-3xl mx-auto text-center px-4 mb-8"
         >
           <p className="text-xl md:text-2xl italic font-medium bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-blue-500">
-            "I don't just write code. I build systems that think, trade, sell, and scale — autonomously."
+            "I don't just build products. I build systems that solve problems at scale."
           </p>
+          <p className="mt-5 text-base leading-7 text-muted-foreground">
+            These are not hobby projects. Each product addresses a specific market problem and is either
+            live with users, revenue-facing, or being built with production quality.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3 text-xs font-semibold uppercase tracking-wide">
+            {["AI Automation", "Financial Systems", "Developer Tools", "Infrastructure"].map((focus) => (
+              <span key={focus} className="rounded-full border bg-card/60 px-3 py-2 text-muted-foreground">
+                {focus}
+              </span>
+            ))}
+          </div>
         </motion.div>
       </div>
 

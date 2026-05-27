@@ -5,7 +5,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Section } from "@/components/section-wrapper";
 import { SectionHeading } from "@/components/section-heading";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
+import { CheckCircle2, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 
@@ -25,6 +25,27 @@ export function About() {
   const { about } = siteConfig;
   const profilePic = PlaceHolderImages.find(p => p.id === "profile-picture");
   const [particles, setParticles] = useState<AboutParticle[]>([]);
+  const metrics = [
+    "4+ years engineering production systems",
+    "20+ system architectures designed",
+    "6+ products shipped live or revenue-facing",
+    "AWS 10,000 AIdeas semi-finalist",
+  ];
+  const specializations = [
+    "AI Systems That Scale: Claude API, LLM integration, agentic workflows",
+    "Backend Architecture & Microservices: Java, Spring Boot, event-driven systems",
+    "SaaS Product Development: full-stack execution and product thinking",
+    "System Design for Growth: distributed systems under real-world constraints",
+    "Operational Automation: 24/7 autonomous systems and lead-to-revenue pipelines",
+    "Real-World Problem Solving: actual business problems, not just algorithms",
+  ];
+  const approach = [
+    "Problem First: understand before coding",
+    "Architecture as Solution: design scales with growth",
+    "Shipping Beats Perfect: live product over theoretical perfection",
+    "Metrics Matter: prove impact with data",
+    "Systems Thinking: frontend, backend, infra, and operations connect",
+  ];
 
   useEffect(() => {
     const newParticles = [...Array(8)].map((_, i) => ({
@@ -169,6 +190,22 @@ export function About() {
           >
             {about.p3}
           </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.55 }}
+            className="grid gap-3 sm:grid-cols-2"
+          >
+            {metrics.map((metric) => (
+              <div
+                key={metric}
+                className="rounded-xl border border-black/10 bg-white/40 p-4 text-sm font-semibold text-foreground shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-white/5"
+              >
+                {metric}
+              </div>
+            ))}
+          </motion.div>
         </div>
         
         <div className="md:col-span-2 flex flex-col items-center gap-8">
@@ -337,6 +374,46 @@ export function About() {
             </div>
           </motion.div>
         </div>
+      </div>
+
+      <div className="relative z-10 mt-14 grid gap-6 lg:grid-cols-2">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="rounded-2xl border border-black/10 bg-white/50 p-6 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
+        >
+          <h3 className="mb-5 text-2xl font-bold">What I Specialize In</h3>
+          <div className="space-y-3">
+            {specializations.map((item) => (
+              <div key={item} className="flex gap-3 text-sm leading-6 text-muted-foreground">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.08 }}
+          className="rounded-2xl border border-black/10 bg-white/50 p-6 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-white/5"
+        >
+          <h3 className="mb-5 text-2xl font-bold">How I Work</h3>
+          <div className="space-y-3">
+            {approach.map((item, index) => (
+              <div key={item} className="flex gap-3 text-sm leading-6 text-muted-foreground">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                  {index + 1}
+                </span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </Section>
   );

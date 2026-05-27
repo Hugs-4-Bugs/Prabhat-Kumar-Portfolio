@@ -12,6 +12,18 @@ import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronUp, Sparkles, Zap, Orbit } from 'lucide-react';
 
 const INITIAL_VISIBLE_PROJECTS = 6;
+const FEATURED_PROJECTS = [
+  "QuantumFusion Solutions",
+  "CodeGuard AI",
+  "PrabhatVerse Blog Platform",
+  "Cryptocurrency Price Prediction",
+];
+const projectImpact: Record<string, string> = {
+  "QuantumFusion Solutions": "Company OS: AI, cloud automation, product studio",
+  "CodeGuard AI": "1000+ users target, AWS 10K AIdeas semi-finalist",
+  "PrabhatVerse Blog Platform": "Technical writing and architecture deep dives",
+  "Cryptocurrency Price Prediction": "Finance ML system with real market data",
+};
 
 interface ProjectParticle {
   id: number;
@@ -127,8 +139,15 @@ export function Projects() {
   }, []);
 
   const filteredProjects = useMemo(() => {
-    if (activeFilter === 'All') return projects;
-    return projects.filter(p => p.tags.includes(activeFilter));
+    const source = activeFilter === 'All' ? projects : projects.filter(p => p.tags.includes(activeFilter));
+    return [...source].sort((a, b) => {
+      const aIndex = FEATURED_PROJECTS.indexOf(a.name);
+      const bIndex = FEATURED_PROJECTS.indexOf(b.name);
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
   }, [activeFilter, projects]);
   
   const visibleProjects = useMemo(() => {
@@ -200,10 +219,26 @@ export function Projects() {
               <Sparkles className="w-8 h-8 text-purple-400 animate-bounce" />
             </div>
             <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-              Exploring the universe of code, one project at a time 🚀
+              Featured systems first: products, production builds, architecture deep dives, and focused experiments.
             </p>
           </motion.div>
         </SectionHeading>
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mb-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
+        >
+          {FEATURED_PROJECTS.map((name) => (
+            <div key={name} className="rounded-2xl border border-cyan-400/20 bg-slate-900/70 p-4 shadow-lg shadow-cyan-950/20 backdrop-blur-xl">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">Featured</p>
+              <h3 className="mt-2 text-lg font-bold text-white">{name}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-300">{projectImpact[name]}</p>
+            </div>
+          ))}
+        </motion.div>
 
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
