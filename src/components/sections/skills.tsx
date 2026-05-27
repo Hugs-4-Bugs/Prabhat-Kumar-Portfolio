@@ -99,6 +99,7 @@ const TabsContext = React.createContext(null);
 
 const Tabs = ({ defaultValue, children, className }) => {
   const [activeTab, setActiveTab] = useState(defaultValue);
+
   return (
     <TabsContext.Provider value={{ activeTab, setActiveTab }}>
       <div className={className}>{children}</div>
@@ -443,7 +444,7 @@ export function Skills() {
             </div>
             
             {/* Enhanced Smooth Tab Transitions */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence initial={false}>
               {skills.map((category) => (
                 <TabsContent key={category.category} value={category.category}>
                   <motion.div

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "trading-bot-architecture",
+    "text": "Breaking down the architecture behind a production-grade AI trading bot for Indian markets: FastAPI, WebSockets, broker integrations, Claude-powered analysis, risk management, and a clean paper-to-live trading flow.",
+    "date": "2026-05-01",
+    "url": "https://www.linkedin.com/in/prabhat-kumar-6963661a4/"
+  },
+  {
+    "id": "codeguard-ai-aws-cost",
+    "text": "CodeGuard AI detects AWS cost risks inside Terraform while developers are still writing infrastructure code. Real-time VS Code diagnostics, quick fixes, and cloud cost guardrails can prevent expensive mistakes before deployment.",
+    "date": "2026-04-24",
+    "url": "https://www.linkedin.com/in/prabhat-kumar-6963661a4/"
+  },
+  {
+    "id": "ai-sales-outreach-automation",
+    "text": "AI sales outreach automation is more than sending emails. The real engineering challenge is lead discovery, validation, personalization, campaign sequencing, reply classification, and workflow automation that runs reliably.",
+    "date": "2026-04-17",
+    "url": "https://www.linkedin.com/in/prabhat-kumar-6963661a4/"
+  }
+]

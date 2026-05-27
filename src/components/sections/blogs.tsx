@@ -55,7 +55,7 @@ const BlogCategoryRow = ({ categoryName, blogs, onRead, bookmarks, onBookmark }:
       <div className="flex justify-between items-center px-4 md:px-8">
         <h3 className="text-3xl font-bold font-headline text-primary mb-8">{categoryName}</h3>
         <div className="md:hidden flex items-center text-sm text-primary/80 mb-8">
-           <AnimatePresence mode="wait">
+           <AnimatePresence initial={false}>
             <motion.div
               key={scrollDirection}
               initial={{ opacity: 0, x: scrollDirection === 'right' ? -10 : 10 }}
