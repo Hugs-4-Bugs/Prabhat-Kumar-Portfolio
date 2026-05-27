@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion, useScroll } from "framer-motion";
 import { Menu, X, Github, Linkedin, Instagram, Search } from "lucide-react";
+import { ProductsLauncher } from "./products/ProductsLauncher";
 import { gsap } from "gsap";
 
 import { cn } from "@/lib/utils";
@@ -81,7 +82,7 @@ export function Header({ onSearchClick }: HeaderProps) {
         <div className="container flex items-center justify-between h-16">
           <Logo />
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            {siteConfig.navLinks.map((link) => {
+            {siteConfig.navLinks.filter(link => link.label !== 'Blogs').map((link) => {
               const isExternal = link.href.startsWith("http");
               if (isExternal) {
                 return (
@@ -120,6 +121,7 @@ export function Header({ onSearchClick }: HeaderProps) {
           </nav>
           <div className="flex items-center space-x-2">
              <div className="hidden md:flex items-center space-x-1">
+               <ProductsLauncher />
                <Button variant="ghost" size="icon" onClick={onSearchClick} aria-label="AI Search" data-cursor-hover>
                   <QuantumAIIcon />
                </Button>
@@ -160,7 +162,7 @@ export function Header({ onSearchClick }: HeaderProps) {
           className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm md:hidden"
         >
           <div className="flex flex-col items-center justify-center h-full space-y-6 text-lg font-medium">
-            {siteConfig.navLinks.map((link) => {
+            {siteConfig.navLinks.filter(link => link.label !== 'Blogs').map((link) => {
               const isExternal = link.href.startsWith("http");
               if (isExternal) {
                 return (
@@ -187,6 +189,13 @@ export function Header({ onSearchClick }: HeaderProps) {
                 </Link>
               );
             })}
+            <Link
+              href="/products"
+              className="transition-colors hover:text-primary"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Products
+            </Link>
             <div className="border-t w-1/2 my-4"></div>
             <Button variant="ghost" onClick={() => { onSearchClick(); setIsMobileMenuOpen(false); }} className="text-lg">
                 <QuantumAIIcon /> <span className="ml-2">AI Search</span>

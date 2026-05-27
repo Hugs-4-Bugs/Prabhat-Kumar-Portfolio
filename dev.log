@@ -1,0 +1,212 @@
+
+> nextn@0.1.0 dev
+> next dev
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/prabhatkumar/package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/package-lock.json
+
+   ▲ Next.js 15.5.9
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.31.104:3000
+
+ ✓ Starting...
+ ✓ Ready in 2.4s
+ ○ Compiling / ...
+ ✓ Compiled / in 3.8s (2111 modules)
+ GET / 200 in 5309ms
+ ✓ Compiled in 215ms (880 modules)
+ GET / 200 in 792ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 1444ms (1247 modules)
+ GET /favicon.ico 200 in 1950ms
+ ✓ Compiled in 1504ms (2111 modules)
+ GET / 200 in 986ms
+ ✓ Compiled in 476ms (2111 modules)
+ GET / 200 in 268ms
+ GET / 200 in 2543ms
+ ✓ Compiled /favicon.ico in 419ms (1247 modules)
+ GET /favicon.ico 200 in 841ms
+ ⨯ ./src/components/products/ProductsLauncher.tsx
+Error:   [31mx[0m Expected '</', got 'numeric literal (10, 10)'
+     ,-[[36;1;4m/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/src/components/products/ProductsLauncher.tsx[0m:230:1]
+ [2m227[0m |               </div>
+ [2m228[0m |               <button
+ [2m229[0m |                 onClick={() => setIsOpen(false)}
+ [2m230[0m |                 className="w-7 h-7 rounded-full flex items-center justify-center transition-colors ${isDark ? "hover:bg-white/10" : "hover:bg-black/5"}"
+     : [35;1m                                                                                                                              ^^[0m
+ [2m231[0m |               >
+ [2m232[0m |                 <X size={14} className={isDark ? "text-white/50" : "text-slate-400"} />
+ [2m233[0m |               </button>
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/products/ProductsLauncher.tsx
+./src/components/header.tsx
+./src/components/RootClientShell.tsx
+ ✓ Compiled in 1213ms (2127 modules)
+ GET / 200 in 256ms
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')] {
+  digest: '175724574'
+}
+ POST / 500 in 456ms
+ ⨯ Error: Could not find the module "/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '1194266960'
+}
+ ⨯ Error: Could not find the module "/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '1194266960'
+}
+ ⨯ Error: Could not find the module "/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '1194266960'
+}
+ ⨯ Error: Could not find the module "/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3736574889'
+}
+ ⨯ Error: Could not find the module "/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3736574889'
+}
+ ⨯ Error: Could not find the module "/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3736574889'
+}
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')] {
+  digest: '1878588569'
+}
+ ⨯ Error: Could not find the module "/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/next-devtools/userspace/app/segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '1194266960'
+}
+[TypeError: Cannot read properties of undefined (reading 'call')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')] {
+  page: '/'
+}
+ ○ Compiling /_error ...
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled /favicon.ico in 3.2s (2437 modules)
+ ✓ Compiled (2453 modules)
+ ⨯ Error: Cannot find module './586.js'
+Require stack:
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/webpack-runtime.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/pages/_document.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/require.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/load-components.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/utils.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/swc/options.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/swc/index.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/router-server.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:58051)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:58097) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 1912ms
+ GET / 200 in 2262ms
+ GET / 500 in 6735ms
+ ⨯ Error: Cannot find module './586.js'
+Require stack:
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/webpack-runtime.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/pages/_document.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/require.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/load-components.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/utils.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/swc/options.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/swc/index.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/router-server.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:58051)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:58097) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 529ms
+ GET / 200 in 2091ms
+ ⨯ Error: Cannot find module './586.js'
+Require stack:
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/webpack-runtime.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/pages/_document.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/require.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/load-components.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/utils.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/swc/options.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/swc/index.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/router-server.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:58051)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:58097) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 70ms
+ GET / 200 in 1073ms
+ ⨯ Error: Cannot find module './586.js'
+Require stack:
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/webpack-runtime.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/pages/_document.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/require.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/load-components.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/utils.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/swc/options.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/swc/index.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/router-server.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:58051)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:58097) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 115ms
+ GET / 200 in 916ms
+ ⨯ Error: Cannot find module './586.js'
+Require stack:
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/webpack-runtime.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/server/pages/_document.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/require.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/load-components.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/utils.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/swc/options.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/swc/index.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/router-server.js
+- /Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/favicon.ico/route.js:1:58051)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:1:58097) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 180ms
+ ✓ Compiled in 10.3s (2451 modules)
+ ✓ Compiled in 1095ms (2451 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/4.pack.gz_' -> '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/client-development/4.pack.gz'
+ GET / 200 in 2618ms
