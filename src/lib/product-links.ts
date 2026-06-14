@@ -7,6 +7,8 @@ import {
   Network,
   ShieldCheck,
   Target,
+  FileText,
+  BadgeDollarSign,
 } from "lucide-react";
 
 export const productLinks = [
@@ -68,5 +70,19 @@ export const productLinks = [
     href: "/problems-solved",
     status: "Research",
     icon: Target,
+  },
+  {
+    label: "Case Studies",
+    description: "Problem, solution, result, metrics",
+    href: "/case-studies",
+    status: "Live",
+    icon: FileText,
+  },
+  {
+    label: "Pricing",
+    description: "Consulting, setup, and retainer models",
+    href: "/pricing",
+    status: "Live",
+    icon: BadgeDollarSign,
   },
 ];

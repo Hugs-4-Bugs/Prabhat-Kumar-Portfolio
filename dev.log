@@ -441,3 +441,4 @@ Import trace for requested module:
  ✓ Compiled in 12.1s (2540 modules)
  ✓ Compiled in 4.9s (2540 modules)
 <w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/server-development/1.pack.gz_' -> '/Users/prabhatkumar/Downloads/Prabhat-Kumar-Portfolio/.next/cache/webpack/server-development/1.pack.gz'
+[?25h

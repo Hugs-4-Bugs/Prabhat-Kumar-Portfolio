@@ -29,6 +29,16 @@ import {
   StrategicProblems,
   WhyDifferent,
 } from "@/components/sections/strategy-sections";
+import {
+  ArchitectureVisualization,
+  CommunityProofAndLeadMagnet,
+  IntegrationShowcase,
+  LiveCodeSnippets,
+  LiveProductDashboard,
+  PricingPreview,
+  ProductComparisonMatrix,
+  ShippingRoadmap,
+} from "@/components/sections/proof-conversion-sections";
 import { PaidModal } from "@/components/blog/PaidModal";
 import { ErrorBoundary } from "@/components/error-boundary";
 
@@ -108,6 +118,22 @@ function AppContent() {
         <CurrentlyBuilding />
       </ErrorBoundary>
 
+      <ErrorBoundary sectionName="LiveProductDashboard">
+        <LiveProductDashboard />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="ProductComparisonMatrix">
+        <ProductComparisonMatrix />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="ArchitectureVisualization">
+        <ArchitectureVisualization />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="ShippingRoadmap">
+        <ShippingRoadmap />
+      </ErrorBoundary>
+
       <ErrorBoundary sectionName="SeoPageLinks">
         <SeoPageLinks />
       </ErrorBoundary>
@@ -152,12 +178,28 @@ function AppContent() {
         <InnovationResearch />
       </ErrorBoundary>
 
+      <ErrorBoundary sectionName="IntegrationShowcase">
+        <IntegrationShowcase />
+      </ErrorBoundary>
+
       <ErrorBoundary sectionName="TechStack">
         <TechStack />
       </ErrorBoundary>
 
       <ErrorBoundary sectionName="Education">
         <Education />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="LiveCodeSnippets">
+        <LiveCodeSnippets />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="CommunityProofAndLeadMagnet">
+        <CommunityProofAndLeadMagnet />
+      </ErrorBoundary>
+
+      <ErrorBoundary sectionName="PricingPreview">
+        <PricingPreview />
       </ErrorBoundary>
 
       <ErrorBoundary sectionName="CTABar">
