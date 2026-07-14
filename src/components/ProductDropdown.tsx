@@ -138,7 +138,7 @@ export function ProductDropdown({ mobile = false, onSelect }: ProductDropdownPro
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="overflow-hidden"
             >
-              <div className="mt-2 grid gap-1 rounded-lg border bg-background/90 p-2 shadow-lg">
+              <div className="mt-2 grid max-h-[55vh] gap-1 overflow-y-auto overscroll-contain rounded-lg border bg-background/90 p-2 pr-1 shadow-lg sm:max-h-[28rem]">
                 {productLinks.map((item, index) => renderItem(item, index, true))}
               </div>
             </motion.div>
@@ -177,10 +177,10 @@ export function ProductDropdown({ mobile = false, onSelect }: ProductDropdownPro
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="absolute left-1/2 top-full z-50 mt-4 w-[360px] -translate-x-1/2 rounded-xl border bg-background/95 p-2 shadow-xl shadow-black/10 backdrop-blur-xl dark:shadow-black/40"
+            className="absolute left-1/2 top-full z-50 mt-4 w-[min(calc(100vw-2rem),390px)] -translate-x-1/2 overflow-hidden rounded-xl border bg-background/95 p-2 shadow-xl shadow-black/10 backdrop-blur-xl dark:shadow-black/40"
             role="menu"
           >
-            <div className="grid gap-1">
+            <div className="grid max-h-[calc(100vh-7rem)] gap-1 overflow-y-auto overscroll-contain pr-1">
               {productLinks.map((item, index) => renderItem(item, index))}
             </div>
           </motion.div>

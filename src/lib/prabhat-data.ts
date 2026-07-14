@@ -113,7 +113,19 @@ export const prabhatData = {
       "OpenAI API", "Ollama AI Models",
       "AI Chatbot & Voicebot Integration",
       "Cryptocurrency Price Prediction using Machine Learning",
-      "AI Compiler", "Visual AI Systems", "Algo Trading Models"
+      "AI Compiler", "Visual AI Systems", "Algo Trading Models",
+      "AI-powered developer tools", "Agentic workflows", "Project-aware AI assistants",
+      "AI idea selection and product validation"
+    ],
+    product_engineering: [
+      "Problem discovery and product positioning",
+      "AI SaaS workflow design",
+      "Developer productivity tooling",
+      "Cloud cost risk detection",
+      "Architecture documentation and technical roadmaps",
+      "Production readiness reviews",
+      "API-first backend design",
+      "Operational automation"
     ],
     trading_concepts: [
       "Mirror Market Analysis", "Supply & Demand Zones", "Real vs Fake Breakouts",
@@ -174,6 +186,58 @@ export const prabhatData = {
       {
         name: "AlgoByPrabhat",
         summary: "Hub for algorithmic trading models. FVG, Order Blocks, Trendlines, Liquidity, etc."
+      },
+      {
+        name: "CodeGuard AI",
+        summary: "VS Code extension that analyzes Terraform infrastructure code and detects potential AWS cost risks before deployment. It scans .tf files, flags expensive cloud resources, and brings FinOps-style guardrails directly into the developer workflow. It represents Prabhat's AWS AI idea-selection direction: choosing practical AI products that solve costly developer and cloud operations problems instead of building generic demos."
+      },
+      {
+        name: "AWS AI Idea Selection System",
+        summary: "A product-thinking framework for identifying high-value AWS and AI automation ideas, scoring them by pain intensity, buyer urgency, implementation feasibility, cloud cost impact, and developer workflow fit. This helps turn raw AI ideas into practical tools like CodeGuard AI, AWS cost detection, infrastructure review assistants, and cloud reliability copilots."
+      },
+      {
+        name: "Cloud Cost Intelligence Toolkit",
+        summary: "Concept and product direction around detecting AWS cost risks, wasteful Terraform patterns, over-provisioned resources, missing budgets, and deployment-time cloud mistakes before they become expensive production bills."
+      },
+      {
+        name: "AI Product Selection Engine",
+        summary: "Framework for ranking startup/product ideas by market pain, technical edge, automation leverage, monetization potential, and whether Prabhat can build a production-grade MVP quickly using Java, Next.js, AI APIs, AWS, and automation workflows."
+      },
+      {
+        name: "IntelliJ IDEA AI Plugin",
+        summary: "Custom IntelliJ IDEA plugin that integrates AI assistance inside the IDE. It focuses on contextual coding help, project-aware responses, provider failover, and an advanced chat interface for developer productivity."
+      },
+      {
+        name: "PrabhatVerse Blog Platform",
+        summary: "Modern full-stack blogging platform with AI-powered writing support, markdown editing, premium content ideas, and a publishing ecosystem for technical writing and creator monetization."
+      },
+      {
+        name: "AcquisitionOS",
+        summary: "AI-assisted lead acquisition and sales workflow system for discovery, qualification, outreach, follow-ups, reply classification, and lead-to-revenue automation."
+      },
+      {
+        name: "AI Sales Outreach Platform",
+        summary: "A 24/7 automated outreach architecture that can coordinate lead discovery, email validation, AI personalization, campaign execution, follow-up sequences, reply classification, and analytics."
+      },
+      {
+        name: "AI Observability Platform",
+        summary: "Monitoring and analysis platform concept for AI systems, focused on model behavior visibility, drift signals, operational reliability, and production-grade insight into AI workflows."
+      },
+      {
+        name: "SystemFoundry",
+        summary: "Architecture consulting and system design product for turning ideas into implementation-ready plans, diagrams, trade-off decisions, API boundaries, and scalable engineering roadmaps."
+      },
+      {
+        name: "Architecture Lab",
+        summary: "Interactive portfolio area for exploring system architecture patterns, including trading infrastructure, backend platforms, AI systems, and product-level engineering decisions."
+      },
+      {
+        name: "Trading Bot Architecture",
+        summary: "Production-grade trading system architecture for Indian markets, crypto, risk controls, live dashboards, broker integrations, signal analysis, paper trading, and live execution guardrails."
+      },
+      {
+        name: "Maa Aarogyam",
+        summary: "Healthcare platform work focused on fast, modern user experience, backend scalability, real-world usability, and professional healthcare service presentation."
       }
     ],
     from_scratch_systems: [
@@ -183,7 +247,32 @@ export const prabhatData = {
       "Visualization Machine",
       "Personal Web Server",
       "Proprietary Database Engine"
-    ]
+    ],
+    current_builds_and_focus_areas: [
+      "Founder-level product systems around QuantumFusion Solutions.",
+      "AI company operating systems and agentic workflows.",
+      "Contract-ready backend, AI, automation, SaaS, and trading system delivery.",
+      "AWS cost intelligence, Terraform risk detection, and cloud reliability tooling.",
+      "System design education, architecture diagrams, and implementation-ready planning.",
+      "AI assistants that can understand the live portfolio context rather than only static profile data.",
+      "AWS AI product ideas, idea validation, product selection, and developer-tool monetization.",
+      "Building practical AI products that connect business pain with production engineering."
+    ],
+    senior_developer_positioning: {
+      headline: "Experienced Java backend, full-stack, AI systems, and cloud automation developer with founder-level product thinking.",
+      strengths: [
+        "Can design backend systems from API contracts to database schema, authentication, deployment, and monitoring.",
+        "Combines Spring Boot, microservices, AWS, Next.js, and AI workflows into usable products.",
+        "Understands both implementation details and product positioning: what to build, why it matters, who needs it, and how to present it.",
+        "Uses system design thinking for trading systems, outreach automation, AI observability, cloud cost guardrails, and developer tools.",
+        "Focuses on real-world reliability, scalability, maintainability, security, and measurable business impact."
+      ],
+      business_value: [
+        "Helps startups move from unclear ideas to implementation-ready systems.",
+        "Builds AI and automation tools that reduce manual work, cloud waste, and operational risk.",
+        "Can communicate technical work as business outcomes for clients, recruiters, founders, and engineering teams."
+      ]
+    }
   },
   work_experience: [
     {

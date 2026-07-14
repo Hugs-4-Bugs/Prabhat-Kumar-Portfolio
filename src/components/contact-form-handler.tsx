@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { handleResumeUpload } from "@/app/actions";
+import { handleResumeUpload, submitContactForm } from "@/app/actions";
 import type { ResumeAnalysisState } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,7 +17,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Upload, Sparkles, Lightbulb, User, Mail, Phone, Briefcase, List, AlertTriangle } from "lucide-react";
-import { siteConfig } from "@/lib/data";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -39,14 +38,27 @@ export function ContactFormHandler() {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { register, handleSubmit, formState: { errors }, setValue, reset } = useForm<ContactFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, reset } = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
   });
 
-  const onSubmit: SubmitHandler<ContactFormData> = (data) => {
-    // This is a client-side function now, but it's not actually submitting via JS
-    // The form action will handle the submission.
-    // We can use this for any pre-submission logic if needed.
+  const onSubmit: SubmitHandler<ContactFormData> = async (data) => {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("email", data.email);
+    formData.append("message", data.message);
+
+    const result = await submitContactForm(formData);
+
+    toast({
+      title: result.success ? "Message Sent" : "Message Failed",
+      description: result.message,
+      variant: result.success ? "default" : "destructive",
+    });
+
+    if (result.success) {
+      reset();
+    }
   };
 
   useEffect(() => {
@@ -178,8 +190,6 @@ export function ContactFormHandler() {
       <div>
         <h3 className="text-2xl font-bold font-headline mb-4">Get in Touch</h3>
         <form
-          action={siteConfig.formspreeEndpoint}
-          method="POST"
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-4"
         >
@@ -198,8 +208,8 @@ export function ContactFormHandler() {
             <Textarea id="message" {...register("message")} placeholder="Let's build something amazing together!" rows={5} data-cursor-hover />
             {errors.message && <p className="text-destructive text-sm mt-1">{errors.message.message}</p>}
           </div>
-          <Button type="submit" className="w-full" data-cursor-hover>
-            Send Message
+          <Button type="submit" className="w-full" disabled={isSubmitting} data-cursor-hover>
+            {isSubmitting ? "Sending..." : "Send Message"}
           </Button>
         </form>
       </div>

@@ -113,7 +113,7 @@ const TabsList = ({ children, className }) => (
     whileInView={{ opacity: 1, scale: 1 }}
     transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.4 }}
     viewport={{ once: true, amount: 0.1 }}
-    className={`flex flex-wrap gap-2 p-1 rounded-full bg-muted/50 backdrop-blur-sm ${className}`}
+    className={`flex flex-wrap justify-center gap-2 p-1 rounded-full bg-muted/50 backdrop-blur-sm ${className}`}
   >
     {children}
   </motion.div>
@@ -429,7 +429,7 @@ export function Skills() {
           
           <Tabs defaultValue={activeCategory} onValueChange={handleTabChange} className="w-full">
             <div className="flex justify-center magnetic-button-container mb-8">
-              <TabsList className="w-full max-w-4xl grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 h-auto border border-border/70 shadow-xl">
+              <TabsList className="w-full max-w-4xl h-auto border border-border/70 shadow-xl">
                 {skills.map((category) => (
                   <TabsTrigger 
                     key={category.category} 

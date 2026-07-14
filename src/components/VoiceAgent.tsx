@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mic, Play, Volume2, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getVoiceAIResponse } from '@/app/actions';
+import { getAIAudio, getVoiceAIResponse } from '@/app/actions';
 import { getBrowserStorage } from '@/lib/browser-storage';
 
 const VOICE_AGENTS = [
@@ -32,16 +32,23 @@ interface VoiceAgentProps {
 }
 
 export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessage }: VoiceAgentProps) {
-  const [state, setState] = useState<'idle' | 'listening' | 'thinking' | 'speaking'>('idle');
+  const [state, setState] = useState<'idle' | 'requesting_permission' | 'listening' | 'thinking' | 'speaking' | 'error'>('idle');
   const [selectedAgent, setSelectedAgent] = useState(VOICE_AGENTS[0]);
   const [transcript, setTranscript] = useState('');
   const [lastExchange, setLastExchange] = useState({ user: '', ai: '' });
   const [sessionStarted, setSessionStarted] = useState(false);
   
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const selectedAgentRef = useRef(VOICE_AGENTS[0]);
   const isComponentMounted = useRef(true);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
+  const stateRef = useRef(state);
+  const finalTranscriptRef = useRef('');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   useEffect(() => {
     isComponentMounted.current = true;
@@ -55,6 +62,10 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
 
     return () => {
       isComponentMounted.current = false;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
       window.speechSynthesis.cancel();
       if (recognitionRef.current) recognitionRef.current.stop();
     };
@@ -100,7 +111,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     return voices.find(v => v.lang.startsWith('en')) || voices[0];
   }, []);
 
-  const speakNaturally = useCallback((text: string, agent?: typeof VOICE_AGENTS[0], onEnd?: () => void) => {
+  const speakWithBrowserFallback = useCallback((text: string, agent?: typeof VOICE_AGENTS[0], onEnd?: () => void) => {
     console.log('[VoiceAgent] Speaking:', text);
     window.speechSynthesis.cancel();
     
@@ -162,14 +173,69 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     speakNext();
   }, [getBestVoice]);
 
-  const startListening = useCallback(() => {
+  const cleanSpeechText = useCallback((text: string) => {
+    return text
+      .replace(/Prabhat/g, 'Pra-bhaat')
+      .replace(/\*\*/g, '').replace(/\*/g, '').replace(/#{1,6}\s/g, '')
+      .replace(/`[^`]*`/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/AWS/g, 'A W S').replace(/API/g, 'A P I')
+      .replace(/JWT/g, 'J W T').replace(/SQL/g, 'S Q L')
+      .replace(/UI/g, 'U I').replace(/UX/g, 'U X');
+  }, []);
+
+  const speakNaturally = useCallback(async (text: string, agent?: typeof VOICE_AGENTS[0], onEnd?: () => void) => {
+    const cleaned = cleanSpeechText(text);
+    if (!cleaned.trim()) {
+      onEnd?.();
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
+
+    try {
+      const currentAgent = agent || selectedAgentRef.current;
+      const audioResponse = await getAIAudio(cleaned, currentAgent.id);
+      if (isComponentMounted.current && audioResponse.success && audioResponse.audio) {
+        const audio = new Audio(audioResponse.audio);
+        audioRef.current = audio;
+        audio.onplay = () => {
+          if (isComponentMounted.current) setState('speaking');
+        };
+        audio.onended = () => {
+          if (isComponentMounted.current) onEnd?.();
+        };
+        audio.onerror = () => {
+          speakWithBrowserFallback(cleaned, currentAgent, onEnd);
+        };
+        await audio.play();
+        return;
+      }
+    } catch (error) {
+      console.error('[VoiceAgent] Natural TTS failed, using browser fallback:', error);
+    }
+
+    speakWithBrowserFallback(cleaned, agent, onEnd);
+  }, [cleanSpeechText, speakWithBrowserFallback]);
+
+  const startListening = useCallback(async () => {
     console.log('[VoiceAgent] Starting listening...');
     if (!isComponentMounted.current) return;
     
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
+    window.speechSynthesis.cancel();
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      setTranscript('Speech recognition not supported.');
+      setState('error');
+      setTranscript('Speech recognition is not supported in this browser. Please try Chrome or Edge.');
       return;
     }
 
@@ -177,10 +243,24 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       try { recognitionRef.current.stop(); } catch(e) {}
     }
 
+    try {
+      setState('requesting_permission');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+    } catch (error) {
+      console.error('[VoiceAgent] Microphone permission error:', error);
+      if (isComponentMounted.current) {
+        setState('error');
+        setTranscript('Microphone permission is blocked. Please allow microphone access and try again.');
+      }
+      return;
+    }
+
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = 'en-IN';
+    finalTranscriptRef.current = '';
     
     recognition.onstart = () => {
       if (isComponentMounted.current) {
@@ -189,28 +269,45 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
       }
     };
 
-    recognition.onresult = (event: any) => {
-      let current = '';
+    recognition.onresult = (event) => {
+      let interim = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        current += event.results[i][0].transcript;
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscriptRef.current += result[0].transcript;
+        } else {
+          interim += result[0].transcript;
+        }
       }
+      const current = `${finalTranscriptRef.current} ${interim}`.trim();
       setTranscript(current);
       
       if (event.results[event.results.length - 1].isFinal) {
-        console.log('[VoiceAgent] Final result:', current);
-        handleUserInput(current);
+        const finalText = finalTranscriptRef.current.trim();
+        console.log('[VoiceAgent] Final result:', finalText);
+        try { recognition.stop(); } catch(e) {}
+        handleUserInput(finalText);
       }
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event) => {
       console.log('[VoiceAgent] Recognition error:', event.error);
       if (isComponentMounted.current) {
-        setState('idle');
+        if (event.error === 'no-speech') {
+          setState('idle');
+          setTranscript('I did not catch that. Tap the mic and try again.');
+        } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          setState('error');
+          setTranscript('Microphone permission is blocked. Please allow microphone access and try again.');
+        } else {
+          setState('error');
+          setTranscript(`Voice recognition error: ${event.error}`);
+        }
       }
     };
 
     recognition.onend = () => {
-      if (isComponentMounted.current && state === 'listening') {
+      if (isComponentMounted.current && stateRef.current === 'listening') {
         setState('idle');
       }
     };
@@ -221,7 +318,7 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
     } catch(e) {
       console.error('[VoiceAgent] Start error:', e);
     }
-  }, [state]);
+  }, []);
 
   const handleUserInput = async (input: string) => {
     if (!input.trim() || !isComponentMounted.current) return;
@@ -243,12 +340,20 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
           }
         });
       } else {
-        console.error('[VoiceAgent] AI call failed:', result.message);
-        if (isComponentMounted.current) setState('idle');
+        const fallback = result.message || "Sorry, I'm having trouble connecting right now.";
+        console.error('[VoiceAgent] AI call failed:', fallback);
+        setLastExchange(prev => ({ ...prev, ai: fallback }));
+        speakNaturally(fallback, undefined, () => {
+          if (isComponentMounted.current) setState('idle');
+        });
       }
     } catch (err) {
       console.error('[VoiceAgent] Fatal error:', err);
-      if (isComponentMounted.current) setState('idle');
+      const fallback = "Sorry, something went wrong with voice mode. Please try again.";
+      setLastExchange(prev => ({ ...prev, ai: fallback }));
+      speakNaturally(fallback, undefined, () => {
+        if (isComponentMounted.current) setState('idle');
+      });
     }
   };
 
@@ -264,6 +369,10 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
 
   const toggleMic = () => {
     if (state === 'speaking') {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
       window.speechSynthesis.cancel();
       startListening();
     } else if (state === 'listening') {
@@ -275,6 +384,10 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
   };
 
   const handleClose = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
     window.speechSynthesis.cancel();
     if (recognitionRef.current) recognitionRef.current.stop();
     onClose();
@@ -368,7 +481,9 @@ export function VoiceAgent({ isVisible, onClose, conversationHistory, onAddMessa
                     className="text-xl md:text-3xl font-bold font-headline mb-2"
                   >
                     {state === 'listening' ? 'Listening...' : 
+                     state === 'requesting_permission' ? 'Requesting microphone...' :
                      state === 'thinking' ? 'Thinking...' : 
+                     state === 'error' ? 'Voice needs attention' :
                      state === 'speaking' ? 'Speaking...' : 'Ready to chat'}
                   </motion.h2>
                   <p className="text-xs md:text-sm text-gray-400 line-clamp-2 min-h-[2rem] md:min-h-[2.5rem]">

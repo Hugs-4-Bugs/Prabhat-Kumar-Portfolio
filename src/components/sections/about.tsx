@@ -26,7 +26,7 @@ export function About() {
   const profilePic = PlaceHolderImages.find(p => p.id === "profile-picture");
   const [particles, setParticles] = useState<AboutParticle[]>([]);
   const metrics = [
-    "4+ years engineering production systems",
+    "3+ years engineering production systems",
     "20+ system architectures designed",
     "6+ products shipped live or revenue-facing",
     "AWS 10,000 AIdeas semi-finalist",

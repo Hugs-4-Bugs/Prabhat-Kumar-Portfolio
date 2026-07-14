@@ -5,9 +5,12 @@ import { z } from "zod";
 import { detectSpam } from "@/ai/flows/detect-spam-contact-form";
 import { parseResumeAndAutofill } from "@/ai/flows/parse-resume-autofill-form";
 import { suggestResumeImprovements } from "@/ai/flows/suggest-resume-improvements";
+import { analyzeProjectDescription } from "@/ai/flows/analyze-project-description";
+import type { AnalyzeProjectDescriptionOutput } from "@/ai/flows/analyze-project-description";
 import { askPrabhatAI } from "@/ai/flows/ask-prabhat-ai-flow";
 import { textToSpeech } from "@/ai/flows/text-to-speech-flow";
 import { ai } from "@/ai/genkit";
+import { prabhatData } from "@/lib/prabhat-data";
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -21,8 +24,12 @@ const contactFormSchema = z.object({
   message: z.string().min(10, "Message must be at least 10 characters."),
 });
 
-// This server action is no longer directly used by the form, 
-// but we keep it for the AI spam check, which FormSubmit can call via a webhook if needed.
+const architectureReviewSchema = z.object({
+  email: z.string().email("Invalid email address."),
+  description: z.string().min(20, "Please describe the product, bottleneck, or architecture in at least 20 characters."),
+});
+
+// Handles contact form delivery through Resend/Rizen while preserving AI spam checks when configured.
 export async function submitContactForm(formData: FormData) {
   const validatedFields = contactFormSchema.safeParse({
     name: formData.get("name"),
@@ -39,25 +46,61 @@ export async function submitContactForm(formData: FormData) {
   }
 
   const { message } = validatedFields.data;
+  const { name, email } = validatedFields.data;
 
   try {
-    const spamResult = await detectSpam({ message });
-    if (spamResult.isSpam) {
-      // This part is for potential future use with FormSubmit webhooks.
-      // For now, FormSubmit handles the submission directly.
-      console.log(`Spam detected: ${spamResult.reason}`);
+    if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) {
+      const spamResult = await detectSpam({ message });
+      if (spamResult.isSpam) {
+        console.log(`Spam detected: ${spamResult.reason}`);
+        return {
+          success: false,
+          message: `Spam detected: ${spamResult.reason}.`,
+        };
+      }
+    }
+  } catch (error) {
+    console.warn("Contact spam check failed; continuing with email delivery:", error);
+  }
+
+  try {
+    const escapedName = escapeHtml(name);
+    const escapedEmail = escapeHtml(email);
+    const escapedMessage = escapeHtml(message).replace(/\n/g, "<br />");
+
+    const response = await sendPortfolioEmail({
+      subject: `New portfolio message from ${name}`,
+      replyTo: email,
+      text: [
+        "New Quantum Message Transmission",
+        "",
+        `Name: ${name}`,
+        `Email: ${email}`,
+        "",
+        "Message:",
+        message,
+      ].join("\n"),
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;">
+          <h2 style="margin:0 0 16px;">New Quantum Message Transmission</h2>
+          <p><strong>Name:</strong> ${escapedName}</p>
+          <p><strong>Email:</strong> ${escapedEmail}</p>
+          <p><strong>Message:</strong></p>
+          <div style="padding:16px;border-left:4px solid #6366f1;background:#f8fafc;">${escapedMessage}</div>
+        </div>
+      `,
+    });
+
+    if (!response.success) {
       return {
         success: false,
-        message: `Spam detected: ${spamResult.reason}.`,
+        message: response.message,
       };
     }
-    
-    // Email sending is now handled by formsubmit.co
-    // We can add other logic here if needed, like saving to a database.
 
     return {
       success: true,
-      message: "Form data is valid and not spam.",
+      message: "Message sent successfully. I will get back to you soon.",
     };
   } catch (error) {
     console.error("Error in form processing:", error);
@@ -66,6 +109,118 @@ export async function submitContactForm(formData: FormData) {
       message: "An unexpected error occurred.",
     };
   }
+}
+
+export async function submitArchitectureReviewRequest(formData: FormData) {
+  const validatedFields = architectureReviewSchema.safeParse({
+    email: formData.get("email"),
+    description: formData.get("description"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      success: false,
+      message: "Please enter a valid email and architecture description.",
+      errors: validatedFields.error.flatten().fieldErrors,
+    };
+  }
+
+  const { email, description } = validatedFields.data;
+  const escapedEmail = escapeHtml(email);
+  const escapedDescription = escapeHtml(description).replace(/\n/g, "<br />");
+
+  const response = await sendPortfolioEmail({
+    subject: `Architecture review request from ${email}`,
+    replyTo: email,
+    text: [
+      "New System Architecture Review Request",
+      "",
+      `Requester Email: ${email}`,
+      "",
+      "Product / Bottleneck / Architecture:",
+      description,
+      "",
+      "Suggested reply:",
+      "Send a practical review checklist covering architecture, scalability, reliability, security, data model, API boundaries, deployment, monitoring, cost, and next steps.",
+    ].join("\n"),
+    html: `
+      <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;">
+        <h2 style="margin:0 0 16px;">New System Architecture Review Request</h2>
+        <p><strong>Requester Email:</strong> ${escapedEmail}</p>
+        <p><strong>Product / Bottleneck / Architecture:</strong></p>
+        <div style="padding:16px;border-left:4px solid #6366f1;background:#f8fafc;">${escapedDescription}</div>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;" />
+        <p style="color:#4b5563;"><strong>Reply with:</strong> a practical review checklist covering architecture, scalability, reliability, security, data model, API boundaries, deployment, monitoring, cost, and next steps.</p>
+      </div>
+    `,
+  });
+
+  if (!response.success) {
+    return { success: false, message: response.message };
+  }
+
+  return {
+    success: true,
+    message: "Review request sent successfully. I will reply with a practical checklist.",
+  };
+}
+
+async function sendPortfolioEmail({
+  subject,
+  replyTo,
+  text,
+  html,
+}: {
+  subject: string;
+  replyTo: string;
+  text: string;
+  html: string;
+}) {
+  const resendApiKey = process.env.RESEND_API_KEY || process.env.RIZEN_API_KEY;
+  const toEmail = process.env.CONTACT_TO_EMAIL || "mailtoprabhat72@gmail.com";
+  const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.CONTACT_FROM_EMAIL || "Portfolio Contact <onboarding@resend.dev>";
+
+  if (!resendApiKey) {
+    return {
+      success: false,
+      message: "Email is not configured. Please add RESEND_API_KEY in environment variables.",
+    };
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: [toEmail],
+      subject,
+      reply_to: replyTo,
+      text,
+      html,
+    }),
+  });
+
+  if (!response.ok) {
+    console.error("Resend email failed:", await response.text());
+    return {
+      success: false,
+      message: "Email could not be sent right now. Please try again later.",
+    };
+  }
+
+  return { success: true };
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 export type ResumeAnalysisState = {
@@ -82,6 +237,24 @@ export type ResumeAnalysisState = {
     suggestions: string;
   } | null;
 };
+
+export async function analyzeProjectDescriptionAction(description: string): Promise<{
+  success: boolean;
+  data?: AnalyzeProjectDescriptionOutput;
+  message?: string;
+}> {
+  if (!description.trim()) {
+    return { success: false, message: "Please enter a project description." };
+  }
+
+  try {
+    const data = await analyzeProjectDescription({ description });
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error analyzing project description:", error);
+    return { success: false, message: "Could not analyze the project right now." };
+  }
+}
 
 export async function handleResumeUpload(
   file: File
@@ -142,9 +315,9 @@ export async function getAIResponse(question: string, history: Array<{ user: str
   }
 }
 
-export async function getAIAudio(text: string) {
+export async function getAIAudio(text: string, voiceAgentId?: string) {
     try {
-        const audioDataUri = await textToSpeech(text);
+        const audioDataUri = await textToSpeech(text, voiceAgentId);
         return { success: true, audio: audioDataUri };
     } catch (error) {
         console.error('Error generating TTS audio:', error);
@@ -174,6 +347,11 @@ export async function getVoiceAIResponse(userMessage: string, history: Array<{ u
   if (!userMessage.trim()) {
     return { success: false, message: "Empty message." };
   }
+
+  const portfolioKnowledge = JSON.stringify(prabhatData, null, 2);
+  const conversationContext = history
+    .map((turn) => `User: ${turn.user}\nQuantumAI: ${turn.model}`)
+    .join('\n\n');
 
   const systemPrompt = `You are QuantumAI, the voice assistant for Prabhat Kumar's portfolio website prabhat.online.
 
@@ -206,19 +384,21 @@ Trading: 4+ years in stocks, crypto, forex, futures and options, derivatives
 
 Links: prabhat.online | prabhatblogs.lovable.app | GitHub: Hugs-4-Bugs
 
+UPDATED PORTFOLIO KNOWLEDGE:
+${portfolioKnowledge}
+
 You can also answer general knowledge questions — be a full general assistant.
 Never claim you lack information about Prabhat.`;
 
   try {
     const { text } = await ai.generate({
-      system: systemPrompt,
-      prompt: [
-        ...history.flatMap(h => [
-          { role: 'user' as const, content: [{ text: h.user }] },
-          { role: 'model' as const, content: [{ text: h.model }] }
-        ]),
-        { role: 'user' as const, content: [{ text: userMessage }] }
-      ]
+      prompt: `${systemPrompt}
+
+CONVERSATION HISTORY:
+${conversationContext || 'No previous voice conversation.'}
+
+USER MESSAGE:
+${userMessage}`
     });
 
     return { success: true, answer: text };

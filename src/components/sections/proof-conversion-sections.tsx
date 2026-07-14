@@ -29,6 +29,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { Section } from "@/components/section-wrapper";
 import { Button } from "@/components/ui/button";
+import { submitArchitectureReviewRequest } from "@/app/actions";
 
 type LiveMetrics = {
   tradingBot: {
@@ -430,6 +431,8 @@ export function LiveCodeSnippets() {
 
 export function CommunityProofAndLeadMagnet() {
   const [submitted, setSubmitted] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const proof: Array<{ label: string; copy: string; icon: LucideIcon }> = [
     { label: "GitHub", copy: "Open-source portfolio and product code", icon: Github },
     { label: "VS Code", copy: "CodeGuard AI marketplace presence", icon: Code2 },
@@ -437,9 +440,17 @@ export function CommunityProofAndLeadMagnet() {
     { label: "Case Studies", copy: "Metrics-backed delivery proof", icon: BarChart3 },
   ];
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setStatusMessage("");
+
+    const formData = new FormData(event.currentTarget);
+    const result = await submitArchitectureReviewRequest(formData);
+
+    setSubmitted(result.success);
+    setStatusMessage(result.message);
+    setIsSubmitting(false);
   };
 
   return (
@@ -466,23 +477,28 @@ export function CommunityProofAndLeadMagnet() {
           </p>
           {submitted ? (
             <div className="mt-6 rounded-xl border border-primary/20 bg-primary/10 p-4 text-sm font-semibold text-primary">
-              Request captured locally. Connect the form endpoint when you are ready to collect emails in production.
+              {statusMessage}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <input
                 required
+                name="email"
                 type="email"
                 placeholder="Email"
                 className="min-h-12 w-full rounded-xl border bg-background px-4 text-sm outline-none transition-colors focus:border-primary"
               />
               <textarea
                 required
+                name="description"
                 placeholder="What system should I review?"
                 className="min-h-28 w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-primary"
               />
-              <Button type="submit" className="w-full">
-                <Mail className="mr-2 h-4 w-4" /> Request Free Review
+              {statusMessage && (
+                <p className="text-sm font-semibold text-destructive">{statusMessage}</p>
+              )}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                <Mail className="mr-2 h-4 w-4" /> {isSubmitting ? "Sending..." : "Request Free Review"}
               </Button>
             </form>
           )}

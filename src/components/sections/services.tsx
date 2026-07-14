@@ -10,7 +10,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { analyzeProjectDescription } from "@/ai/flows/analyze-project-description";
+import { analyzeProjectDescriptionAction } from "@/app/actions";
 import type { AnalyzeProjectDescriptionOutput } from "@/ai/flows/analyze-project-description";
 
 export function Services() {
@@ -139,19 +139,31 @@ export function Services() {
   };
 
   const handleAnalysis = () => {
+    const projectDescription = description.trim();
+    if (!projectDescription) return;
+
     startTransition(async () => {
       setAnalysisResult(null);
-      const result = await analyzeProjectDescription({ description });
-      if (result) {
-        setAnalysisResult(result);
-        toast({
-          title: "Analysis Complete",
-          description: "AI suggestions are ready.",
-        });
-      } else {
+      try {
+        const result = await analyzeProjectDescriptionAction(projectDescription);
+        if (result.success && result.data) {
+          setAnalysisResult(result.data);
+          toast({
+            title: "Analysis Complete",
+            description: "AI suggestions are ready.",
+          });
+        } else {
+          toast({
+            title: "Analysis Failed",
+            description: result.message || "Could not get a response from the AI.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Project analysis failed:", error);
         toast({
           title: "Analysis Failed",
-          description: "Could not get a response from the AI.",
+          description: "Please try again with a little more project detail.",
           variant: "destructive",
         });
       }
@@ -363,7 +375,7 @@ export function Services() {
                 
                 <MagneticButton 
                   onClick={handleAnalysis} 
-                  disabled={isPending || !description} 
+                  disabled={isPending || !description.trim()} 
                   data-cursor-hover
                   className="relative overflow-hidden bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
                 >
