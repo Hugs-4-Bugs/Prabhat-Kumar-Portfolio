@@ -1,56 +1,47 @@
 'use server';
 /**
- * @fileOverview A flow for converting text to speech.
- *
- * - textToSpeech - A function that takes text and returns an audio data URI.
+ * @fileOverview Converts text to speech using ElevenLabs.
+ * Returns a base64 audio data URI on success, or null on failure
+ * so the caller can fall back to the browser Web Speech API.
  */
 
-import {ai} from '@/ai/genkit';
-import wav from 'wav';
+/**
+ * Resolves the ElevenLabs voice ID for the given agent using a fully-static
+ * switch statement. This avoids Next.js / Vercel build-time dynamic
+ * process.env[] access which always evaluates to undefined.
+ */
+function getElevenLabsVoiceId(voiceAgentId?: string): string | undefined {
+  const agentId = voiceAgentId?.toLowerCase().trim();
+  switch (agentId) {
+    case 'quantum': return process.env.ELEVENLABS_VOICE_ID_QUANTUM;
+    case 'nova':    return process.env.ELEVENLABS_VOICE_ID_NOVA;
+    case 'sage':    return process.env.ELEVENLABS_VOICE_ID_SAGE;
+    case 'aria':    return process.env.ELEVENLABS_VOICE_ID_ARIA;
+    case 'echo':    return process.env.ELEVENLABS_VOICE_ID_ECHO;
+    case 'orion':   return process.env.ELEVENLABS_VOICE_ID_ORION;
+    case 'luna':    return process.env.ELEVENLABS_VOICE_ID_LUNA;
+    default:        return process.env.ELEVENLABS_VOICE_ID;
+  }
+}
 
-const ELEVENLABS_VOICE_ENV_BY_AGENT: Record<string, string> = {
-  quantum: 'ELEVENLABS_VOICE_ID_QUANTUM',
-  nova: 'ELEVENLABS_VOICE_ID_NOVA',
-  sage: 'ELEVENLABS_VOICE_ID_SAGE',
-  aria: 'ELEVENLABS_VOICE_ID_ARIA',
-  echo: 'ELEVENLABS_VOICE_ID_ECHO',
-  orion: 'ELEVENLABS_VOICE_ID_ORION',
-  luna: 'ELEVENLABS_VOICE_ID_LUNA',
-};
-
-export async function textToSpeech(text: string, voiceAgentId?: string): Promise<string> {
-    const elevenLabsAudio = await textToSpeechWithElevenLabs(text, voiceAgentId);
-    if (elevenLabsAudio) {
-      return elevenLabsAudio;
-    }
-
-    const { media } = await ai.generate({
-      model: 'googleai/gemini-2.5-flash-preview-tts',
-      config: {
-        responseModalities: ['AUDIO'],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Alloy' },
-          },
-        },
-      },
-      prompt: text,
-    });
-    if (!media?.url) {
-      throw new Error('No audio returned from TTS model.');
-    }
-    const pcmData = Buffer.from(media.url.substring(media.url.indexOf(',') + 1), 'base64');
-    const wavData = await toWav(pcmData);
-    return `data:audio/wav;base64,${wavData}`;
+export async function textToSpeech(text: string, voiceAgentId?: string): Promise<string | null> {
+  return textToSpeechWithElevenLabs(text, voiceAgentId);
 }
 
 async function textToSpeechWithElevenLabs(text: string, voiceAgentId?: string): Promise<string | null> {
   const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey) {
+    console.error('[TTS] ElevenLabs API key (ELEVENLABS_API_KEY) is missing — falling back to browser TTS.');
+    return null;
+  }
 
-  const agentVoiceEnv = voiceAgentId ? ELEVENLABS_VOICE_ENV_BY_AGENT[voiceAgentId] : undefined;
-  const voiceId = (agentVoiceEnv ? process.env[agentVoiceEnv] : undefined) || process.env.ELEVENLABS_VOICE_ID;
-  if (!voiceId) return null;
+  const voiceId = getElevenLabsVoiceId(voiceAgentId);
+  if (!voiceId) {
+    console.error(`[TTS] No ElevenLabs voice ID found for agent "${voiceAgentId ?? 'default'}" — falling back to browser TTS.`);
+    return null;
+  }
+
+  console.log(`[TTS] ElevenLabs request started — agent: "${voiceAgentId ?? 'default'}", voice ID: "${voiceId}"`);
 
   try {
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
@@ -72,42 +63,19 @@ async function textToSpeechWithElevenLabs(text: string, voiceAgentId?: string): 
       }),
     });
 
+    console.log(`[TTS] ElevenLabs HTTP status: ${response.status}`);
+
     if (!response.ok) {
-      console.error('ElevenLabs TTS failed:', await response.text());
+      const errBody = await response.text();
+      console.error(`[TTS] ElevenLabs rejected voice ID "${voiceId}" (HTTP ${response.status}):`, errBody);
       return null;
     }
 
     const audioBuffer = Buffer.from(await response.arrayBuffer());
+    console.log(`[TTS] ElevenLabs audio received — ${audioBuffer.length} bytes`);
     return `data:audio/mpeg;base64,${audioBuffer.toString('base64')}`;
   } catch (error) {
-    console.error('ElevenLabs TTS error:', error);
+    console.error('[TTS] ElevenLabs fetch error:', error);
     return null;
   }
-}
-
-async function toWav(
-  pcmData: Buffer,
-  channels = 1,
-  rate = 24000,
-  sampleWidth = 2
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const writer = new wav.Writer({
-      channels,
-      sampleRate: rate,
-      bitDepth: sampleWidth * 8,
-    });
-
-    const bufs: Buffer[] = [];
-    writer.on('error', reject);
-    writer.on('data', (chunk) => {
-      bufs.push(chunk);
-    });
-    writer.on('end', () => {
-      resolve(Buffer.concat(bufs).toString('base64'));
-    });
-
-    writer.write(pcmData);
-    writer.end();
-  });
 }

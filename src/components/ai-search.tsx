@@ -6,14 +6,14 @@ import Balancer from "react-wrap-balancer";
 import { Sparkles, X, Search, Mic, MicOff, User, Trash2, AudioWaveform, SendHorizontal } from "lucide-react";
 import Lottie from "lottie-react";
 
-import { getAISearchResponse, getAIAudio } from "@/app/actions";
+import { getAISearchResponse } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import listeningAnimation from "@/lib/listening-animation.json";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { VoiceAgent } from "@/components/VoiceAgent";
 import { getBrowserStorage } from "@/lib/browser-storage";
+import { VoiceAgent } from "@/components/VoiceAgent";
 
 interface Message {
   role: 'user' | 'model';
@@ -37,6 +37,60 @@ interface Particle {
   yRange: number;
 }
 
+/* ─── Lightweight transcript normalization ────────────────────────────── */
+
+const SR_CORRECTIONS: [RegExp, string][] = [
+  [/\bPra-?ha[rl]t\b/gi, "Prabhat"],
+  [/\bProbhat\b/gi,      "Prabhat"],
+  [/\bPrabhath\b/gi,     "Prabhat"],
+  [/\bPrabot\b/gi,       "Prabhat"],
+  [/\bParbhat\b/gi,      "Prabhat"],
+  [/\bPrabhut\b/gi,      "Prabhat"],
+  [/\bPrabhet\b/gi,      "Prabhat"],
+  [/\bPrabat\b/gi,       "Prabhat"],
+  [/\bPrahat\b/gi,       "Prabhat"],
+  [/\bPrabha[td]\b/gi,   "Prabhat"],
+  [/\bspring\s+boot\b/gi,   "Spring Boot"],
+  [/\bspringboot\b/gi,      "Spring Boot"],
+  [/\bspring\s+book\b/gi,   "Spring Boot"],
+  [/\bspring\s+but\b/gi,    "Spring Boot"],
+  [/\bspring\s+bout\b/gi,   "Spring Boot"],
+  [/\bspring\s+bought\b/gi, "Spring Boot"],
+  [/\bmicro\s+services\b/gi, "microservices"],
+  [/\bmicro-services\b/gi,   "microservices"],
+  [/\bjava\s+script\b/gi,   "JavaScript"],
+  [/\btype\s+script\b/gi,   "TypeScript"],
+  [/\ba\.?\s*w\.?\s*s\b/gi, "AWS"],
+  [/\bamazon\s+web\s+services\b/gi, "AWS"],
+  [/\bpostgres\b/gi,   "PostgreSQL"],
+  [/\bpost\s+gres\b/gi, "PostgreSQL"],
+  [/\bmy\s+sql\b/gi,   "MySQL"],
+  [/\bmongo\s+db\b/gi, "MongoDB"],
+  [/\brest\s+api\b/gi,  "REST API"],
+  [/\brest\s+apis\b/gi, "REST APIs"],
+  [/\bj\.?\s*w\.?\s*t\b/gi, "JWT"],
+  [/\bjason\b/g,        "JSON"],
+  [/\bci\s*\/\s*cd\b/gi, "CI/CD"],
+  [/\bdev\s*ops\b/gi,   "DevOps"],
+  [/\bcode\s+guard\b/gi,      "CodeGuard"],
+  [/\bacquisition\s+os\b/gi,  "AcquisitionOS"],
+  [/\bquantum\s+ai\b/gi,      "QuantumAI"],
+  [/\bquantum\s+fusion\b/gi,  "QuantumFusion"],
+  [/\bsystem\s+foundry\b/gi,  "SystemFoundry"],
+  [/(?<![a-zA-Z])\bi\b(?![a-zA-Z])/g, "I"],
+];
+
+function normalizeSpeechTranscript(text: string): string {
+  let result = text
+    .replace(/\s+/g, " ")
+    .replace(/\b(\w+)\s+\1\b/gi, "$1")
+    .trim();
+  for (const [pattern, replacement] of SR_CORRECTIONS) {
+    result = result.replace(pattern, replacement);
+  }
+  return result.replace(/^./, (c) => c.toUpperCase());
+}
+
 export function AISearch({ isVisible, onClose }: AISearchProps) {
   const { toast } = useToast();
   const [query, setQuery] = useState("");
@@ -47,6 +101,9 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   const [particles, setParticles] = useState<Particle[]>([]);
   
   const recognitionRef = useRef<any>(null);
+  const activeRecognitionRef = useRef<any>(null);
+  const interimRef = useRef('');
+  const finalRef = useRef('');
   const overlayRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -126,16 +183,8 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
       const response = await getAISearchResponse(currentQuery, history);
 
       if (response.success && response.answer) {
+        console.log('[AISearch] Assistant response received, appending once');
         setConversation(prev => [...prev, { role: 'model', content: response.answer as string }]);
-        
-        const audioResponse = await getAIAudio(response.answer);
-         if(audioResponse.success && audioResponse.audio && audioRef.current) {
-            audioRef.current.src = audioResponse.audio;
-            audioRef.current.play();
-        } else if (!audioResponse.success) {
-           toast({ title: 'Audio Error', description: audioResponse.message, variant: 'destructive' });
-        }
-
       } else {
         toast({
           title: "AI Search Error",
@@ -149,54 +198,111 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      console.warn("Speech Recognition not supported by this browser.");
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      console.warn('[SR] Speech Recognition not supported by this browser.');
       return;
     }
-    
-    if (!recognitionRef.current) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
+    // Store the constructor, not an instance — we create a fresh instance each time
+    recognitionRef.current = SR;
+  }, []);
 
-        recognition.onresult = (event: any) => {
-            const transcript = event.results[0][0].transcript;
-            setQuery(transcript);
-            if (event.results[0].isFinal) {
-               setIsListening(false);
-            }
-        };
-
-        recognition.onerror = (event: any) => {
-            console.error("Speech recognition error:", event.error);
-            if (event.error !== 'no-speech') {
-              toast({ title: 'Voice Error', description: `Could not recognize speech: ${event.error}`, variant: 'destructive'});
-            }
-            setIsListening(false);
-        };
-        
-        recognition.onstart = () => {
-            setIsListening(true);
-        };
-        
-        recognition.onend = () => {
-            setIsListening(false);
-        };
-        
-        recognitionRef.current = recognition;
-    }
-  }, [toast]);
-  
   const toggleListening = () => {
-    if (!recognitionRef.current) return;
+    const SR = recognitionRef.current;
+    if (!SR) return;
+
     if (isListening) {
-      recognitionRef.current.stop();
-    } else {
-      stopAudio();
-      setQuery('');
-      recognitionRef.current.start();
+      console.log('[SR] Microphone stopped by user');
+      activeRecognitionRef.current?.stop();
+      activeRecognitionRef.current = null;
+      setIsListening(false);
+      return;
+    }
+
+    console.log('[SR] Microphone clicked — starting recognition');
+    stopAudio();
+    setQuery('');
+    interimRef.current = '';
+    finalRef.current = '';
+
+    const rec = new SR();
+    rec.continuous = false;
+    rec.interimResults = true;
+    // en-US has the best acoustic model coverage for technical and conversational speech
+    rec.lang = 'en-US';
+
+    // Short hold after final result before committing — lets the user finish a thought
+    // without being cut off by a brief natural pause mid-sentence
+    const HOLD_MS = 600;
+    let holdTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const clearHold = () => {
+      if (holdTimer !== null) { clearTimeout(holdTimer); holdTimer = null; }
+    };
+
+    const commitAndStop = () => {
+      clearHold();
+      try { rec.stop(); } catch { /* ignore */ }
+    };
+
+    rec.onstart = () => {
+      console.log('[SR] Recognition started');
+      setIsListening(true);
+    };
+
+    rec.onresult = (event: any) => {
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalRef.current += result[0].transcript;
+        } else {
+          interim += result[0].transcript;
+        }
+      }
+      const display = (finalRef.current + ' ' + interim).trim();
+      console.log(`[SR] Interim transcript: "${display}"`);
+      setQuery(display);
+
+      // After a final result, wait briefly before stopping — the user may
+      // still be forming the rest of their sentence
+      if (event.results[event.results.length - 1].isFinal) {
+        clearHold();
+        holdTimer = setTimeout(commitAndStop, HOLD_MS);
+      }
+    };
+
+    rec.onerror = (event: any) => {
+      clearHold();
+      console.error('[SR] Recognition error:', event.error);
+      if (event.error === 'no-speech' || event.error === 'aborted') {
+        setIsListening(false);
+        activeRecognitionRef.current = null;
+        return;
+      }
+      toast({ title: 'Voice Error', description: `Could not recognize speech: ${event.error}`, variant: 'destructive' });
+      setIsListening(false);
+      activeRecognitionRef.current = null;
+    };
+
+    rec.onend = () => {
+      clearHold();
+      console.log('[SR] Recognition ended');
+      const committed = normalizeSpeechTranscript(finalRef.current.trim());
+      if (committed) {
+        console.log(`[SR] Final transcript committed: "${committed}"`);
+        setQuery(committed);
+      }
+      setIsListening(false);
+      activeRecognitionRef.current = null;
+    };
+
+    try {
+      rec.start();
+      activeRecognitionRef.current = rec;
+    } catch (e) {
+      console.error('[SR] rec.start() threw:', e);
+      setIsListening(false);
     }
   };
 
@@ -239,9 +345,11 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   const canSubmit = !isPending && !isListening && query.trim().length > 0;
 
   return (
+    <>
     <AnimatePresence>
         {isVisible && (
             <motion.div
+                key="chat-overlay"
                 ref={overlayRef}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -297,17 +405,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                   ))}
                 </div>
 
-                <div className="absolute top-4 right-4 z-20 flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsVoiceMode(true)}
-                      className="backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20"
-                      data-cursor-hover
-                    >
-                      <AudioWaveform className="h-5 w-5" />
-                      <span className="sr-only">Open Voice Mode</span>
-                    </Button>
+                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex gap-1 sm:gap-2">
                     {conversation.length > 0 && (
                       <Button 
                         variant="ghost" 
@@ -337,11 +435,11 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -50, opacity: 0 }}
                     transition={{ ease: "easeOut" }}
-                    className="w-full max-w-4xl h-full flex flex-col pt-12 pb-8 px-4 relative z-10"
+                    className="w-full max-w-4xl h-full flex flex-col pt-14 pb-4 px-3 sm:px-4 relative z-10"
                 >
                     <div className="flex-shrink-0 text-center pb-8 sticky top-0 z-10 pt-4 -mt-4">
                         <motion.h1 
-                          className="text-4xl md:text-6xl font-bold font-headline tracking-tighter mb-4"
+                          className="text-3xl sm:text-4xl md:text-6xl font-bold font-headline tracking-tighter mb-2 sm:mb-4"
                           animate={{
                             textShadow: [
                               '0 0 25px rgba(120, 119, 198, 0.7)',
@@ -363,7 +461,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                             </Balancer>
                         </motion.h1>
                         <motion.p 
-                          className="text-xl text-muted-foreground/90"
+                          className="text-sm sm:text-xl text-muted-foreground/90"
                           animate={{
                             textShadow: [
                               '0 0 15px rgba(120, 119, 198, 0.5)',
@@ -414,7 +512,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                 {message.role === 'user' ? (
                                     <div className="flex items-start gap-4 justify-end">
                                         <motion.div 
-                                          className="p-4 text-primary-foreground rounded-2xl rounded-br-none max-w-2xl relative overflow-hidden"
+                                          className="p-3 sm:p-4 text-primary-foreground rounded-2xl rounded-br-none max-w-[85vw] sm:max-w-2xl relative overflow-hidden"
                                           style={{
                                             backgroundImage: `
                                               linear-gradient(135deg, 
@@ -497,7 +595,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                               <Sparkles className="w-4 h-4 text-primary-foreground" />
                                             </motion.div>
                                             <motion.div 
-                                                className="whitespace-pre-wrap p-6 rounded-2xl relative overflow-hidden"
+                                                className="whitespace-pre-wrap p-4 sm:p-6 rounded-2xl relative overflow-hidden"
                                                 style={{
                                                   backgroundImage: `
                                                     radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
@@ -539,10 +637,11 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                         <AnimatePresence>
                         {isListening && (
                             <motion.div 
+                                key="listening"
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
-                                className="flex flex-col items-center justify-center text-center p-12 space-y-4"
+                                className="flex flex-col items-center justify-center text-center p-6 sm:p-12 space-y-3 sm:space-y-4"
                                 style={{
                                   backgroundImage: `
                                     radial-gradient(circle at 50% 50%, rgba(120, 119, 198, 0.25) 0%, transparent 70%),
@@ -565,7 +664,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                     ease: "easeInOut"
                                   }}
                                 >
-                                  <Lottie animationData={listeningAnimation} loop={true} style={{width: 100, height: 100}}/>
+                                  <Lottie animationData={listeningAnimation} loop={true} style={{width: 70, height: 70}}/>
                                 </motion.div>
                                 <motion.p 
                                   className="text-lg font-medium"
@@ -588,6 +687,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                         )}
                         {isPending && (
                             <motion.div 
+                                key="pending"
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
                                 exit={{ opacity: 0, height: 0 }}
@@ -656,7 +756,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                         </div>
                     </ScrollArea>
                     
-                    <form onSubmit={handleFormSubmit} className="relative mt-8 flex-shrink-0">
+                    <form onSubmit={handleFormSubmit} className="relative mt-4 sm:mt-8 flex-shrink-0">
                         <motion.div 
                           className="absolute inset-0 rounded-full"
                           style={{
@@ -674,110 +774,100 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                               0 4px 16px rgba(120, 119, 198, 0.2)
                             `
                           }}
-                          whileFocus={{
-                            boxShadow: `
-                              inset 0 1px 0 rgba(255, 255, 255, 0.2),
-                              0 12px 40px rgba(120, 119, 198, 0.5),
-                              0 6px 20px rgba(120, 119, 198, 0.4),
-                              0 0 0 2px rgba(120, 219, 255, 0.3)
-                            `
-                          }}
                         />
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
+                        <Search className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-muted-foreground z-10 w-4 h-4 sm:w-5 sm:h-5" />
                         <input
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Ask a follow-up question..."
-                            className="relative z-10 w-full h-16 pl-14 pr-36 rounded-full bg-transparent focus:outline-none text-lg placeholder-muted-foreground"
+                            placeholder="Ask a question..."
+                            className="relative z-10 w-full h-12 sm:h-16 pl-10 sm:pl-14 pr-24 sm:pr-36 rounded-full bg-transparent focus:outline-none text-sm sm:text-lg placeholder-muted-foreground"
                             disabled={isPending || isListening}
                             data-cursor-hover
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-3 z-10">
-                            <motion.div
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <Button 
-                                type="button" 
-                                size="icon" 
-                                variant={isListening ? "destructive" : "ghost"} 
-                                onClick={toggleListening} 
-                                disabled={isPending || !recognitionRef.current}
-                                className="rounded-full backdrop-blur-md border border-white/20"
-                                style={{
-                                  backgroundImage: isListening ? `
-                                    radial-gradient(circle at 30% 30%, 
-                                      rgba(239, 68, 68, 0.9) 0%, 
-                                      rgba(220, 38, 38, 0.8) 50%, 
-                                      rgba(185, 28, 28, 0.7) 100%
-                                    )
-                                  ` : `
-                                    radial-gradient(circle at 30% 30%, 
-                                      rgba(120, 119, 198, 0.3) 0%, 
-                                      rgba(255, 119, 198, 0.25) 50%, 
-                                      transparent 100%
-                                    )
-                                  `,
-                                  boxShadow: isListening ? `
-                                    0 4px 20px rgba(239, 68, 68, 0.6),
-                                    0 2px 10px rgba(220, 38, 38, 0.5)
-                                  ` : `
-                                    0 4px 15px rgba(120, 119, 198, 0.3),
-                                    0 2px 8px rgba(255, 119, 198, 0.2)
-                                  `
-                                }}
-                              >
-                                {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-                              </Button>
-                            </motion.div>
-                            <motion.div
-                              whileHover={canSubmit ? { scale: 1.1 } : {}}
-                              whileTap={canSubmit ? { scale: 0.95 } : {}}
-                            >
-                              <Button 
-                                type="submit" 
-                                size="icon" 
-                                variant="ghost" 
-                                disabled={!canSubmit}
-                                className="rounded-full backdrop-blur-md border border-white/20"
-                                style={{
-                                  backgroundImage: canSubmit ? `
-                                    radial-gradient(circle at 30% 30%, 
-                                      rgba(120, 219, 255, 0.4) 0%, 
-                                      rgba(255, 219, 120, 0.35) 50%, 
-                                      rgba(120, 255, 187, 0.3) 100%
-                                    )
-                                  ` : 'none',
-                                  boxShadow: canSubmit ? `
-                                    0 4px 20px rgba(120, 219, 255, 0.5),
-                                    0 2px 10px rgba(255, 219, 120, 0.4)
-                                  ` : 'none',
-                                  opacity: canSubmit ? 1 : 0.4
-                                }}
-                              >
-                                <SendHorizontal className="w-5 h-5" />
-                              </Button>
-                            </motion.div>
+                        <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 sm:gap-3 z-10">
+                            {query.trim().length === 0 ? (
+                              <>
+                                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                                  <Button 
+                                    type="button" 
+                                    size="icon" 
+                                    variant={isListening ? "destructive" : "ghost"} 
+                                    onClick={toggleListening} 
+                                    disabled={isPending || !recognitionRef.current}
+                                    className="rounded-full backdrop-blur-md border border-white/20 w-8 h-8 sm:w-10 sm:h-10"
+                                    style={{
+                                      backgroundImage: isListening ? `
+                                        radial-gradient(circle at 30% 30%, rgba(239,68,68,0.9) 0%, rgba(220,38,38,0.8) 50%, rgba(185,28,28,0.7) 100%)
+                                      ` : `
+                                        radial-gradient(circle at 30% 30%, rgba(120,119,198,0.3) 0%, rgba(255,119,198,0.25) 50%, transparent 100%)
+                                      `,
+                                      boxShadow: isListening
+                                        ? `0 4px 20px rgba(239,68,68,0.6)`
+                                        : `0 4px 15px rgba(120,119,198,0.3)`
+                                    }}
+                                  >
+                                    {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                                  </Button>
+                                </motion.div>
+                                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                                  <Button 
+                                    type="button" 
+                                    size="icon" 
+                                    variant="ghost" 
+                                    onClick={() => setIsVoiceMode(true)}
+                                    className="rounded-full backdrop-blur-md border border-white/20 w-8 h-8 sm:w-10 sm:h-10"
+                                    style={{
+                                      backgroundImage: `radial-gradient(circle at 30% 30%, rgba(120,219,255,0.3) 0%, rgba(120,255,187,0.25) 50%, transparent 100%)`,
+                                      boxShadow: `0 4px 15px rgba(120,219,255,0.3)`
+                                    }}
+                                  >
+                                    <AudioWaveform className="w-4 h-4" />
+                                  </Button>
+                                </motion.div>
+                              </>
+                            ) : (
+                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                                <Button 
+                                  type="submit" 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="rounded-full backdrop-blur-md border border-white/20 w-8 h-8 sm:w-10 sm:h-10"
+                                  style={{
+                                    backgroundImage: `radial-gradient(circle at 30% 30%, rgba(120,219,255,0.5) 0%, rgba(255,219,120,0.45) 50%, rgba(120,255,187,0.4) 100%)`,
+                                    boxShadow: `0 4px 20px rgba(120,219,255,0.5)`
+                                  }}
+                                >
+                                  <SendHorizontal className="w-4 h-4" />
+                                </Button>
+                              </motion.div>
+                            )}
                         </div>
                     </form>
 
                 </motion.div>
 
-                {/* Voice Agent Overlay */}
-                <VoiceAgent 
-                  isVisible={isVoiceMode} 
-                  onClose={() => setIsVoiceMode(false)}
-                  conversationHistory={conversation.reduce((acc: Array<{ user: string; model: string }>, message, index) => {
-                    if (message.role === 'user' && conversation[index + 1]?.role === 'model') {
-                      acc.push({ user: message.content, model: conversation[index + 1].content });
-                    }
-                    return acc;
-                  }, [])}
-                  onAddMessage={handleAddMessage}
-                />
+
             </motion.div>
         )}
+        
     </AnimatePresence>
+
+    {/* Voice Agent Modal — rendered outside AnimatePresence so it manages its own presence */}
+    <VoiceAgent 
+      isVisible={isVoiceMode}
+      onClose={() => setIsVoiceMode(false)}
+      conversationHistory={conversation.reduce((acc: Array<{ user: string; model: string }>, message, index) => {
+        if (message.role === 'user' && conversation[index + 1]?.role === 'model') {
+          acc.push({
+            user: message.content,
+            model: conversation[index + 1].content,
+          });
+        }
+        return acc;
+      }, [])}
+      onAddMessage={handleAddMessage}
+    />
+    </>
   );
 }

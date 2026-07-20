@@ -38,6 +38,21 @@ export function Hero() {
   const currentTheme = theme === "system" ? systemTheme : theme;
   const isDark = currentTheme === "dark";
 
+  // Pre-compute random positions once — never recalculate on re-renders
+  const pulseNodes = useRef(
+    [...Array(8)].map(() => ({
+      left: Math.random() * 80 + 10,
+      top: Math.random() * 80 + 10,
+    }))
+  );
+  const dataStreams = useRef(
+    [...Array(12)].map(() => ({
+      width: 400 + Math.random() * 300,
+      left: -400 - Math.random() * 200,
+      rotate: Math.random() * 15 - 7.5,
+    }))
+  );
+
   useEffect(() => {
     setMounted(true);
     return () => {
@@ -135,28 +150,29 @@ export function Hero() {
       }
     }
 
-    // Create particles
+    // Create particles — capped for consistent 60fps on all devices
     const particles: Particle[] = [];
     const particleCount = Math.min(
-      150,
-      Math.floor((canvas.width * canvas.height) / 8000)
+      80,
+      Math.floor((canvas.width * canvas.height) / 12000)
     );
 
     for (let i = 0; i < particleCount; i++) {
       particles.push(new Particle());
     }
 
-    // Connection lines
+    // Connection lines — use squared distance to avoid Math.sqrt per pair
     const connectParticles = () => {
-      const maxDistance = 150;
+      const maxDistance = 120;
+      const maxDistSq = maxDistance * maxDistance;
       for (let a = 0; a < particles.length; a++) {
-        for (let b = a; b < particles.length; b++) {
+        for (let b = a + 1; b < particles.length; b++) {
           const dx = particles[a].x - particles[b].x;
           const dy = particles[a].y - particles[b].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
+          const distSq = dx * dx + dy * dy;
 
-          if (distance < maxDistance) {
-            const opacity = 1 - distance / maxDistance;
+          if (distSq < maxDistSq) {
+            const opacity = 1 - Math.sqrt(distSq) / maxDistance;
             ctx!.strokeStyle = isDark
               ? `rgba(100, 100, 255, ${opacity * 0.3})`
               : `rgba(59, 130, 246, ${opacity * 0.2})`;
@@ -550,15 +566,15 @@ export function Hero() {
         ))}
 
         {/* Pulse Nodes - Theme Aware */}
-        {[...Array(8)].map((_, i) => (
+        {pulseNodes.current.map((node, i) => (
           <div
             key={i}
             className="pulse-node bg-element absolute rounded-full"
             style={{
               width: `${60 + i * 30}px`,
               height: `${60 + i * 30}px`,
-              left: `${Math.random() * 80 + 10}%`,
-              top: `${Math.random() * 80 + 10}%`,
+              left: `${node.left}%`,
+              top: `${node.top}%`,
               background: isDark
                 ? `radial-gradient(circle, rgba(59, 130, 246, 0.3), transparent 70%)`
                 : `radial-gradient(circle, rgba(37, 99, 235, 0.2), transparent 70%)`,
@@ -568,15 +584,15 @@ export function Hero() {
         ))}
 
         {/* Data Streams - Theme Aware */}
-        {[...Array(12)].map((_, i) => (
+        {dataStreams.current.map((stream, i) => (
           <div
             key={i}
             className="data-stream bg-element absolute h-0.5"
             style={{
-              width: `${400 + Math.random() * 300}px`,
-              left: `${-400 - Math.random() * 200}px`,
+              width: `${stream.width}px`,
+              left: `${stream.left}px`,
               top: `${i * 8 + 6}%`,
-              transform: `rotate(${Math.random() * 15 - 7.5}deg)`,
+              transform: `rotate(${stream.rotate}deg)`,
               background: isDark
                 ? "linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent)"
                 : "linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.3), transparent)",
@@ -700,7 +716,7 @@ export function Hero() {
 
         {/* Description */}
         <motion.p
-          className="hero-description text-element max-w-3xl mx-auto text-base md:text-xl lg:text-2xl font-light leading-relaxed mb-12"
+          className="hero-description text-element max-w-3xl mx-auto text-base md:text-xl lg:text-2xl font-light leading-relaxed mb-8 sm:mb-12"
           style={{
             textShadow: isDark
               ? "0 2px 8px rgba(0,0,0,0.5)"
@@ -739,7 +755,7 @@ export function Hero() {
             <Button
               asChild
               size="lg"
-              className="relative px-8 py-6 text-lg font-semibold min-w-[200px] sm:min-w-[220px] group"
+              className="relative px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg font-semibold w-full sm:w-auto sm:min-w-[220px] group"
               style={{
                 background: isDark
                   ? `
@@ -794,7 +810,7 @@ export function Hero() {
               asChild
               size="lg"
               variant="outline"
-              className="relative px-8 py-6 text-lg font-semibold min-w-[200px] sm:min-w-[220px] backdrop-blur-lg group border-2"
+              className="relative px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg font-semibold w-full sm:w-auto sm:min-w-[220px] backdrop-blur-lg group border-2"
               style={{
                 background: isDark
                   ? "rgba(255, 255, 255, 0.08)"
