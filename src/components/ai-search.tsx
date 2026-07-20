@@ -776,12 +776,20 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                           }}
                         />
                         <Search className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-muted-foreground z-10 w-4 h-4 sm:w-5 sm:h-5" />
-                        <input
-                            type="text"
+                        <textarea
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                // Enter alone → submit, no newline
+                                e.preventDefault();
+                                if (canSubmit) handleSubmit(query);
+                              }
+                              // Shift+Enter → let the browser insert a newline naturally
+                            }}
                             placeholder="Ask a question..."
-                            className="relative z-10 w-full h-12 sm:h-16 pl-10 sm:pl-14 pr-24 sm:pr-36 rounded-full bg-transparent focus:outline-none text-sm sm:text-lg placeholder-muted-foreground"
+                            rows={1}
+                            className="relative z-10 w-full min-h-[48px] sm:min-h-[64px] h-auto max-h-40 py-3 sm:py-5 pl-10 sm:pl-14 pr-24 sm:pr-36 rounded-full bg-transparent focus:outline-none text-xs sm:text-sm placeholder-muted-foreground resize-none overflow-y-auto leading-snug"
                             disabled={isPending || isListening}
                             data-cursor-hover
                         />
