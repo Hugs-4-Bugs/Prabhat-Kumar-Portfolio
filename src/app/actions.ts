@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { detectSpam } from "@/ai/flows/detect-spam-contact-form";
 import { parseResumeAndAutofill } from "@/ai/flows/parse-resume-autofill-form";
+import { extractMeetingFieldsFlow } from "@/ai/flows/extract-meeting-fields-flow";
 import { suggestResumeImprovements } from "@/ai/flows/suggest-resume-improvements";
 import { analyzeProjectDescription } from "@/ai/flows/analyze-project-description";
 import type { AnalyzeProjectDescriptionOutput } from "@/ai/flows/analyze-project-description";
@@ -389,12 +390,17 @@ export async function getAIAudio(text: string, voiceAgentId?: string) {
 }
 
 // AI Search Action
-export async function getAISearchResponse(question: string, history: Array<{ user: string; model: string }>) {
+export async function getAISearchResponse(
+  question: string,
+  history: Array<{ user: string; model: string }>,
+  visitorContext?: string,
+  meetingContext?: string
+) {
   if (!question.trim()) {
     return { success: false, message: "Please enter a question." };
   }
   try {
-    const response = await askPrabhatAI({ question, history });
+    const response = await askPrabhatAI({ question, history, visitorContext, meetingContext });
     return { success: true, answer: response.answer };
   } catch (error) {
     console.error("Error getting AI search response:", error);
@@ -402,13 +408,40 @@ export async function getAISearchResponse(question: string, history: Array<{ use
   }
 }
 
+export async function extractMeetingFieldsAction(query: string, currentData: Record<string, any>) {
+  try {
+    const result = await extractMeetingFieldsFlow({ query, currentData });
+    return { success: true, data: result };
+  } catch (e: any) {
+    console.error("Error extracting meeting fields:", e);
+    return { success: false };
+  }
+}
+
 /**
  * Specialized AI response action optimized for Voice Mode.
  * It enforces short, conversational, non-markdown responses and multilingual support.
  */
-export async function getVoiceAIResponse(userMessage: string, history: Array<{ user: string; model: string }>, voiceAgentId?: string) {
+export async function getVoiceAIResponse(
+  userMessage: string,
+  history: Array<{ user: string; model: string }>,
+  voiceAgentId?: string,
+  visitorContext?: string,
+  meetingContext?: string
+) {
   if (!userMessage.trim()) {
     return { success: false, message: "Empty message." };
+  }
+
+  let prompt = `User's message: "${userMessage}"
+  
+  Remember: Short, conversational, spoken-style.`;
+
+  if (visitorContext) {
+    prompt += `\n\nVisitor Context: ${visitorContext}`;
+  }
+  if (meetingContext) {
+    prompt += `\n\nMeeting Context: ${meetingContext}`;
   }
 
   let agentName = "QuantumAI";
@@ -473,8 +506,7 @@ Never claim you lack information about Prabhat.`;
 CONVERSATION HISTORY:
 ${conversationContext || 'No previous voice conversation.'}
  
-USER MESSAGE:
-${userMessage}`
+${prompt}`
     });
 
     return { success: true, answer: text };

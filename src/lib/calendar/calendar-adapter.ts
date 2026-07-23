@@ -1,0 +1,121 @@
+/**
+ * Calendar Adapter — Phase 5
+ *
+ * The single integration point between the Meeting Orchestration Engine
+ * and Google Calendar / Google Meet.
+ *
+ * Future adapters (Outlook, Teams, Zoom, Calendly) implement the same
+ * CalendarAdapter interface and are swapped in without changing QuantumAI.
+ */
+
+import type { MeetingSession } from "@/lib/meeting/meeting-session";
+import type { MeetingFormData } from "@/lib/meeting/meeting-types";
+import { buildAuthedClient } from "./google/google-auth";
+import { checkAvailability, formatAlternativesText } from "./google/availability";
+import { createCalendarMeeting, type CalendarMeeting } from "./google/meeting-create";
+import { buildIsoDateTime, isValidTimezone } from "./google/timezone";
+
+// ── Adapter interface (extendable for Outlook, Zoom, etc.) ──────────────────
+
+export interface ScheduleResult {
+  success: boolean;
+  meeting?: CalendarMeeting;
+  conflictMessage?: string;
+  error?: string;
+}
+
+// ── Environment helpers ──────────────────────────────────────────────────────
+
+function getConfig() {
+  const refreshToken = process.env.GOOGLE_CALENDAR_REFRESH_TOKEN;
+  const calendarId   = process.env.GOOGLE_CALENDAR_ID ?? "primary";
+  if (!refreshToken) {
+    throw new Error(
+      "[CalendarAdapter] GOOGLE_CALENDAR_REFRESH_TOKEN is not set. " +
+      "Run the OAuth flow at /api/auth/google to authorise."
+    );
+  }
+  return { refreshToken, calendarId };
+}
+
+// ── Main scheduling function ─────────────────────────────────────────────────
+
+/**
+ * Attempt to schedule a meeting from a completed MeetingSession.
+ *  1. Validates timezone
+ *  2. Checks calendar availability
+ *  3. Creates Google Calendar event + Meet link if available
+ *  4. Returns conflict message with alternatives if slot is taken
+ */
+export async function scheduleFromSession(
+  session: MeetingSession
+): Promise<ScheduleResult> {
+  const form = extractFormData(session);
+  if (!form) {
+    return { success: false, error: "Incomplete meeting data." };
+  }
+
+  if (!isValidTimezone(form.timezone)) {
+    return { success: false, error: `Invalid timezone: ${form.timezone}` };
+  }
+
+  let config;
+  try {
+    config = getConfig();
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+
+  const auth = buildAuthedClient(config.refreshToken);
+
+  // Build ISO start/end
+  const startIso = `${form.preferredDate}T${form.preferredTime}:00`;
+  const end = new Date(`${form.preferredDate}T${form.preferredTime}:00`);
+  end.setMinutes(end.getMinutes() + 60);
+  const endIso = end.toISOString().slice(0, 19);
+
+  // Check availability
+  let avail;
+  try {
+    avail = await checkAvailability(
+      auth, config.calendarId, startIso, endIso, form.timezone
+    );
+  } catch (e: any) {
+    console.error("[CalendarAdapter] Availability check failed:", e.message);
+    return { success: false, error: "Could not check calendar availability." };
+  }
+
+  if (!avail.available) {
+    const msg = formatAlternativesText(avail.alternatives, form.timezone);
+    return {
+      success: false,
+      conflictMessage: `That time is already booked. ${msg}`,
+    };
+  }
+
+  // Create event + Meet link
+  try {
+    const meeting = await createCalendarMeeting(
+      auth, config.calendarId, form as MeetingFormData
+    );
+    return { success: true, meeting };
+  } catch (e: any) {
+    console.error("[CalendarAdapter] Event creation failed:", e.message);
+    return { success: false, error: "Failed to create the calendar event." };
+  }
+}
+
+// ── Helper ───────────────────────────────────────────────────────────────────
+
+function extractFormData(session: MeetingSession): Partial<MeetingFormData> | null {
+  const d: Record<string, string> = {};
+  for (const [k, v] of Object.entries(session.fields)) {
+    if (v.value) d[k] = v.value;
+  }
+  const required = [
+    "firstName","lastName","email","phone","countryCode",
+    "reasonForMeeting","preferredDate","preferredTime","timezone",
+  ];
+  if (required.some((r) => !d[r])) return null;
+  return d as Partial<MeetingFormData>;
+}

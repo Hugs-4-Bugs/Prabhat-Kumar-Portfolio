@@ -1,0 +1,11 @@
+DOCUMENT: Price Prediction of Cryptocurrency using Machine Learning
+TYPE: research-paper
+AUTHOR: Prabhat Kumar
+DATE: 2023-05-15
+SUMMARY: Short‑term Bitcoin price forecasting using LSTM, RNN, and ensemble methods like Random Forest. Evaluates model accuracy utilizing technical indicators such as MACD, RSI, and MOM.
+KEY DATA POINTS (verified):
+- 5 years of daily Bitcoin data analyzed
+- Models achieve high accuracy with minimal error rates
+- Technical features like MACD, RSI30, and MOM30 are the most important predictive indicators
+WHAT THIS DEMONSTRATES: Machine learning expertise, time‑series forecasting, practical implementation of ML in finance.
+LINK: /research/cryptocurrency-price-prediction-using-ml

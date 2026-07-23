@@ -1,0 +1,57 @@
+[
+  {
+    "slug": "breakthrough-product-opportunity-2026",
+    "title": "Breakthrough Product Opportunity Report 2026",
+    "type": "report",
+    "publishedDate": "2026-03-01",
+    "venue": null,
+    "tags": [
+      "AI",
+      "SaaS",
+      "Market Research",
+      "Product Strategy"
+    ],
+    "pdfPath": "/research/breakthrough-product-opportunity-2026.pdf",
+    "coverImage": null,
+    "readingTimeMinutes": 15,
+    "featured": true,
+    "description": "A comprehensive analysis of the top 3 breakthrough software product opportunities for solo technical founders, with market sizing and execution blueprints."
+  },
+  {
+    "slug": "cryptocurrency-price-prediction-using-ml",
+    "title": "Price Prediction of Cryptocurrency using Machine Learning",
+    "type": "research-paper",
+    "publishedDate": "2023-05-15",
+    "venue": "Sri Krishna Institute of Technology (BE Thesis)",
+    "tags": [
+      "Machine Learning",
+      "Cryptocurrency",
+      "LSTM",
+      "Random Forest"
+    ],
+    "pdfPath": "/research/cryptocurrency-price-prediction.pdf",
+    "coverImage": null,
+    "readingTimeMinutes": 20,
+    "featured": false,
+    "description": "Short‑term Bitcoin price forecasting using LSTM, RNN, and ensemble methods – achieving high accuracy with technical indicators."
+  },
+  {
+    "slug": "acquisitionos-product-opportunity-report",
+    "title": "AcquisitionOS: Product Opportunity Report 2026",
+    "type": "report",
+    "publishedDate": "2026-07-01",
+    "venue": null,
+    "tags": [
+      "B2B SaaS",
+      "Sales Technology",
+      "Customer Acquisition",
+      "AI Agents"
+    ],
+    "pdfPath": "/research/acquisitionos-product-opportunity-report.pdf",
+    "coverImage": null,
+    "readingTimeMinutes": 18,
+    "featured": true,
+    "description": "A comprehensive analysis of the $30B+ B2B customer acquisition market and the product blueprint for an autonomous prospecting platform built on open‑weight frontier models.",
+    "content": "## Executive Summary\n\nB2B customer acquisition is a $30B+ annual labor market still conducted largely by humans. Sales development representatives (SDRs) cost $75,000–$120,000 per year fully loaded, work 50–100 contacts per day, and achieve reply rates of 1–3%. The tools meant to amplify them — Outreach, Salesloft, Apollo, ZoomInfo — have evolved into fragmented copilots that demand constant human operation. The result is a category stuck in productivity stasis despite a decade of investment.\n\nAcquisitionOS is a proposed AI‑native platform that replaces this stack with an autonomous agent system. Built on open‑weight frontier models, the product runs the entire top‑of‑funnel pipeline: ICP definition, prospect discovery across LinkedIn and the open web, multi‑channel sequence orchestration, grounded personalization, CRM‑native sync, and meeting handoff to account executives. The system is not a copilot; it is an SDR team that works 24/7, costs one‑tenth as much, and converts three to five times better.\n\n**The opportunity in five points:**\n\n1. The SDR model is broken. Average fully‑loaded cost per SDR exceeds $90K; average reply rate on cold outbound is below 3%. The unit economics of B2B growth have not improved meaningfully in a decade.\n\n2. Open‑weight frontier AI changes the math. Models released under permissive licenses deliver frontier‑class reasoning at one‑tenth the inference cost of proprietary models, with an eight‑hour autonomous task horizon – the first models that can credibly run an outbound workflow end‑to‑end.\n\n3. The tool stack is fragmented. The median revenue team uses 8–12 disconnected tools for prospecting, enrichment, sequencing, and CRM sync. AcquisitionOS collapses this into a single agentic layer.\n\n4. The wedge is clear. Start with B2B SaaS startups (10–200 employees, $1M–$20M ARR) where founder‑led sales is the status quo, then move up‑market to mid‑market as the product matures. Three‑year SOM: $180M ARR.\n\n5. The incumbents cannot follow quickly. Outreach and Apollo are anchored to human‑in‑the‑loop workflows and proprietary data models; a full rewrite is required to match an agent‑first architecture.\n\n**The report covers:** the structural failure of the modern B2B acquisition stack, the macro trends that make a generational opportunity possible, a complete product blueprint, target users and market sizing, competitive differentiation, technical architecture, monetization strategy, and an 18‑month founder execution roadmap."
+  }
+]

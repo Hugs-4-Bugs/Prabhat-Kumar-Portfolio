@@ -82,7 +82,7 @@ export function Header({ onSearchClick }: HeaderProps) {
       >
         <div className="container flex items-center justify-between h-16">
           <Logo />
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-bold">
             {siteConfig.navLinks.filter(link => link.label !== 'Blogs').map((link) => {
               const isExternal = link.href.startsWith("http");
               const productDropdown = link.label === "Services" ? (
@@ -169,7 +169,7 @@ export function Header({ onSearchClick }: HeaderProps) {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-40 bg-background/95 backdrop-blur-sm md:hidden"
         >
-          <div className="flex flex-col items-center justify-center h-full space-y-6 text-lg font-medium">
+          <div className="flex flex-col items-center justify-center h-full space-y-6 text-lg font-bold">
             {siteConfig.navLinks.filter(link => link.label !== 'Blogs').map((link) => {
               const isExternal = link.href.startsWith("http");
               const productDropdown = link.label === "Services" ? (

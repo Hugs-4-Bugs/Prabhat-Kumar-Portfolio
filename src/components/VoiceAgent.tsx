@@ -12,6 +12,10 @@ import { X, Mic, ChevronDown, Power, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getAIAudio, getVoiceAIResponse } from "@/app/actions";
 import { getBrowserStorage } from "@/lib/browser-storage";
+import { getVisitorContextHint } from "@/lib/visitor/visitor-engine";
+import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
+import { extractMeetingFieldsAction } from "@/app/actions";
+import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
 
 /* ─── Voice Agent Definitions ─────────────────────────────────────────── */
 const VOICE_AGENTS = [
@@ -248,6 +252,9 @@ export const VoiceAgent = memo(function VoiceAgent({
   const [lastAI, setLastAI] = useState("");
   const [sessionStarted, setSessionStarted] = useState(false);
 
+  /* ── Visitor Intelligence (Phase 7) — session-only, async, zero API calls ── */
+  const { analyse: analyseVisitor, reset: resetVisitorProfile } = useVisitorIntelligence();
+
   /* refs so callbacks always see fresh values */
   const agentRef = useRef<Agent>(VOICE_AGENTS[0]);
   const isMounted = useRef(true);
@@ -262,7 +269,10 @@ export const VoiceAgent = memo(function VoiceAgent({
   
   /* cleanup tracking */
   const sessionActiveRef = useRef(true); // track if session is active
-  const pendingTimeoutsRef = useRef<NodeJS.Timeout[]>([]); // track setTimeout calls
+  const pendingTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
+  
+  const engine = useMeetingEngine();
+  const { profile } = useVisitorIntelligence(); // track setTimeout calls
   const conversationAbortRef = useRef<AbortController | null>(null); // abort conversation TTS
   const micPermissionGrantedRef = useRef(false); // skip re-requesting permission between turns
 
@@ -818,10 +828,42 @@ export const VoiceAgent = memo(function VoiceAgent({
     setTranscript(input);
 
     try {
+      const isCollecting = engine.session && engine.session.state === 'collecting';
+      let meetingContext = undefined;
+      const isMeetingLikely = profile.meetingProbability > 60 || profile.meetingSignalDetected;
+      
+      if (!isCollecting && isMeetingLikely) {
+         meetingContext = "Visitor Intelligence indicates this user might want a meeting. Proactively and politely suggest they can schedule a meeting with Prabhat if they'd like. Keep it natural.";
+      }
+      
+      if (isCollecting) {
+         // Extract fields from user message
+         const extraction = await extractMeetingFieldsAction(input, engine.data);
+         if (extraction.success && extraction.data) {
+           Object.entries(extraction.data).forEach(([key, val]) => {
+             if (val) engine.setField(key as any, val);
+           });
+         }
+         
+         const remaining = engine.getRemainingFields();
+         if (remaining.length > 0) {
+           const nextMsg = engine.nextQuestion();
+           meetingContext = `The user is scheduling a meeting. You must ask them for their missing info ONE BY ONE.
+           Remaining missing fields: ${remaining.join(", ")}.
+           Next question to ask: "${nextMsg}".
+           Acknowledge their answer briefly, then ask the next question naturally (spoken style).`;
+         } else {
+           meetingContext = `The user just provided the last piece of information!
+           All fields collected. Tell the user you've got everything and the meeting request is ready to confirm on their screen.`;
+         }
+      }
+
       const result = await getVoiceAIResponse(
         input,
         conversationHistory,
-        agentRef.current.id
+        agentRef.current.id,
+        undefined, // visitorContext
+        meetingContext
       );
 
       // Check session is still active after async call
@@ -831,6 +873,12 @@ export const VoiceAgent = memo(function VoiceAgent({
         const answer = result.answer as string;
         setLastAI(answer);
         onAddMessage(input, answer);
+
+        // Update visitor intelligence asynchronously — no UI impact
+        analyseVisitor(input, conversationHistory.flatMap(h => [
+          { role: "user" as const, content: h.user },
+          { role: "model" as const, content: h.model },
+        ]));
 
         speakNaturallyForConversation(answer, agentRef.current, () => {
           if (isMounted.current && sessionActiveRef.current) {
@@ -935,6 +983,7 @@ export const VoiceAgent = memo(function VoiceAgent({
     setSessionStarted(false);
     setVoiceState("idle");
     setDropdownOpen(false);
+    resetVisitorProfile();
     
     // Notify parent to close
     onClose();

@@ -1,0 +1,12 @@
+DOCUMENT: AcquisitionOS: Product Opportunity Report 2026
+TYPE: report
+AUTHOR: Prabhat Kumar
+DATE: 2026-07-01
+SUMMARY: A comprehensive analysis of the $30B+ B2B customer acquisition market and the product blueprint for an autonomous prospecting platform built on open‑weight frontier models.
+KEY DATA POINTS (verified):
+- $30B+ annual labor market for B2B customer acquisition
+- SDRs cost $75,000–$120,000 per year fully loaded
+- Current average reply rates on cold outbound are 1–3%
+- Start with B2B SaaS startups ($1M–$20M ARR), $180M ARR SOM over 3 years
+WHAT THIS DEMONSTRATES: Market research, product strategy, technical writing.
+LINK: /research/acquisitionos-product-opportunity-report

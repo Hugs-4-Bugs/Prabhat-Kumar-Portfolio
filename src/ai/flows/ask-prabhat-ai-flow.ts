@@ -17,6 +17,8 @@ const AskPrabhatAIInputSchema = z.object({
     user: z.string(),
     model: z.string(),
   })).optional().describe('The previous conversation history.'),
+  visitorContext: z.string().optional(),
+  meetingContext: z.string().optional(),
 });
 export type AskPrabhatAIInput = z.infer<typeof AskPrabhatAIInputSchema>;
 
@@ -51,6 +53,16 @@ const prompt = ai.definePrompt({
 
   **Comprehensive Data about Prabhat Kumar (Context):**
   {{{context}}}
+  
+  {{#if visitorContext}}
+  **Visitor Intelligence Context:**
+  {{{visitorContext}}}
+  {{/if}}
+
+  {{#if meetingContext}}
+  **Meeting Scheduling Context:**
+  {{{meetingContext}}}
+  {{/if}}
   
   {{#if history}}
   **Conversation History:**

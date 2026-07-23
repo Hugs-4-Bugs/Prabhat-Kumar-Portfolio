@@ -10,7 +10,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  serverExternalPackages: ['@genkit-ai/google-genai', 'google-auth-library', 'genkit', 'jws'],
+  serverExternalPackages: ['@genkit-ai/google-genai', 'google-auth-library', 'genkit', 'jws', 'googleapis'],
   images: {
     remotePatterns: [
       {

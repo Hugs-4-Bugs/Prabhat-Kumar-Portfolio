@@ -236,6 +236,9 @@ export function InnovationResearch() {
           <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm font-semibold text-primary">
             Continuous learning: always exploring, always iterating, always shipping.
           </div>
+          <Link href="/research" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 w-full md:w-auto">
+            View Research & Articles <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
         </div>
       </div>
     </Section>

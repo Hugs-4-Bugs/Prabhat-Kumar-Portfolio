@@ -72,7 +72,7 @@
 
 
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { siteConfig } from '@/lib/data';
 import { RootClientShell } from '@/components/RootClientShell';
@@ -110,11 +110,35 @@ const websiteSchema = {
   },
 };
 
-// We cannot use Metadata API in a client component
-// export const metadata: Metadata = {
-//   title: siteConfig.title,
-//   description: siteConfig.description,
-// };
+export const metadata: Metadata = {
+  title: siteConfig.title,
+  description: siteConfig.description,
+  metadataBase: new URL(siteUrl),
+  robots: { index: true, follow: true },
+  alternates: {
+    canonical: siteUrl,
+  },
+  openGraph: {
+    title: siteConfig.title,
+    description: siteConfig.description,
+    url: siteUrl,
+    images: [{ url: ogImageUrl }],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [ogImageUrl],
+  }
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#030712' },
+  ],
+};
 
 export default function RootLayout({
   children,
@@ -124,40 +148,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <title>{siteConfig.title}</title>
-        <meta name="description" content={siteConfig.description} />
-        <meta name="robots" content="index, follow" />
-        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#030712" media="(prefers-color-scheme: dark)" />
-        <link rel="canonical" href={siteUrl} />
-        <meta property="og:title" content={siteConfig.title} />
-        <meta property="og:description" content={siteConfig.description} />
-        <meta property="og:url" content={siteUrl} />
-        <meta property="og:image" content={ogImageUrl} />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={siteConfig.title} />
-        <meta name="twitter:description" content={siteConfig.description} />
-        <meta name="twitter:image" content={ogImageUrl} />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(personSchema),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(websiteSchema),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-
+        
         {/* Microsoft Clarity Code Starts */}
         <script
           type="text/javascript"
@@ -192,7 +191,6 @@ export default function RootLayout({
         />
         {/* Google Analytics Code Ends */}
       </head>
-
       <body className="font-body bg-background text-foreground antialiased selection:bg-primary/20">
         <RootClientShell>{children}</RootClientShell>
       </body>

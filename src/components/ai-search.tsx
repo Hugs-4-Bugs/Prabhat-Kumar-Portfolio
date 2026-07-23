@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Balancer from "react-wrap-balancer";
-import { Sparkles, X, Search, Mic, MicOff, User, Trash2, AudioWaveform, SendHorizontal } from "lucide-react";
+import { Sparkles, X, Search, Mic, MicOff, User, Trash2, AudioWaveform, SendHorizontal, Plus } from "lucide-react";
 import Lottie from "lottie-react";
 
 import { getAISearchResponse } from "@/app/actions";
@@ -14,6 +14,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { getBrowserStorage } from "@/lib/browser-storage";
 import { VoiceAgent } from "@/components/VoiceAgent";
+import { CapabilityTrigger } from "@/components/CapabilityPanel";
+import { IntentSuggestions } from "@/components/IntentSuggestions";
+import { useIntentEngine } from "@/lib/intent/use-intent-engine";
+import { MeetingPanel } from "@/components/MeetingPanel";
+import { hasMeetingIntent, getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
+import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
+import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
+import { extractMeetingFieldsAction } from "@/app/actions";
 
 interface Message {
   role: 'user' | 'model';
@@ -98,6 +106,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   const [isPending, startTransition] = useTransition();
   const [isListening, setIsListening] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [isSchedulingOpen, setIsSchedulingOpen] = useState(false);
   const [particles, setParticles] = useState<Particle[]>([]);
   
   const recognitionRef = useRef<any>(null);
@@ -106,6 +115,8 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   const finalRef = useRef('');
   const overlayRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Phase 7: accumulates form field values extracted from conversation
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -154,18 +165,20 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     stopAudio();
     setConversation([]);
     getBrowserStorage()?.removeItem('ai-search-conversation');
+    resetVisitorProfile();
     toast({
       title: "Conversation Cleared",
       description: "The chat history has been cleared.",
     });
   }
-  
+
   const handleSubmit = useCallback(async (currentQuery: string) => {
     if (!currentQuery.trim()) return;
-
     stopAudio();
     
+    
     const newConversation: Message[] = [...conversation, { role: 'user', content: currentQuery }];
+    // const newConversation: Message[] = [...conversation, { role: 'user', content: currentQuery }];
     setConversation(newConversation);
     setQuery("");
 
@@ -180,15 +193,63 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         return acc;
       }, []);
 
-      const response = await getAISearchResponse(currentQuery, history);
+      // Check scheduling intent BEFORE calling AI so we can inject a natural reply
+      const isMeetingLikely = profile.meetingProbability > 60 || profile.meetingSignalDetected;
+      const wantsMeeting = hasMeetingIntent(currentQuery) && isMeetingLikely;
+
+      const isCollecting = engine.session && engine.session.state === 'collecting';
+      
+      let meetingContext = undefined;
+      
+      if (!engine.session && isMeetingLikely) {
+         meetingContext = "Visitor Intelligence indicates this user might want a meeting. Proactively and politely suggest they can schedule a meeting with Prabhat if they'd like. Keep it natural.";
+      }
+      
+      if (wantsMeeting && !engine.session) {
+        // Open the meeting engine!
+        engine.open();
+        setIsSchedulingOpen(true);
+      }
+      
+      if (engine.session && engine.session.state === 'collecting') {
+         // Extract fields from user message
+         const extraction = await extractMeetingFieldsAction(currentQuery, engine.data);
+         if (extraction.success && extraction.data) {
+           Object.entries(extraction.data).forEach(([key, val]) => {
+             if (val) engine.setField(key as any, val);
+           });
+         }
+         
+         // Build a prompt injection so QuantumAI asks for the next missing field!
+         const remaining = engine.getRemainingFields();
+         if (remaining.length > 0) {
+           const nextMsg = engine.nextQuestion();
+           meetingContext = `The user is currently scheduling a meeting. You must ask the user for their missing information ONE BY ONE.
+           Missing fields remaining: ${remaining.join(", ")}.
+           Next question you must ask: "${nextMsg}".
+           Acknowledge their answer briefly, then ask the next question.`;
+         } else {
+           meetingContext = `The user just provided the last piece of information for the meeting schedule! 
+           All required fields collected. Tell the user you have compiled their meeting request and please review the meeting panel on the screen to confirm submission.`;
+         }
+      }
+
+      const response = wantsMeeting && !engine.session
+        ? { success: true, answer: getMeetingIntentReply() }
+        : await getAISearchResponse(currentQuery, history, undefined, meetingContext);
 
       if (response.success && response.answer) {
         console.log('[AISearch] Assistant response received, appending once');
-        setConversation(prev => [...prev, { role: 'model', content: response.answer as string }]);
+        setConversation(prev => {
+          const updated = [...prev, { role: 'model' as const, content: response.answer as string }];
+          updateIntent(currentQuery, updated);
+          analyseVisitor(currentQuery, updated);
+          return updated;
+        });
       } else {
         toast({
           title: "AI Search Error",
-          description: response.message || "An error occurred.",
+          description: ('message' in response ? response.message : undefined) || "An error occurred.",
           variant: "destructive",
         });
         setConversation(prev => prev.slice(0, -1));
@@ -343,6 +404,26 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   }, [conversation, isPending]);
 
   const canSubmit = !isPending && !isListening && query.trim().length > 0;
+
+  // ── Phase 2.1: Auto-resize textarea ──────────────────────────────────
+  // Max ~6 lines before scrollbar kicks in (6 * ~20px line-height ≈ 120px)
+  const MAX_TEXTAREA_HEIGHT = 120;
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    // Reset to auto so scrollHeight reflects the true content height
+    el.style.height = "auto";
+    const next = Math.min(el.scrollHeight, MAX_TEXTAREA_HEIGHT);
+    el.style.height = `${next}px`;
+    el.style.overflowY = el.scrollHeight > MAX_TEXTAREA_HEIGHT ? "auto" : "hidden";
+  }, [query]);
+
+  // ── Phase 2: Intent engine (pure local, zero API calls) ──────────────
+  const { suggestions, updateIntent } = useIntentEngine();
+
+  // ── Phase 7: Visitor Intelligence (session-only, async, zero API calls) ─
+  const { analyse: analyseVisitor, reset: resetVisitorProfile, profile } = useVisitorIntelligence();
+  const engine = useMeetingEngine();
 
   return (
     <>
@@ -634,6 +715,14 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                             </div>
                         ))}
 
+                        {/* Phase 2: Intent-based suggestions after last AI message */}
+                        {!isPending && suggestions.length > 0 && (
+                          <IntentSuggestions
+                            suggestions={suggestions}
+                            onSelect={(label) => setQuery(label)}
+                          />
+                        )}
+
                         <AnimatePresence>
                         {isListening && (
                             <motion.div 
@@ -756,9 +845,9 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                         </div>
                     </ScrollArea>
                     
-                    <form onSubmit={handleFormSubmit} className="relative mt-4 sm:mt-8 flex-shrink-0">
+                    <form onSubmit={handleFormSubmit} className="relative mt-4 sm:mt-8 flex-shrink-0 rounded-[28px]">
                         <motion.div 
-                          className="absolute inset-0 rounded-full"
+                          className="absolute inset-0 rounded-[28px]"
                           style={{
                             backgroundImage: `
                               radial-gradient(circle at 30% 50%, rgba(120, 119, 198, 0.25) 0%, transparent 50%),
@@ -775,8 +864,13 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                             `
                           }}
                         />
-                        <Search className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 text-muted-foreground z-10 w-4 h-4 sm:w-5 sm:h-5" />
+                        {/* Left icons: Search + Capability trigger */}
+                        <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1">
+                          <Search className="text-muted-foreground w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                          <CapabilityTrigger onScheduleMeeting={() => setIsSchedulingOpen(true)} />
+                        </div>
                         <textarea
+                            ref={textareaRef}
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             onKeyDown={(e) => {
@@ -789,7 +883,8 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                             }}
                             placeholder="Ask a question..."
                             rows={1}
-                            className="relative z-10 w-full min-h-[48px] sm:min-h-[64px] h-auto max-h-40 py-3 sm:py-5 pl-10 sm:pl-14 pr-24 sm:pr-36 rounded-full bg-transparent focus:outline-none text-xs sm:text-sm placeholder-muted-foreground resize-none overflow-y-auto leading-snug"
+                            className="relative z-10 w-full py-3 sm:py-4 pl-20 sm:pl-24 pr-24 sm:pr-36 bg-transparent focus:outline-none text-xs sm:text-sm placeholder-muted-foreground resize-none overflow-hidden leading-snug transition-[height] duration-150"
+                            style={{ height: "auto" }}
                             disabled={isPending || isListening}
                             data-cursor-hover
                         />
@@ -876,6 +971,13 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
       }, [])}
       onAddMessage={handleAddMessage}
     />
+
+    {/* Meeting Panel — Phase 3 */}
+    <MeetingPanel
+      isOpen={isSchedulingOpen}
+      onClose={() => setIsSchedulingOpen(false)}
+    />
     </>
   );
 }
+
