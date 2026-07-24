@@ -10,6 +10,7 @@ import { AISection } from '@/components/blog/AISection';
 import { Button } from '@/components/ui/button';
 import { TableOfContents } from '@/components/blog/TableOfContents';
 import { cn } from '@/lib/utils';
+import { use } from 'react';
 
 // Helper function to get reading time
 const calculateReadingTime = (content: string) => {
@@ -18,8 +19,9 @@ const calculateReadingTime = (content: string) => {
   return Math.ceil(wordCount / wordsPerMinute);
 };
 
-export default function BlogPage({ params }: { params: { slug: string } }) {
-  const blog = blogData.find((p) => p.slug === params.slug);
+export default function BlogPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
+  const blog = blogData.find((p) => p.slug === slug);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   if (!blog) {
