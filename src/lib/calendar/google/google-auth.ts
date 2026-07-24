@@ -27,12 +27,13 @@ export function getOAuth2Client() {
 }
 
 /** Generate the consent URL to redirect the user to */
-export async function getAuthUrl(): Promise<string> {
+export async function getAuthUrl(state: string): Promise<string> {
   const auth = getOAuth2Client();
   return auth.generateAuthUrl({
     access_type: "offline",
     scope: SCOPES,
     prompt: "consent",
+    state,
   });
 }
 

@@ -92,10 +92,19 @@ export function validateSession(session: MeetingSession): {
 } {
   const data = extractData(session);
   const errors = validateMeetingForm(data);
+  // A collecting session must pass through `validating` before it becomes
+  // `ready`. Skipping that state is rejected by the lifecycle guard, leaving a
+  // visually complete form in `collecting` and preventing submission.
+  const validationState = session.state === "collecting"
+    ? transition(session.state, "validating")
+    : session.state;
   const nextState = errors.length === 0 ? "ready" : "collecting";
+  const resolvedState = validationState === nextState
+    ? validationState
+    : transition(validationState, nextState);
   const updated = {
     ...session,
-    state: transition(session.state, nextState),
+    state: resolvedState,
     updatedAt: Date.now(),
   };
   persistSession(updated);
@@ -108,7 +117,7 @@ export function validateSession(session: MeetingSession): {
 /**
  * Request submission. Calls /api/meeting/schedule which runs the
  * Google Calendar adapter server-side.
- * Falls back to "submitted" (draft saved) if the calendar API is not yet configured.
+ * A request is successful only after the calendar API confirms event creation.
  */
 export async function requestSubmission(
   session: MeetingSession
@@ -148,26 +157,30 @@ export async function requestSubmission(
 
     if (res.status === 409 && json.conflictMessage) {
       // Conflict — revert to ready so user can pick a new time
-      const reverted = { ...pending, state: transition(pending.state, "ready") as MeetingSession["state"], updatedAt: Date.now() };
+      const reverted = {
+        ...pending,
+        state: transition(pending.state, "ready") as MeetingSession["state"],
+        suggestedSlots: Array.isArray(json.alternatives) ? json.alternatives : [],
+        updatedAt: Date.now(),
+      };
       persistSession(reverted);
+      emit(reverted.id, "draft_saved", { state: "ready" });
       return { session: reverted, success: false, conflictMessage: json.conflictMessage };
     }
 
-    // Calendar not configured yet — still save locally
-    console.warn("[Workflow] Calendar API unavailable:", json.error ?? res.status);
+    return {
+      session,
+      success: false,
+      error: json.error ?? "Calendar scheduling is unavailable. Please try again later.",
+    };
   } catch (e: any) {
-    console.warn("[Workflow] Schedule fetch failed:", e.message);
+    console.warn("[Workflow] Schedule request failed:", e.message);
+    return {
+      session,
+      success: false,
+      error: "Could not reach the scheduling service. Please try again later.",
+    };
   }
-
-  // Graceful fallback: save as draft without calendar event
-  const submitted = {
-    ...pending,
-    state: transition(pending.state, "submitted") as MeetingSession["state"],
-    updatedAt: Date.now(),
-  };
-  persistSession(submitted);
-  emit(submitted.id, "draft_saved", { state: "submitted" });
-  return { session: submitted, success: true };
 }
 
 /** Cancel the current session */

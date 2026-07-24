@@ -106,7 +106,7 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed z-[1040] inset-x-3 bottom-20 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl max-h-[80vh] flex flex-col"
+            className="fixed z-[1040] inset-x-3 bottom-3 sm:inset-x-auto sm:bottom-20 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-xl max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-6rem)] flex flex-col"
             style={{
               backdropFilter: "blur(32px) saturate(200%)",
               background: "linear-gradient(160deg, rgba(16,16,36,0.97) 0%, rgba(8,8,22,0.98) 100%)",
@@ -199,9 +199,9 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
                       <input className={inputCls} style={inputStyle} type="email" placeholder="john@company.com" {...inp("email")} />
                     </Field>
                     <Field label="Phone" required>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col min-[380px]:flex-row gap-2">
                         <select
-                          className="rounded-xl px-2 py-2 text-xs text-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 transition-colors flex-shrink-0 w-28"
+                          className="rounded-xl px-2 py-2 text-xs text-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 transition-colors flex-shrink-0 w-full min-[380px]:w-28"
                           style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
                           value={data.countryCode ?? ""}
                           onChange={(e) => engine.setField("countryCode", e.target.value)}
@@ -213,7 +213,7 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
                             return <option key={c} value={code}>{c}</option>;
                           })}
                         </select>
-                        <input className={inputCls} style={inputStyle} type="tel" placeholder="9876543210" {...inp("phone")} />
+                        <input className={inputCls + " min-w-0"} style={inputStyle} type="tel" placeholder="9876543210" {...inp("phone")} />
                       </div>
                     </Field>
                     <Field label="Company">

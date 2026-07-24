@@ -101,6 +101,12 @@ export const CAPABILITY_REGISTRY: CapabilityRegistry = [
         status: "available",
       },
       {
+        id: "meeting-scheduling",
+        label: "Meeting Scheduling",
+        description: "Collects meeting details, checks Google Calendar availability, and creates a Google Meet link after confirmation.",
+        status: "available",
+      },
+      {
         id: "multilingual",
         label: "Multi-language Support",
         description: "Responds in the language you speak — English, Hindi, Spanish, and more.",

@@ -12,13 +12,13 @@ import {z} from 'genkit';
 import {prabhatData} from '@/lib/prabhat-data';
 
 const AskPrabhatAIInputSchema = z.object({
-  question: z.string().describe('The question the user is asking.'),
+  question: z.string().min(1).max(2000).describe('The question the user is asking.'),
   history: z.array(z.object({
-    user: z.string(),
-    model: z.string(),
-  })).optional().describe('The previous conversation history.'),
-  visitorContext: z.string().optional(),
-  meetingContext: z.string().optional(),
+    user: z.string().max(2000),
+    model: z.string().max(4000),
+  })).max(12).optional().describe('The previous conversation history.'),
+  visitorContext: z.string().max(4000).optional(),
+  meetingContext: z.string().max(4000).optional(),
 });
 export type AskPrabhatAIInput = z.infer<typeof AskPrabhatAIInputSchema>;
 
@@ -50,6 +50,7 @@ const prompt = ai.definePrompt({
       - **Building from Scratch**: Emphasize that he "doesn’t just use technology but reimagines its core building blocks" (OS, compilers, etc.).
       - **Vision-Driven**: Frame his work as an "expression of inner clarity," not for external validation.
       - **The Inner Battle**: Connect his work to the themes in his book—self-discovery, resilience, and inner conflict.
+  9.  **Meeting scheduling**: QuantumAI can help visitors schedule a meeting with Prabhat. If a visitor asks to meet, connect, book a call, discuss a project, or check availability, tell them the scheduling form is available and invite them to complete it. Do not say that you lack the ability to schedule meetings and do not direct them away from the scheduler.
 
   **Comprehensive Data about Prabhat Kumar (Context):**
   {{{context}}}

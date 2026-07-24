@@ -35,7 +35,7 @@ export const extractMeetingFieldsFlow = ai.defineFlow(
       Already known data: ${JSON.stringify(input.currentData)}
       User Message: "${input.query}"
       
-      Only return values for fields that you can extract from the user's message. If a field is not present or implied in the message, do NOT include it. Use standard formats (e.g. ISO date for preferredDate [YYYY-MM-DD], HH:MM for preferredTime, IANA string for timezone).`,
+      Only return values for fields that you can extract from the user's message. If a field is not present or implied in the message, do NOT include it. Use standard formats (e.g. ISO date for preferredDate [YYYY-MM-DD], HH:MM for preferredTime, IANA string for timezone). For reasonForMeeting, turn a long or informal explanation into a concise, professional summary of at most two sentences without changing its meaning.`,
       output: { schema: ExtractMeetingFieldsOutputSchema }
     });
     return output!;

@@ -74,11 +74,11 @@ export async function sendEmail(
       await sendViaResend(payload);
       job.status = "delivered";
       job.deliveredAt = Date.now();
-      console.log(`[EmailService] ✅ ${type} delivered to ${payload.to} (attempt ${attempt})`);
+      console.log(`[EmailService] ${type} delivered (attempt ${attempt}).`);
       return job;
     } catch (err: any) {
       job.error = err.message;
-      console.error(`[EmailService] ❌ Attempt ${attempt} failed for ${payload.to}:`, err.message);
+      console.error(`[EmailService] ${type} delivery attempt ${attempt} failed:`, err.message);
 
       if (attempt < MAX_ATTEMPTS) {
         job.status = "retry_scheduled";
@@ -89,6 +89,6 @@ export async function sendEmail(
   }
 
   job.status = "failed";
-  console.error(`[EmailService] ❌ All ${MAX_ATTEMPTS} attempts failed for ${payload.to}`);
+  console.error(`[EmailService] ${type} delivery failed after ${MAX_ATTEMPTS} attempts.`);
   return job;
 }

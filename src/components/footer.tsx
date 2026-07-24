@@ -1,5 +1,6 @@
 // src/components/footer.tsx
 "use client";
+import Link from "next/link";
 import { siteConfig } from "@/lib/data";
 import { ArrowUp } from "lucide-react";
 import { Button } from "./ui/button";
@@ -37,7 +38,17 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Prabhat Kumar. All Rights Reserved.</p>
+          <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <Link href="/privacy-policy" className="underline-offset-4 hover:underline hover:text-foreground">
+              Privacy Policy
+            </Link>
+            <span aria-hidden="true">·</span>
+            <Link href="/terms" className="underline-offset-4 hover:underline hover:text-foreground">
+              Terms of Service
+            </Link>
+            <span aria-hidden="true">·</span>
+            <span>&copy; {new Date().getFullYear()} Prabhat Kumar. All Rights Reserved.</span>
+          </p>
           {/* <p className="mt-1">Built with Next.js, Tailwind CSS, and a touch of AI magic ✨</p> */}
         </div>
       </div>

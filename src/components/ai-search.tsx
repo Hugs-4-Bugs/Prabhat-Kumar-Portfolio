@@ -19,6 +19,7 @@ import { IntentSuggestions } from "@/components/IntentSuggestions";
 import { useIntentEngine } from "@/lib/intent/use-intent-engine";
 import { MeetingPanel } from "@/components/MeetingPanel";
 import { hasMeetingIntent, getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
+import { selectedSuggestedSlotIndex } from "@/lib/meeting/suggested-slot";
 import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
 import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
 import { extractMeetingFieldsAction } from "@/app/actions";
@@ -195,7 +196,10 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
       // Check scheduling intent BEFORE calling AI so we can inject a natural reply
       const isMeetingLikely = profile.meetingProbability > 60 || profile.meetingSignalDetected;
-      const wantsMeeting = hasMeetingIntent(currentQuery) && isMeetingLikely;
+      // An explicit request must always open the scheduler. Visitor scoring is
+      // only used to decide whether a proactive suggestion is appropriate.
+      const wantsMeeting = hasMeetingIntent(currentQuery);
+      const suggestedSlotIndex = selectedSuggestedSlotIndex(currentQuery, engine.session?.suggestedSlots?.length ?? 0);
 
       const isCollecting = engine.session && engine.session.state === 'collecting';
       
@@ -210,31 +214,43 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         engine.open();
         setIsSchedulingOpen(true);
       }
+      if (suggestedSlotIndex !== null) {
+        const selected = engine.selectSuggestedSlot(suggestedSlotIndex);
+        if (selected) {
+          setIsSchedulingOpen(true);
+        }
+      }
       
       if (engine.session && engine.session.state === 'collecting') {
          // Extract fields from user message
          const extraction = await extractMeetingFieldsAction(currentQuery, engine.data);
          if (extraction.success && extraction.data) {
-           Object.entries(extraction.data).forEach(([key, val]) => {
-             if (val) engine.setField(key as any, val);
-           });
+           const updatedSession = engine.setFields(extraction.data);
+           if (updatedSession) {
+             const remaining = updatedSession.remainingFields;
+             meetingContext = remaining.length > 0
+               ? `The user is scheduling a meeting. A form on screen has been updated with the details they supplied. Ask only for the next missing required detail: ${updatedSession.currentStep}. Keep it natural and ask one question at a time.`
+               : "All required meeting details are filled in the on-screen form. Ask the user to review the details and confirm the request when ready.";
+           }
          }
          
          // Build a prompt injection so QuantumAI asks for the next missing field!
          const remaining = engine.getRemainingFields();
-         if (remaining.length > 0) {
+         if (!meetingContext && remaining.length > 0) {
            const nextMsg = engine.nextQuestion();
            meetingContext = `The user is currently scheduling a meeting. You must ask the user for their missing information ONE BY ONE.
            Missing fields remaining: ${remaining.join(", ")}.
            Next question you must ask: "${nextMsg}".
            Acknowledge their answer briefly, then ask the next question.`;
-         } else {
+         } else if (!meetingContext) {
            meetingContext = `The user just provided the last piece of information for the meeting schedule! 
            All required fields collected. Tell the user you have compiled their meeting request and please review the meeting panel on the screen to confirm submission.`;
          }
       }
 
-      const response = wantsMeeting && !engine.session
+      const response = suggestedSlotIndex !== null
+        ? { success: true, answer: `I’ve applied option ${suggestedSlotIndex + 1} to the meeting form. Please review the updated date and time, then confirm the request to create the meeting.` }
+        : wantsMeeting && !engine.session
         ? { success: true, answer: getMeetingIntentReply() }
         : await getAISearchResponse(currentQuery, history, undefined, meetingContext);
 
@@ -874,7 +890,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
+                              if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
                                 // Enter alone → submit, no newline
                                 e.preventDefault();
                                 if (canSubmit) handleSubmit(query);
@@ -980,4 +996,3 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     </>
   );
 }
-

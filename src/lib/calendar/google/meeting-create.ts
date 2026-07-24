@@ -50,7 +50,9 @@ export async function createCalendarMeeting(
   const event = await calendar.events.insert({
     calendarId,
     conferenceDataVersion: 1,
-    sendUpdates: "none",
+    // Google sends the attendee the calendar invitation; Resend also sends the
+    // portfolio's confirmation message to the visitor and owner.
+    sendUpdates: "all",
     requestBody: {
       summary,
       description,

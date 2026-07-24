@@ -16,6 +16,9 @@ import { getVisitorContextHint } from "@/lib/visitor/visitor-engine";
 import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
 import { extractMeetingFieldsAction } from "@/app/actions";
 import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
+import { hasMeetingIntent, getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
+import { selectedSuggestedSlotIndex } from "@/lib/meeting/suggested-slot";
+import { MeetingPanel } from "@/components/MeetingPanel";
 
 /* ─── Voice Agent Definitions ─────────────────────────────────────────── */
 const VOICE_AGENTS = [
@@ -251,6 +254,7 @@ export const VoiceAgent = memo(function VoiceAgent({
   const [transcript, setTranscript] = useState("");
   const [lastAI, setLastAI] = useState("");
   const [sessionStarted, setSessionStarted] = useState(false);
+  const [isSchedulingOpen, setIsSchedulingOpen] = useState(false);
 
   /* ── Visitor Intelligence (Phase 7) — session-only, async, zero API calls ── */
   const { analyse: analyseVisitor, reset: resetVisitorProfile } = useVisitorIntelligence();
@@ -275,6 +279,7 @@ export const VoiceAgent = memo(function VoiceAgent({
   const { profile } = useVisitorIntelligence(); // track setTimeout calls
   const conversationAbortRef = useRef<AbortController | null>(null); // abort conversation TTS
   const micPermissionGrantedRef = useRef(false); // skip re-requesting permission between turns
+  const listeningRequestedRef = useRef(false);
 
   /* keep refs in sync */
   useEffect(() => {
@@ -314,6 +319,7 @@ export const VoiceAgent = memo(function VoiceAgent({
       isMounted.current = false;
       sessionActiveRef.current = false;
       micPermissionGrantedRef.current = false;
+      listeningRequestedRef.current = false;
       
       // Clear all pending timeouts
       pendingTimeoutsRef.current.forEach(t => clearTimeout(t));
@@ -361,7 +367,7 @@ export const VoiceAgent = memo(function VoiceAgent({
    * speaking within <10 ms — no network call, no ElevenLabs, no Gemini.
    * Called the moment the user clicks a different agent card.
    */
-  const speakPreviewInstantly = useCallback((agent: Agent) => {
+  const speakPreviewInstantly = useCallback((agent: Agent, onFinished?: () => void) => {
     // Cancel whatever is speaking right now, immediately
     stopAllAudio();
     recognitionRef.current?.stop();
@@ -378,7 +384,10 @@ export const VoiceAgent = memo(function VoiceAgent({
 
     const speakNext = () => {
       if (abort.signal.aborted || !isMounted.current) return;
-      if (index >= sentences.length) return;
+      if (index >= sentences.length) {
+        onFinished?.();
+        return;
+      }
 
       const utterance = new SpeechSynthesisUtterance(sentences[index].trim());
       const voice = getBestBrowserVoice(agent);
@@ -446,39 +455,89 @@ export const VoiceAgent = memo(function VoiceAgent({
       rec.continuous = true;
       rec.interimResults = true;
       rec.lang = "en-IN";
+      let finalTranscript = "";
+      let interrupted = false;
+      let speechHandled = false;
+      let silenceTimer: ReturnType<typeof setTimeout> | null = null;
+
+      const clearSilenceTimer = () => {
+        if (silenceTimer !== null) {
+          clearTimeout(silenceTimer);
+          silenceTimer = null;
+        }
+      };
+
+      const interrupt = () => {
+        if (interrupted || !isMounted.current || !sessionActiveRef.current) return;
+        interrupted = true;
+        // Stop only the assistant output. Keep this recognition session alive so
+        // the first words of the interruption are not discarded.
+        stopAllAudio();
+        setVoiceState("listening");
+        setTranscript("");
+      };
+
+      const commitSpeech = () => {
+        clearSilenceTimer();
+        if (speechHandled) return;
+        const spoken = finalTranscript.trim();
+        if (!spoken) return;
+        speechHandled = true;
+        try { rec.stop(); } catch { /* ignore */ }
+        handleUserSpeech(normalizeSpeechTranscript(spoken));
+      };
 
       // onspeechstart fires the moment the browser detects voice audio —
       // this is the earliest possible signal that the user is speaking.
       (rec as any).onspeechstart = () => {
-        if (isMounted.current && sessionActiveRef.current && stateRef.current === "speaking") {
-          // Stop assistant immediately
-          stopAllAudio();
-          bargeInRecognitionRef.current = null;
-          try { rec.stop(); } catch { /* ignore */ }
-          // Switch to main listening right away
-          startListening();
+        if (stateRef.current === "speaking") interrupt();
+      };
+
+      // Keep this recognition alive after interruption. Starting a second
+      // recognizer here used to lose the user's opening words and caused races.
+      rec.onresult = (event) => {
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript || interim) {
+          interrupt();
+          setTranscript(`${finalTranscript} ${interim}`.trim());
+        }
+        if (event.results[event.results.length - 1].isFinal) {
+          clearSilenceTimer();
+          silenceTimer = setTimeout(commitSpeech, 900);
+          pendingTimeoutsRef.current.push(silenceTimer);
         }
       };
 
-      // Also catch any transcription result as a fallback barge-in trigger
-      rec.onresult = () => {
-        if (isMounted.current && sessionActiveRef.current && stateRef.current === "speaking") {
-          stopAllAudio();
-          bargeInRecognitionRef.current = null;
-          try { rec.stop(); } catch { /* ignore */ }
-          startListening();
+      (rec as any).onspeechend = () => {
+        if (!speechHandled && finalTranscript.trim()) {
+          clearSilenceTimer();
+          silenceTimer = setTimeout(commitSpeech, 350);
+          pendingTimeoutsRef.current.push(silenceTimer);
         }
       };
 
       rec.onerror = () => {
+        clearSilenceTimer();
         // Silently fail — don't interrupt main flow
         bargeInRecognitionRef.current = null;
       };
 
       rec.onend = () => {
+        clearSilenceTimer();
         // Clear the ref so a fresh instance can be started if needed
         if (bargeInRecognitionRef.current === rec) {
           bargeInRecognitionRef.current = null;
+        }
+        if (!speechHandled && finalTranscript.trim() && interrupted) {
+          commitSpeech();
+          return;
         }
         // Restart only if the assistant is still speaking
         if (
@@ -662,14 +721,17 @@ export const VoiceAgent = memo(function VoiceAgent({
     if (!isMounted.current || !sessionActiveRef.current) return;
 
     // Prevent concurrent recognition instances — if already listening, do nothing
-    if (stateRef.current === "listening") return;
+    if (stateRef.current === "listening" || listeningRequestedRef.current) return;
+    listeningRequestedRef.current = true;
 
     stopAllAudio();
+    stopBargeInListening();
 
     const SR =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
     if (!SR) {
+      listeningRequestedRef.current = false;
       setVoiceState("error");
       setTranscript(
         "Speech recognition is not supported. Please use Chrome or Edge."
@@ -688,6 +750,7 @@ export const VoiceAgent = memo(function VoiceAgent({
         stream.getTracks().forEach((t) => t.stop());
         micPermissionGrantedRef.current = true;
       } catch {
+        listeningRequestedRef.current = false;
         if (isMounted.current && sessionActiveRef.current) {
           setVoiceState("error");
           setTranscript("Microphone permission blocked. Please allow access.");
@@ -697,7 +760,10 @@ export const VoiceAgent = memo(function VoiceAgent({
     }
 
     // Exit if session ended while waiting
-    if (!sessionActiveRef.current || !isMounted.current) return;
+    if (!sessionActiveRef.current || !isMounted.current) {
+      listeningRequestedRef.current = false;
+      return;
+    }
 
     const rec = new SR() as SpeechRecognition;
     rec.continuous = true;
@@ -732,6 +798,7 @@ export const VoiceAgent = memo(function VoiceAgent({
     };
 
     rec.onstart = () => {
+      listeningRequestedRef.current = false;
       console.log('[VoiceAgent] SR started');
       if (isMounted.current && sessionActiveRef.current) {
         if (stateRef.current === "speaking") {
@@ -776,6 +843,7 @@ export const VoiceAgent = memo(function VoiceAgent({
     };
 
     rec.onerror = (e) => {
+      listeningRequestedRef.current = false;
       if (!isMounted.current || !sessionActiveRef.current) return;
       clearSilenceTimer();
       console.warn('[VoiceAgent] SR error:', e.error);
@@ -798,6 +866,7 @@ export const VoiceAgent = memo(function VoiceAgent({
     };
 
     rec.onend = () => {
+      listeningRequestedRef.current = false;
       console.log('[VoiceAgent] SR ended, speechHandled:', speechHandled);
       clearSilenceTimer();
       // If we have accumulated final text that wasn't committed yet, commit now
@@ -816,6 +885,7 @@ export const VoiceAgent = memo(function VoiceAgent({
       rec.start();
       recognitionRef.current = rec;
     } catch (e) {
+      listeningRequestedRef.current = false;
       console.error("[VoiceAgent] rec.start error", e);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -829,8 +899,19 @@ export const VoiceAgent = memo(function VoiceAgent({
 
     try {
       const isCollecting = engine.session && engine.session.state === 'collecting';
+      const wantsMeeting = hasMeetingIntent(input);
+      const suggestedSlotIndex = selectedSuggestedSlotIndex(input, engine.session?.suggestedSlots?.length ?? 0);
       let meetingContext = undefined;
       const isMeetingLikely = profile.meetingProbability > 60 || profile.meetingSignalDetected;
+
+      if (wantsMeeting && !engine.session) {
+        engine.open();
+        setIsSchedulingOpen(true);
+      }
+      if (suggestedSlotIndex !== null) {
+        const selected = engine.selectSuggestedSlot(suggestedSlotIndex);
+        if (selected) setIsSchedulingOpen(true);
+      }
       
       if (!isCollecting && isMeetingLikely) {
          meetingContext = "Visitor Intelligence indicates this user might want a meeting. Proactively and politely suggest they can schedule a meeting with Prabhat if they'd like. Keep it natural.";
@@ -840,31 +921,39 @@ export const VoiceAgent = memo(function VoiceAgent({
          // Extract fields from user message
          const extraction = await extractMeetingFieldsAction(input, engine.data);
          if (extraction.success && extraction.data) {
-           Object.entries(extraction.data).forEach(([key, val]) => {
-             if (val) engine.setField(key as any, val);
-           });
+           const updatedSession = engine.setFields(extraction.data);
+           if (updatedSession) {
+             const remaining = updatedSession.remainingFields;
+             meetingContext = remaining.length > 0
+               ? `The meeting form on screen has been updated. Ask only for the next missing required detail: ${updatedSession.currentStep}. For names, email addresses, and phone numbers, repeat the value back for confirmation before moving on. Keep the question short and natural.`
+               : "All required meeting details are filled in the on-screen form. Ask the user to review the details and confirm the request when ready.";
+           }
          }
          
          const remaining = engine.getRemainingFields();
-         if (remaining.length > 0) {
+         if (!meetingContext && remaining.length > 0) {
            const nextMsg = engine.nextQuestion();
            meetingContext = `The user is scheduling a meeting. You must ask them for their missing info ONE BY ONE.
            Remaining missing fields: ${remaining.join(", ")}.
            Next question to ask: "${nextMsg}".
            Acknowledge their answer briefly, then ask the next question naturally (spoken style).`;
-         } else {
+         } else if (!meetingContext) {
            meetingContext = `The user just provided the last piece of information!
            All fields collected. Tell the user you've got everything and the meeting request is ready to confirm on their screen.`;
          }
       }
 
-      const result = await getVoiceAIResponse(
-        input,
-        conversationHistory,
-        agentRef.current.id,
-        undefined, // visitorContext
-        meetingContext
-      );
+      const result = suggestedSlotIndex !== null
+        ? { success: true, answer: `I’ve applied option ${suggestedSlotIndex + 1}. Please review the updated meeting details on screen and confirm the request when you’re ready.` }
+        : wantsMeeting && !engine.session
+        ? { success: true, answer: getMeetingIntentReply() }
+        : await getVoiceAIResponse(
+            input,
+            conversationHistory,
+            agentRef.current.id,
+            undefined, // visitorContext
+            meetingContext
+          );
 
       // Check session is still active after async call
       if (!sessionActiveRef.current || !isMounted.current) return;
@@ -932,18 +1021,14 @@ export const VoiceAgent = memo(function VoiceAgent({
       // Non-fatal — best effort unlock
     }
 
-    // Use browser TTS for greeting (instant, no ElevenLabs wait)
-    speakPreviewInstantly(agentRef.current);
-    // After greeting, start listening — rough estimate based on word count
-    const greetingWords = agentRef.current.greeting.split(" ").length;
-    const estimatedMs = Math.max(2000, (greetingWords / agentRef.current.rate) * 500);
-    const timeout = setTimeout(() => {
+    // Start listening only after the greeting finishes. A time estimate can
+    // overlap its own speech and makes recognition feel unreliable.
+    speakPreviewInstantly(agentRef.current, () => {
       if (isMounted.current && sessionActiveRef.current) {
         setVoiceState("idle");
         startListening();
       }
-    }, estimatedMs);
-    pendingTimeoutsRef.current.push(timeout);
+    });
   };
 
   /* ─── Mic toggle ──────────────────────────────────────────────────── */
@@ -965,6 +1050,7 @@ export const VoiceAgent = memo(function VoiceAgent({
     // Mark session as inactive immediately
     sessionActiveRef.current = false;
     micPermissionGrantedRef.current = false;
+    listeningRequestedRef.current = false;
     
     // Clear all pending timeouts
     pendingTimeoutsRef.current.forEach(t => clearTimeout(t));
@@ -1060,6 +1146,10 @@ export const VoiceAgent = memo(function VoiceAgent({
           <VoiceStyles />
         </motion.div>
       )}
+      <MeetingPanel
+        isOpen={isSchedulingOpen}
+        onClose={() => setIsSchedulingOpen(false)}
+      />
     </AnimatePresence>
   );
 });

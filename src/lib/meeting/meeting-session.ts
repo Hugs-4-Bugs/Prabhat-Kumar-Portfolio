@@ -49,6 +49,7 @@ export interface MeetingSession {
   completedFields: (keyof MeetingFormData)[];
   remainingFields: (keyof MeetingFormData)[];
   invalidFields: (keyof MeetingFormData)[];
+  suggestedSlots?: { start: string; end: string }[];
   createdAt: number;
   updatedAt: number;
 }

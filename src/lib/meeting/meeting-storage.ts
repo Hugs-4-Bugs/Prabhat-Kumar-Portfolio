@@ -20,8 +20,9 @@ export function loadPersistedSession(): MeetingSession | null {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as MeetingSession;
-    // Don't restore terminal or completed sessions
-    if (parsed.state === "completed" || parsed.state === "confirmed") return null;
+    // A submitted request must never be resumed as a new draft. Doing so leaves
+    // the workflow in a non-collecting state and prevents AI-assisted filling.
+    if (["submitted", "completed", "confirmed", "cancelled", "rejected"].includes(parsed.state)) return null;
     return parsed;
   } catch {
     return null;

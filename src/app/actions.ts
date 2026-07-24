@@ -14,7 +14,7 @@ import { ai } from "@/ai/genkit";
 import { prabhatData } from "@/lib/prabhat-data";
 
 const contactFormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
+  name: z.string().min(2, "Name must be at least 2 characters.").max(120, "Name is too long."),
   email: z.string().email("Invalid email address.").refine(email => {
     const validDomains = ["gmail.com", "yahoo.com", "outlook.com", "icloud.com"];
     const domain = email.split('@')[1];
@@ -22,13 +22,20 @@ const contactFormSchema = z.object({
   }, {
     message: "Please use a valid email provider (Gmail, Yahoo, Outlook, or iCloud)."
   }),
-  message: z.string().min(10, "Message must be at least 10 characters."),
+  message: z.string().min(10, "Message must be at least 10 characters.").max(5000, "Message is too long."),
 });
 
 const architectureReviewSchema = z.object({
   email: z.string().email("Invalid email address."),
-  description: z.string().min(20, "Please describe the product, bottleneck, or architecture in at least 20 characters."),
+  description: z.string().min(20, "Please describe the product, bottleneck, or architecture in at least 20 characters.").max(5000, "Description is too long."),
 });
+
+const ALLOWED_RESUME_TYPES = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+]);
 
 // Handles contact form delivery through Resend/Rizen while preserving AI spam checks when configured.
 export async function submitContactForm(formData: FormData) {
@@ -53,7 +60,7 @@ export async function submitContactForm(formData: FormData) {
     if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) {
       const spamResult = await detectSpam({ message });
       if (spamResult.isSpam) {
-        console.log(`Spam detected: ${spamResult.reason}`);
+        console.warn("[Contact] Spam submission rejected.");
         return {
           success: false,
           message: `Spam detected: ${spamResult.reason}.`,
@@ -236,7 +243,7 @@ async function sendPortfolioEmail({
     html,
   };
 
-  console.log("[Email] Sending →", { from: fromEmail, to: toEmail, replyTo: safeReplyTo, subject });
+  console.log("[Email] Sending contact submission.");
 
   // 10-second timeout to avoid hanging on Resend network issues
   const controller = new AbortController();
@@ -261,7 +268,7 @@ async function sendPortfolioEmail({
       return { success: false, message: "Email could not be delivered. Please try again later." };
     }
 
-    console.log("[Email] Delivered successfully:", responseBody);
+    console.log("[Email] Contact submission delivered.");
     return { success: true };
   } catch (error: any) {
     clearTimeout(timeout);
@@ -325,6 +332,10 @@ export async function handleResumeUpload(
 
   if (file.size > 4 * 1024 * 1024) { // 4MB limit
     return { success: false, message: "File is too large. Maximum size is 4MB." };
+  }
+
+  if (!ALLOWED_RESUME_TYPES.has(file.type)) {
+    return { success: false, message: "Unsupported file type. Please upload a PDF, DOC, DOCX, or TXT resume." };
   }
 
   try {
@@ -471,6 +482,7 @@ VOICE RESPONSE RULES:
 - Never start with "Certainly!", "Great question!", or "Of course!" — just answer.
 - Be warm, direct, conversational.
 - Since you are representing yourself as ${agentName}, always introduce yourself or refer to yourself as ${agentName} if asked.
+- You can help a visitor schedule a meeting with Prabhat. If they ask to meet, connect, book a call, discuss a project, or check availability, let them know that the meeting form is open and guide them through its required details. Never say that meeting scheduling is unavailable.
 
 ABOUT PRABHAT KUMAR:
 Name: Prabhat Kumar

@@ -10,7 +10,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { scheduleFromSession } from "@/lib/calendar/calendar-adapter";
 import { sendMeetingConfirmationEmails } from "@/lib/notifications/meeting-confirmation";
-import type { MeetingSession } from "@/lib/meeting/meeting-session";
+import { extractData, type MeetingSession } from "@/lib/meeting/meeting-session";
+import { validateMeetingForm } from "@/lib/meeting/meeting-validator";
 
 export async function POST(req: NextRequest) {
   let session: MeetingSession;
@@ -23,6 +24,13 @@ export async function POST(req: NextRequest) {
 
   if (!session?.id || !session?.fields) {
     return NextResponse.json({ error: "Incomplete session data." }, { status: 422 });
+  }
+
+  // Never trust the client-side meeting state. A public endpoint can be called
+  // directly, so validate the raw field values again before Calendar is touched.
+  const validationErrors = validateMeetingForm(extractData(session));
+  if (validationErrors.length > 0) {
+    return NextResponse.json({ error: "Invalid meeting details." }, { status: 422 });
   }
 
   // ── Step 1: Create Google Calendar event + Meet link ────────────────────
@@ -42,6 +50,7 @@ export async function POST(req: NextRequest) {
       {
         success: false,
         conflictMessage: scheduleResult.conflictMessage,
+        alternatives: scheduleResult.alternatives,
         error: scheduleResult.error,
       },
       { status: scheduleResult.conflictMessage ? 409 : 500 }
@@ -50,11 +59,15 @@ export async function POST(req: NextRequest) {
 
   const meeting = scheduleResult.meeting!;
 
-  // ── Step 2: Send confirmation emails (fire-and-forget, never block response) ─
-  // We don't await here so email failures never delay the response to the user.
-  sendMeetingConfirmationEmails(session, meeting).catch((e) => {
+  // ── Step 2: Send confirmation emails before completing the request ─────────
+  // Serverless runtimes can stop fire-and-forget work once a response is sent.
+  // Awaiting delivery makes the outcome observable and reliable.
+  let emailDelivery = { visitorDelivered: false, ownerDelivered: false };
+  try {
+    emailDelivery = await sendMeetingConfirmationEmails(session, meeting);
+  } catch (e: any) {
     console.error("[ScheduleAPI] Email delivery error:", e.message);
-  });
+  }
 
   return NextResponse.json({
     success: true,
@@ -66,5 +79,6 @@ export async function POST(req: NextRequest) {
       endIso:   meeting.endIso,
       summary:  meeting.summary,
     },
+    emailDelivery,
   });
 }

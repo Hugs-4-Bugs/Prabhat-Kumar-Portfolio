@@ -12,6 +12,7 @@ import type { MeetingSession } from "@/lib/meeting/meeting-session";
 import type { MeetingFormData } from "@/lib/meeting/meeting-types";
 import { buildAuthedClient } from "./google/google-auth";
 import { checkAvailability, formatAlternativesText } from "./google/availability";
+import type { TimeSlot } from "./google/availability";
 import { createCalendarMeeting, type CalendarMeeting } from "./google/meeting-create";
 import { buildIsoDateTime, isValidTimezone } from "./google/timezone";
 
@@ -21,6 +22,7 @@ export interface ScheduleResult {
   success: boolean;
   meeting?: CalendarMeeting;
   conflictMessage?: string;
+  alternatives?: TimeSlot[];
   error?: string;
 }
 
@@ -90,6 +92,7 @@ export async function scheduleFromSession(
     return {
       success: false,
       conflictMessage: `That time is already booked. ${msg}`,
+      alternatives: avail.alternatives,
     };
   }
 

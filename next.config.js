@@ -4,12 +4,6 @@ const path = require('path');
 const nextConfig = {
   /* config options here */
   outputFileTracingRoot: path.join(__dirname),
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   serverExternalPackages: ['@genkit-ai/google-genai', 'google-auth-library', 'genkit', 'jws', 'googleapis'],
   images: {
     remotePatterns: [

@@ -53,7 +53,7 @@ This portfolio is built with a rich set of features designed to provide an engag
 - **Animation**: GSAP (ScrollTrigger), Framer Motion
 - **Smooth Scrolling**: Lenis
 - **AI Integration**: Google Genkit, Google AI Platform
-- **Form Handling**: React Hook Form, Zod (for validation), FormSubmit.co
+- **Form Handling**: React Hook Form, Zod (for validation), Resend
 - **Deployment**: Vercel
 
 ## 🛠️ Getting Started
@@ -79,20 +79,25 @@ To get this project running locally, follow these steps:
     ```
 
 3.  **Set up environment variables:**
-    Create a `.env` file in the root of the project and add your Google AI API key.
-    ```
-    GEMINI_API_KEY=your_google_ai_api_key_here
-    ```
+    Copy `.env.example` to `.env.local` and populate the services you use.
+    `GEMINI_API_KEY` is required for AI features; Resend, ElevenLabs, and Google
+    Calendar variables are required only for their corresponding integrations.
 
 4.  **Run the development server:**
     ```bash
     npm run dev
     ```
-    The application will be available at `http://localhost:9002`.
+    The application will be available at `http://localhost:3000`.
 
 ##  deploying on vercel
 
-This project is configured for easy deployment on Vercel. Simply connect your GitHub repository to a new Vercel project, and it will automatically build and deploy the application. The `vercel.json` file is already included.
+This project is configured for Vercel. Add the production values from
+`.env.example` in Vercel Project Settings before deploying, then run `npm run
+typecheck`, `npm run lint`, and `npm run build` in a Node.js 18+ environment.
+
+Google Calendar OAuth setup is development-only: obtain the refresh token from a
+protected development environment, then add it to Vercel as
+`GOOGLE_CALENDAR_REFRESH_TOKEN`. The OAuth setup route is disabled in production.
 
 ## 🙏 Acknowledgements
 

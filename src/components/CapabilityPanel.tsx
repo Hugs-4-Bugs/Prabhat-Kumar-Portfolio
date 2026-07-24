@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Plus } from "lucide-react";
 import { CAPABILITY_REGISTRY } from "@/lib/capabilities";
@@ -19,6 +20,7 @@ import { CAPABILITY_REGISTRY } from "@/lib/capabilities";
 export function CapabilityTrigger({ onScheduleMeeting }: { onScheduleMeeting?: () => void } = {}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -31,6 +33,12 @@ export function CapabilityTrigger({ onScheduleMeeting }: { onScheduleMeeting?: (
   })).filter((cat) => cat.items.length > 0);
 
   const totalCount = categories.reduce((s, c) => s + c.items.length, 0);
+
+  // The search overlay is animated and clips its contents. Render the dialog at
+  // document level so fixed positioning is always relative to the viewport.
+  useEffect(() => {
+    setPortalRoot(document.body);
+  }, []);
 
   // ── Close menu on outside click ──────────────────────────────────────
   useEffect(() => {
@@ -147,7 +155,7 @@ export function CapabilityTrigger({ onScheduleMeeting }: { onScheduleMeeting?: (
       </AnimatePresence>
 
       {/* ── Capability Panel ───────────────────────────────────────── */}
-      <AnimatePresence>
+      {portalRoot && createPortal(<AnimatePresence>
         {panelOpen && (
           <>
             {/* Scrim */}
@@ -170,7 +178,7 @@ export function CapabilityTrigger({ onScheduleMeeting }: { onScheduleMeeting?: (
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 18, scale: 0.97 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed z-[1030] inset-x-3 bottom-20 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-lg max-h-[70vh] flex flex-col"
+              className="fixed z-[1030] inset-x-3 bottom-3 sm:inset-x-auto sm:bottom-20 sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-lg max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-6rem)] flex flex-col"
               style={{
                 backdropFilter: "blur(32px) saturate(200%)",
                 background:
@@ -215,7 +223,7 @@ export function CapabilityTrigger({ onScheduleMeeting }: { onScheduleMeeting?: (
                       {category.title}
                     </h3>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
                       {category.items.map((item) => (
                         <div
                           key={item.id}
@@ -255,7 +263,7 @@ export function CapabilityTrigger({ onScheduleMeeting }: { onScheduleMeeting?: (
             </motion.div>
           </>
         )}
-      </AnimatePresence>
+      </AnimatePresence>, portalRoot)}
     </div>
   );
 }

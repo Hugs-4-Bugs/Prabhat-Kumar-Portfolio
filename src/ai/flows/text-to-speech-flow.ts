@@ -25,6 +25,7 @@ function getElevenLabsVoiceId(voiceAgentId?: string): string | undefined {
 }
 
 export async function textToSpeech(text: string, voiceAgentId?: string): Promise<string | null> {
+  if (!text.trim() || text.length > 5000) return null;
   return textToSpeechWithElevenLabs(text, voiceAgentId);
 }
 

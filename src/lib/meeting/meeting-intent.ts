@@ -30,9 +30,9 @@ export function hasMeetingIntent(message: string): boolean {
  */
 export function getMeetingIntentReply(name = "Prabhat"): string {
   const replies = [
-    `I'd be happy to help you schedule a meeting with ${name}! I've opened the scheduling form for you. Please fill in your details and preferred time — ${name} will receive your request and confirm shortly.`,
-    `Sure! Let me open the meeting scheduler for you. Fill in your details and ${name} will get back to you to confirm the time.`,
-    `Great idea! I've brought up the meeting request form. Just fill in your details and ${name} will confirm a time that works.`,
+    `I'd be happy to help you schedule a meeting with ${name}. I’ve opened the form and can fill it in as we talk. To begin, what are your first and last names?`,
+    `Sure—the meeting form is open, and I can fill it in for you. Please share your first and last names to get started.`,
+    `Great—I’ve opened the meeting form. I’ll collect the details one at a time, starting with your first and last names.`,
   ];
   return replies[Math.floor(Math.random() * replies.length)];
 }
