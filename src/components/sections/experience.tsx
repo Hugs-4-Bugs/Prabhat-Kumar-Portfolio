@@ -362,7 +362,7 @@ export function Experience() {
               return (
                 <div
                   key={index}
-                  ref={el => cardsRef.current[index] = el}
+                  ref={el => { cardsRef.current[index] = el; }}
                   className={`cinematic-card group relative w-full lg:w-[90%] xl:w-[80%] ${isLeft ? "mr-auto ml-0 pr-8 lg:pr-24" : "ml-auto mr-0 pl-8 lg:pl-24"}`}
                   onMouseEnter={() => handleCardHover(index)}
                   onMouseLeave={() => handleCardLeave(index)}
