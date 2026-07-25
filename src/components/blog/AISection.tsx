@@ -30,7 +30,7 @@ export function AISection({ content }: AISectionProps) {
       setSummary("");
       const result = await getBlogSummary(content);
       if (result.success) {
-        setSummary(result.summary);
+        setSummary(result.summary ?? "");
       } else {
         toast({ title: "Summary Error", description: result.message, variant: "destructive" });
       }
