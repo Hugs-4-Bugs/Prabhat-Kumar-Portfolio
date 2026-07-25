@@ -352,7 +352,7 @@ export function Education() {
             return (
               <div key={index} className={`flex w-full md:w-1/2 ${layoutClasses} p-10 md:p-6`}>
                 <div
-                  ref={(el) => (cardsRef.current[index] = el!)}
+                  ref={(el) => { cardsRef.current[index] = el!; }}
                   className={`relative p-8 rounded-xl transform-gpu w-full backdrop-blur-md border transition-all duration-500 card-glow
                     ${isDark 
                         ? "bg-gray-900/60 border-cyan-500/30 shadow-[0_0_20px_rgba(0,255,255,0.1)]" 
