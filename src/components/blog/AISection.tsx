@@ -48,8 +48,7 @@ export function AISection({ content }: AISectionProps) {
 
       const newConversationEntry = {
         user: currentQuestion,
-        ai: result.success ? result.answer : result.message || "An error occurred.",
-      };
+        ai: result.success ? (result.answer ?? "An error occurred.") : (result.message || "An error occurred."),      };
 
       setConversation(prev => [...prev, newConversationEntry]);
 
