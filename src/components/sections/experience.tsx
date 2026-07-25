@@ -116,8 +116,8 @@ export function Experience() {
       trail: {x: number, y: number, opacity: number}[];
 
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.x = Math.random() * canvas!.width;
+        this.y = Math.random() * canvas!.height;
         this.size = Math.random() * 2 + 1;
         this.speed = Math.random() * 0.3 + 0.1;
         this.opacity = Math.random() * 0.1 + 0.05;
@@ -133,8 +133,8 @@ export function Experience() {
         if (this.trail.length > 5) this.trail.shift();
         this.trail.forEach(point => point.opacity *= 0.8);
         if (this.y < -10) {
-          this.y = canvas.height + 10;
-          this.x = Math.random() * canvas.width;
+          this.y = canvas!.height + 10;
+          this.x = Math.random() * canvas!.width;
         }
       }
 
