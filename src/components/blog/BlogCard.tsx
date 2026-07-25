@@ -66,7 +66,7 @@ export function BlogCard({ blog, onRead, onBookmark, isBookmarked }: BlogCardPro
               {blog.category}
             </Badge>
             <Badge variant="outline" className="text-xs font-medium">
-              {blog.subCategory}
+              {blog.subcategory}
             </Badge>
         </div>
 
