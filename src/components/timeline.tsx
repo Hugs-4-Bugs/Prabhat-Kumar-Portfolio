@@ -14,11 +14,12 @@ interface TimelineProps {
 }
 
 const Icon = ({ name, className }: { name: IconName; className?: string }) => {
-  const LucideIcon = LucideIcons[name];
+  const LucideIcon = LucideIcons[name] as typeof LucideIcons[keyof typeof LucideIcons] | undefined;
   if (!LucideIcon) {
     return null;
   }
-  return <LucideIcon className={className} />;
+  const IconComponent = LucideIcon as React.ComponentType<{ className?: string }>;
+  return <IconComponent className={className} />;
 };
 
 export function Timeline({ events, iconName }: TimelineProps) {

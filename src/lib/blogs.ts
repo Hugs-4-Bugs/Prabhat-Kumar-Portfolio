@@ -2,4 +2,18 @@
 import data from './blogs.json';
 import type { Blog } from './types';
 
-export const blogData: Blog[] = data.blogs;
+const blogs = data.blogs as Array<{
+  slug: string;
+  title: string;
+  description: string;
+  tag: 'Paid' | 'Free';
+  date: string;
+  category: 'Technical' | 'Non-Technical' | 'Books';
+  subCategory: string;
+  content: string;
+}>;
+
+export const blogData: Blog[] = blogs.map((blog) => ({
+  ...blog,
+  subcategory: blog.subCategory,
+}));

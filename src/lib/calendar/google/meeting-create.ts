@@ -5,7 +5,7 @@
  */
 
 import { google } from "googleapis";
-import type { OAuth2Client } from "googleapis/build/src/auth/oauth2client";
+import type { OAuth2Client } from "google-auth-library";
 import type { MeetingFormData } from "@/lib/meeting/meeting-types";
 
 export interface CalendarMeeting {

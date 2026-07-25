@@ -4,7 +4,7 @@
  */
 
 import { google } from "googleapis";
-import type { OAuth2Client } from "googleapis/build/src/auth/oauth2client";
+import type { OAuth2Client } from "google-auth-library";
 
 export async function updateCalendarEvent(
   auth: OAuth2Client,

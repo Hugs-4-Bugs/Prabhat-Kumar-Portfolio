@@ -449,7 +449,7 @@ export function CommunityProofAndLeadMagnet() {
     const result = await submitArchitectureReviewRequest(formData);
 
     setSubmitted(result.success);
-    setStatusMessage(result.message);
+    setStatusMessage(result.message ?? "");
     setIsSubmitting(false);
   };
 

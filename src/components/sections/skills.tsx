@@ -63,18 +63,20 @@ const siteConfig = {
 };
 
 // Mock Shadcn/ui Components
-const Card = ({ className = "", children }) => (
+type SimpleProps = React.PropsWithChildren<{ className?: string }>;
+const Card: React.FC<SimpleProps> = ({ className = "", children }) => (
   <div className={`rounded-xl border bg-card text-card-foreground shadow-xl ${className}`}>
     {children}
   </div>
 );
 
-const CardContent = ({ className = "", children }) => (
+const CardContent: React.FC<SimpleProps> = ({ className = "", children }) => (
   <div className={`p-6 ${className}`}>{children}</div>
 );
 
-const Section = React.forwardRef(({ id, className = "", children, ...props }, ref) => (
-  <section id={id} ref={ref} className={`py-24 sm:py-32 overflow-hidden relative ${className}`} {...props}>
+type SectionProps = React.PropsWithChildren<{ id?: string; className?: string }> & React.HTMLAttributes<HTMLElement>;
+const Section = React.forwardRef<HTMLElement, SectionProps>(({ id, className = "", children, ...props }, ref) => (
+  <section id={id} ref={ref as any} className={`py-24 sm:py-32 overflow-hidden relative ${className}`} {...props}>
     <div className="mx-auto max-w-7xl px-6 lg:px-8">
       {children}
     </div>
@@ -82,7 +84,7 @@ const Section = React.forwardRef(({ id, className = "", children, ...props }, re
 ));
 Section.displayName = 'Section';
 
-const SectionHeading = ({ children }) => (
+const SectionHeading: React.FC<React.PropsWithChildren> = ({ children }) => (
   <motion.h2 
     initial={{ opacity: 0, y: -50 }}
     whileInView={{ opacity: 1, y: 0 }}
@@ -94,20 +96,30 @@ const SectionHeading = ({ children }) => (
   </motion.h2>
 );
 
-// Enhanced Tabs with smooth transitions
-const TabsContext = React.createContext(null);
+type TabsContextValue = {
+  activeTab: string;
+  setActiveTab: (value: string) => void;
+};
+const TabsContext = React.createContext<TabsContextValue | null>(null);
 
-const Tabs = ({ defaultValue, children, className }) => {
+type TabsProps = React.PropsWithChildren<{ defaultValue: string; className?: string; onValueChange?: (value: string) => void }>;
+const Tabs: React.FC<TabsProps> = ({ defaultValue, children, className, onValueChange }) => {
   const [activeTab, setActiveTab] = useState(defaultValue);
 
+  const handleSetActiveTab = (value: string) => {
+    setActiveTab(value);
+    onValueChange?.(value);
+  };
+
   return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
+    <TabsContext.Provider value={{ activeTab, setActiveTab: handleSetActiveTab }}>
       <div className={className}>{children}</div>
     </TabsContext.Provider>
   );
 };
 
-const TabsList = ({ children, className }) => (
+type TabsListProps = React.PropsWithChildren<{ className?: string }>
+const TabsList: React.FC<TabsListProps> = ({ children, className }) => (
   <motion.div 
     initial={{ opacity: 0, scale: 0.8 }}
     whileInView={{ opacity: 1, scale: 1 }}
@@ -119,16 +131,17 @@ const TabsList = ({ children, className }) => (
   </motion.div>
 );
 
-const TabsTrigger = ({ value, children, className, ...props }) => {
-  const { activeTab, setActiveTab } = React.useContext(TabsContext);
+type TabsTriggerProps = React.PropsWithChildren<{ value: string; className?: string }> & React.ButtonHTMLAttributes<HTMLButtonElement>
+const TabsTrigger: React.FC<TabsTriggerProps> = ({ value, children, className, ...props }) => {
+  const { activeTab, setActiveTab } = React.useContext(TabsContext) as any;
   const isActive = activeTab === value;
 
-  const ref = useRef(null);
+  const ref = useRef<HTMLButtonElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  const handleMouseMove = useCallback((e) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (ref.current) {
       const { left, top, width, height } = ref.current.getBoundingClientRect();
       const center = { x: left + width / 2, y: top + height / 2 };
@@ -156,12 +169,12 @@ const TabsTrigger = ({ value, children, className, ...props }) => {
         isActive ? 'bg-primary text-primary-foreground shadow-lg' : 'text-foreground/70 hover:bg-muted'
       } ${className}`}
       onClick={() => setActiveTab(value)}
-      onMouseMove={handleMouseMove}
+      onMouseMove={handleMouseMove as any}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={() => setIsHovered(true)}
       style={{ x, y }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      {...props}
+      {...(props as any)}
     >
       <span className="relative z-10 flex items-center">
         {children}
@@ -180,8 +193,9 @@ const TabsTrigger = ({ value, children, className, ...props }) => {
   );
 };
 
-const TabsContent = ({ value, children }) => {
-  const { activeTab } = React.useContext(TabsContext);
+type TabsContentProps = React.PropsWithChildren<{ value: string }>
+const TabsContent: React.FC<TabsContentProps> = ({ value, children }) => {
+  const { activeTab } = React.useContext(TabsContext) as any;
   
   if (activeTab !== value) return null;
 
@@ -206,7 +220,7 @@ const TabsContent = ({ value, children }) => {
 // Enhanced SkillCard with Better Alignment
 // ====================================================================
 
-function SkillCard({ skill, index }) {
+function SkillCard({ skill, index }: { skill: string; index: number }) {
   const tiltX = useMotionValue(0);
   const tiltY = useMotionValue(0);
 
@@ -217,7 +231,7 @@ function SkillCard({ skill, index }) {
   const rotateX = useTransform(sy, [-10, 10], ["2deg", "-2deg"]);
   const rotateY = useTransform(sx, [-10, 10], ["-2deg", "2deg"]);
 
-  const handleMouseMove = useCallback((e) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (e.currentTarget) {
       const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
       const center = { x: left + width / 2, y: top + height / 2 };
@@ -290,12 +304,12 @@ function SkillCard({ skill, index }) {
 
 export function Skills() {
   const { skills } = siteConfig;
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
   const [activeCategory, setActiveCategory] = useState(skills[0].category);
 
   // Handle Parallax & Spotlight - FIXED: Throttled mouse movement
-  const handleMouseMove = useCallback((e) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (sectionRef.current) {
       const { left, top, width, height } = sectionRef.current.getBoundingClientRect();
       const x = (e.clientX - left) / width;
@@ -312,7 +326,7 @@ export function Skills() {
   const parallaxY = (mousePos.y - 0.5) * -40;
 
   // Enhanced tab change handler for smoother transitions
-  const handleTabChange = useCallback((value) => {
+  const handleTabChange = useCallback((value: string) => {
     setActiveCategory(value);
   }, []);
 
@@ -408,9 +422,9 @@ export function Skills() {
         <div
           className="absolute inset-0 z-0 spotlight-overlay transition-colors duration-300"
           style={{
-            '--mouse-x': mousePos.x,
-            '--mouse-y': mousePos.y,
-          }}
+            "--mouse-x": mousePos.x,
+            "--mouse-y": mousePos.y,
+          } as React.CSSProperties}
         />
 
         {/* Floating Beams with Smoother Parallax */}
@@ -509,7 +523,7 @@ export default Skills;
 // "use client";
 
 // import { motion } from "framer-motion";
-// import { siteConfig } from "@/lib/data";
+// import { siteConfig } } from "@/lib/data";
 // import { Section } from "@/components/section-wrapper";
 // import { SectionHeading } from "@/components/section-heading";
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

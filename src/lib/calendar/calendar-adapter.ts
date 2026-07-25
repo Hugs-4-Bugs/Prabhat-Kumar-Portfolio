@@ -57,8 +57,9 @@ export async function scheduleFromSession(
     return { success: false, error: "Incomplete meeting data." };
   }
 
-  if (!isValidTimezone(form.timezone)) {
-    return { success: false, error: `Invalid timezone: ${form.timezone}` };
+  const timezone = form.timezone?.trim();
+  if (!timezone || !isValidTimezone(timezone)) {
+    return { success: false, error: `Invalid timezone: ${timezone ?? ""}` };
   }
 
   let config;
@@ -80,7 +81,7 @@ export async function scheduleFromSession(
   let avail;
   try {
     avail = await checkAvailability(
-      auth, config.calendarId, startIso, endIso, form.timezone
+      auth, config.calendarId, startIso, endIso, timezone
     );
   } catch (e: any) {
     console.error("[CalendarAdapter] Availability check failed:", e.message);
@@ -88,7 +89,7 @@ export async function scheduleFromSession(
   }
 
   if (!avail.available) {
-    const msg = formatAlternativesText(avail.alternatives, form.timezone);
+    const msg = formatAlternativesText(avail.alternatives, timezone);
     return {
       success: false,
       conflictMessage: `That time is already booked. ${msg}`,
