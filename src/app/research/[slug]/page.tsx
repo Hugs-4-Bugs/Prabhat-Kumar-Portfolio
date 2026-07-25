@@ -13,8 +13,9 @@ export function generateStaticParams() {
   return papers.map((p) => ({ slug: p.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const paper = getResearchPaperBySlug(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const paper = getResearchPaperBySlug(slug);
   if (!paper) return {};
 
   return {
@@ -29,8 +30,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default function ResearchDetailPage({ params }: { params: { slug: string } }) {
-  const paper = getResearchPaperBySlug(params.slug);
+export default async function ResearchDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const paper = getResearchPaperBySlug(slug);
   if (!paper) notFound();
 
   // JSON-LD structured data
