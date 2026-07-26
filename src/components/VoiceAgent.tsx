@@ -242,10 +242,15 @@ export const VoiceAgent = memo(function VoiceAgent({
 }: VoiceAgentProps) {
   type VoiceState =
     | "idle"
+    | "opening"
     | "requesting_permission"
     | "listening"
+    | "processing"
     | "thinking"
     | "speaking"
+    | "interrupted"
+    | "paused"
+    | "closing"
     | "error";
 
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
@@ -280,6 +285,10 @@ export const VoiceAgent = memo(function VoiceAgent({
   const conversationAbortRef = useRef<AbortController | null>(null); // abort conversation TTS
   const micPermissionGrantedRef = useRef(false); // skip re-requesting permission between turns
   const listeningRequestedRef = useRef(false);
+  const restartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const restartListeningRef = useRef<() => void>(() => undefined);
+  const turnIdRef = useRef(0);
+  const playbackIdRef = useRef(0);
 
   /* keep refs in sync */
   useEffect(() => {
@@ -314,7 +323,6 @@ export const VoiceAgent = memo(function VoiceAgent({
   /* cleanup on unmount */
   useEffect(() => {
     isMounted.current = true;
-    sessionActiveRef.current = true;
     return () => {
       isMounted.current = false;
       sessionActiveRef.current = false;
@@ -324,6 +332,7 @@ export const VoiceAgent = memo(function VoiceAgent({
       // Clear all pending timeouts
       pendingTimeoutsRef.current.forEach(t => clearTimeout(t));
       pendingTimeoutsRef.current = [];
+      if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
       
       // Stop all audio playback
       stopAllAudio();
@@ -339,6 +348,10 @@ export const VoiceAgent = memo(function VoiceAgent({
 
   /* ─── Stop everything ─────────────────────────────────────────────── */
   const stopAllAudio = useCallback(() => {
+    // Every utterance callback carries the playback id that created it. Bump
+    // this before cancellation so canceled browser-TTS callbacks cannot queue
+    // the next sentence after an interruption or session exit.
+    playbackIdRef.current++;
     // Abort preview audio
     previewAbortRef.current?.abort();
     previewAbortRef.current = null;
@@ -359,6 +372,18 @@ export const VoiceAgent = memo(function VoiceAgent({
     // Abort any pending conversation TTS requests
     conversationAbortRef.current?.abort();
     conversationAbortRef.current = null;
+  }, []);
+
+  // One central restart path keeps recognition single-instance and avoids a
+  // growing list of turn timers during long hands-free sessions.
+  const scheduleListening = useCallback((delay = 150) => {
+    if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+    restartTimerRef.current = setTimeout(() => {
+      restartTimerRef.current = null;
+      if (isMounted.current && sessionActiveRef.current) {
+        restartListeningRef.current();
+      }
+    }, delay);
   }, []);
 
   /* ─── Instant browser-TTS preview (zero latency) ─────────────────── */
@@ -470,10 +495,14 @@ export const VoiceAgent = memo(function VoiceAgent({
       const interrupt = () => {
         if (interrupted || !isMounted.current || !sessionActiveRef.current) return;
         interrupted = true;
+        // Ignore a response/TTS request that belongs to the turn being
+        // interrupted. Server Actions cannot be force-cancelled, but their
+        // eventual result must never resume speaking.
+        turnIdRef.current++;
         // Stop only the assistant output. Keep this recognition session alive so
         // the first words of the interruption are not discarded.
         stopAllAudio();
-        setVoiceState("listening");
+        setVoiceState("interrupted");
         setTranscript("");
       };
 
@@ -507,6 +536,7 @@ export const VoiceAgent = memo(function VoiceAgent({
         if (finalTranscript || interim) {
           interrupt();
           setTranscript(`${finalTranscript} ${interim}`.trim());
+          setVoiceState("listening");
         }
         if (event.results[event.results.length - 1].isFinal) {
           clearSilenceTimer();
@@ -665,13 +695,14 @@ export const VoiceAgent = memo(function VoiceAgent({
     if (!isMounted.current || !sessionActiveRef.current) return;
     console.log(`[VoiceAgent] speakWithBrowser called for agent "${agent.name}"`);
     window.speechSynthesis.cancel();
+    const playbackId = ++playbackIdRef.current;
 
     const sentences = text.match(/[^.!?]+[.!?]+/g) ?? [text];
     let index = 0;
 
     const speakNext = () => {
       // Exit if session ended or component unmounted
-      if (!isMounted.current || !sessionActiveRef.current) return;
+      if (!isMounted.current || !sessionActiveRef.current || playbackId !== playbackIdRef.current) return;
       if (index >= sentences.length) {
         onEnd?.();
         return;
@@ -685,7 +716,7 @@ export const VoiceAgent = memo(function VoiceAgent({
       utterance.volume = 1;
       
       utterance.onstart = () => {
-        if (isMounted.current && sessionActiveRef.current) {
+        if (isMounted.current && sessionActiveRef.current && playbackId === playbackIdRef.current) {
           setVoiceState("speaking");
           // Start background listening for barge-in detection
           startBargeInListening();
@@ -694,16 +725,16 @@ export const VoiceAgent = memo(function VoiceAgent({
       
       utterance.onend = () => {
         index++;
-        if (isMounted.current && sessionActiveRef.current) {
+        if (isMounted.current && sessionActiveRef.current && playbackId === playbackIdRef.current) {
           stopBargeInListening();
-          setTimeout(speakNext, 200);
+          setTimeout(speakNext, 120);
         }
       };
       
       utterance.onerror = (e) => {
         console.error("[VoiceAgent] utterance error", e);
         index++;
-        if (isMounted.current && sessionActiveRef.current) {
+        if (isMounted.current && sessionActiveRef.current && playbackId === playbackIdRef.current) {
           stopBargeInListening();
           speakNext();
         }
@@ -850,9 +881,8 @@ export const VoiceAgent = memo(function VoiceAgent({
       if (e.error === "aborted") return;
       if (e.error === "no-speech") {
         if (isMounted.current && sessionActiveRef.current) {
-          setVoiceState("idle");
-          const t = setTimeout(startListening, 800);
-          pendingTimeoutsRef.current.push(t);
+          setVoiceState("paused");
+          scheduleListening(250);
         }
         return;
       }
@@ -861,8 +891,11 @@ export const VoiceAgent = memo(function VoiceAgent({
         setTranscript("Microphone blocked. Please allow access.");
         return;
       }
-      setVoiceState("error");
-      setTranscript(`Voice error: ${e.error}`);
+      // Network and engine errors are usually transient in Chromium. Keep the
+      // session alive and retry without asking the user to press the mic.
+      setVoiceState("paused");
+      setTranscript("Reconnecting microphone…");
+      scheduleListening(650);
     };
 
     rec.onend = () => {
@@ -876,8 +909,7 @@ export const VoiceAgent = memo(function VoiceAgent({
       }
       // If nothing was heard, auto-restart
       if (!speechHandled && isMounted.current && sessionActiveRef.current && stateRef.current === "listening") {
-        const t = setTimeout(startListening, 800);
-        pendingTimeoutsRef.current.push(t);
+        scheduleListening(250);
       }
     };
 
@@ -889,12 +921,19 @@ export const VoiceAgent = memo(function VoiceAgent({
       console.error("[VoiceAgent] rec.start error", e);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stopAllAudio]);
+  }, [scheduleListening, stopAllAudio]);
+
+  useEffect(() => {
+    restartListeningRef.current = () => {
+      void startListening();
+    };
+  }, [startListening]);
 
   /* ─── Handle user speech → AI → TTS → listen again ──────────────── */
   const handleUserSpeech = async (input: string) => {
     if (!input.trim() || !isMounted.current || !sessionActiveRef.current) return;
-    setVoiceState("thinking");
+    const turnId = ++turnIdRef.current;
+    setVoiceState("processing");
     setTranscript(input);
 
     try {
@@ -956,7 +995,7 @@ export const VoiceAgent = memo(function VoiceAgent({
           );
 
       // Check session is still active after async call
-      if (!sessionActiveRef.current || !isMounted.current) return;
+      if (!sessionActiveRef.current || !isMounted.current || turnId !== turnIdRef.current) return;
 
       if (result.success && result.answer) {
         const answer = result.answer as string;
@@ -971,19 +1010,18 @@ export const VoiceAgent = memo(function VoiceAgent({
 
         speakNaturallyForConversation(answer, agentRef.current, () => {
           if (isMounted.current && sessionActiveRef.current) {
-            setVoiceState("idle");
-            const timeout = setTimeout(startListening, 600);
-            pendingTimeoutsRef.current.push(timeout);
+            setVoiceState("paused");
+            scheduleListening();
           }
         });
       } else {
         const fallback =
-          result.message ?? "Sorry, I'm having trouble connecting right now.";
+          ("message" in result ? result.message : undefined) ??
+          "Sorry, I'm having trouble connecting right now.";
         speakWithBrowser(cleanForSpeech(fallback), agentRef.current, () => {
           if (isMounted.current && sessionActiveRef.current) {
-            setVoiceState("idle");
-            const t = setTimeout(startListening, 600);
-            pendingTimeoutsRef.current.push(t);
+            setVoiceState("paused");
+            scheduleListening();
           }
         });
       }
@@ -991,10 +1029,9 @@ export const VoiceAgent = memo(function VoiceAgent({
       if (!sessionActiveRef.current || !isMounted.current) return;
       const fallback = "Sorry, something went wrong. Please try again.";
       speakWithBrowser(cleanForSpeech(fallback), agentRef.current, () => {
-        if (isMounted.current && sessionActiveRef.current) {
-          setVoiceState("idle");
-          const t = setTimeout(startListening, 600);
-          pendingTimeoutsRef.current.push(t);
+          if (isMounted.current && sessionActiveRef.current) {
+            setVoiceState("paused");
+            scheduleListening();
         }
       });
     }
@@ -1003,7 +1040,9 @@ export const VoiceAgent = memo(function VoiceAgent({
   /* ─── Start session ───────────────────────────────────────────────── */
   const startSession = () => {
     sessionActiveRef.current = true;
+    turnIdRef.current++;
     setSessionStarted(true);
+    setVoiceState("opening");
 
     // Unlock browser autoplay policy — must happen synchronously inside a
     // user gesture. Without this, audio.play() is rejected with NotAllowedError
@@ -1025,36 +1064,33 @@ export const VoiceAgent = memo(function VoiceAgent({
     // overlap its own speech and makes recognition feel unreliable.
     speakPreviewInstantly(agentRef.current, () => {
       if (isMounted.current && sessionActiveRef.current) {
-        setVoiceState("idle");
-        startListening();
+        setVoiceState("paused");
+        scheduleListening(120);
       }
     });
   };
 
   /* ─── Mic toggle ──────────────────────────────────────────────────── */
   const toggleMic = () => {
-    if (voiceState === "speaking") {
-      // Barge-in: user wants to interrupt, stop speaking and start listening
-      stopAllAudio();
-      startListening();
-    } else if (voiceState === "listening") {
-      recognitionRef.current?.stop();
-      setVoiceState("idle");
-    } else {
-      startListening();
-    }
+    // Voice mode is hands-free once it has begun. The active-session control
+    // therefore ends the session rather than turning the microphone into
+    // push-to-talk.
+    handleClose();
   };
 
   /* ─── Close ───────────────────────────────────────────────────────── */
   const handleClose = () => {
     // Mark session as inactive immediately
     sessionActiveRef.current = false;
+    turnIdRef.current++;
     micPermissionGrantedRef.current = false;
     listeningRequestedRef.current = false;
     
     // Clear all pending timeouts
     pendingTimeoutsRef.current.forEach(t => clearTimeout(t));
     pendingTimeoutsRef.current = [];
+    if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
+    restartTimerRef.current = null;
     
     // Stop all audio playback immediately
     stopAllAudio();
@@ -1067,7 +1103,7 @@ export const VoiceAgent = memo(function VoiceAgent({
     
     // Reset state
     setSessionStarted(false);
-    setVoiceState("idle");
+    setVoiceState("closing");
     setDropdownOpen(false);
     resetVisitorProfile();
     
@@ -1078,19 +1114,29 @@ export const VoiceAgent = memo(function VoiceAgent({
   /* ─── Derived UI values ───────────────────────────────────────────── */
   const stateLabel: Record<VoiceState, string> = {
     idle: "Ready to chat",
+    opening: "Starting voice mode…",
     requesting_permission: "Requesting microphone…",
     listening: "Listening…",
+    processing: "Processing…",
     thinking: "Thinking…",
     speaking: "Speaking…",
+    interrupted: "Listening…",
+    paused: "Waiting for you…",
+    closing: "Ending voice mode…",
     error: "Voice needs attention",
   };
 
   const orbColors: Record<VoiceState, string> = {
     idle: "radial-gradient(circle at 30% 30%, #4a90d9, #1e3a8a)",
+    opening: "conic-gradient(from 0deg, #1e3a8a, #6366f1, #1e3a8a)",
     requesting_permission: "radial-gradient(circle at 30% 30%, #6366f1, #1e3a8a)",
     listening: "radial-gradient(circle at 30% 30%, #3b82f6, #0ea5e9)",
+    processing: "conic-gradient(from 0deg, #1e3a8a, #9333ea, #1e3a8a)",
     thinking: "conic-gradient(from 0deg, #1e3a8a, #9333ea, #1e3a8a)",
     speaking: "radial-gradient(circle at 30% 30%, #06b6d4, #1e3a8a)",
+    interrupted: "radial-gradient(circle at 30% 30%, #3b82f6, #0ea5e9)",
+    paused: "radial-gradient(circle at 30% 30%, #6366f1, #1e3a8a)",
+    closing: "radial-gradient(circle at 30% 30%, #334155, #0f172a)",
     error: "radial-gradient(circle at 30% 30%, #ef4444, #7f1d1d)",
   };
 
@@ -1611,7 +1657,7 @@ function ActiveSession({
         </motion.h2>
         <p className="text-xs text-gray-400 line-clamp-2 min-h-[2rem] px-2 leading-relaxed">
           {transcript ||
-            (voiceState === "speaking" ? lastAI : "Tap the mic to speak.")}
+            (voiceState === "speaking" ? lastAI : "Voice mode stays active hands-free.")}
         </p>
       </div>
 
@@ -1624,11 +1670,7 @@ function ActiveSession({
           voiceState === "listening" ? "bg-red-500" : "bg-white text-black"
         }`}
       >
-        {voiceState === "listening" ? (
-          <X size={22} />
-        ) : (
-          <Mic size={22} />
-        )}
+        <X size={22} />
       </motion.button>
 
       {/* Exit */}
