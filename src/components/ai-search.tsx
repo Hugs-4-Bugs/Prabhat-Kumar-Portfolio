@@ -29,6 +29,16 @@ interface Message {
   content: string;
 }
 
+function isStoredConversation(value: unknown): value is Message[] {
+  return Array.isArray(value) && value.every(
+    (message) =>
+      typeof message === 'object' &&
+      message !== null &&
+      (message.role === 'user' || message.role === 'model') &&
+      typeof message.content === 'string'
+  );
+}
+
 interface AISearchProps {
   isVisible: boolean;
   onClose: () => void;
@@ -142,9 +152,20 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
   useEffect(() => {
     if (isVisible) {
-      const savedConversation = getBrowserStorage()?.getItem('ai-search-conversation');
+      const storage = getBrowserStorage();
+      const savedConversation = storage?.getItem('ai-search-conversation');
       if (savedConversation) {
-        setConversation(JSON.parse(savedConversation));
+        try {
+          const parsedConversation: unknown = JSON.parse(savedConversation);
+          if (isStoredConversation(parsedConversation)) {
+            setConversation(parsedConversation);
+          } else {
+            storage?.removeItem('ai-search-conversation');
+          }
+        } catch {
+          // A stale or partially-written value must never crash the app shell.
+          storage?.removeItem('ai-search-conversation');
+        }
       }
     }
   }, [isVisible]);

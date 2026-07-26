@@ -24,6 +24,16 @@ interface Message {
   text: string;
 }
 
+function isStoredMessages(value: unknown): value is Message[] {
+  return Array.isArray(value) && value.every(
+    (message) =>
+      typeof message === 'object' &&
+      message !== null &&
+      (message.sender === 'user' || message.sender === 'ai') &&
+      typeof message.text === 'string'
+  );
+}
+
 interface AIAssistantProps {
   isSearchOpen: boolean;
 }
@@ -48,9 +58,20 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
 
   // Load conversation from localStorage on initial render
   useEffect(() => {
-    const savedMessages = getBrowserStorage()?.getItem('assistant-conversation');
+    const storage = getBrowserStorage();
+    const savedMessages = storage?.getItem('assistant-conversation');
     if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
+      try {
+        const parsedMessages: unknown = JSON.parse(savedMessages);
+        if (isStoredMessages(parsedMessages)) {
+          setMessages(parsedMessages);
+        } else {
+          storage?.removeItem('assistant-conversation');
+        }
+      } catch {
+        // A stale or partially-written value must never crash the app shell.
+        storage?.removeItem('assistant-conversation');
+      }
     }
   }, []);
 
