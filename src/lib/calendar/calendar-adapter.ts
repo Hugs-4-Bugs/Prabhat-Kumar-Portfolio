@@ -58,7 +58,9 @@ export async function scheduleFromSession(
   }
 
   const timezone = form.timezone?.trim();
-  if (!timezone || !isValidTimezone(timezone)) {
+  const preferredDate = form.preferredDate;
+  const preferredTime = form.preferredTime;
+  if (!timezone || !preferredDate || !preferredTime || !isValidTimezone(timezone)) {
     return { success: false, error: `Invalid timezone: ${timezone ?? ""}` };
   }
 
@@ -74,7 +76,7 @@ export async function scheduleFromSession(
   // Resolve the visitor's selected local time before querying free/busy. A
   // timezone-less Date string uses the server timezone and can check a
   // completely different slot from the one later inserted into Google Calendar.
-  const start = zonedDateTimeToUtc(form.preferredDate, form.preferredTime, timezone);
+  const start = zonedDateTimeToUtc(preferredDate, preferredTime, timezone);
   const end = new Date(start.getTime() + 60 * 60 * 1000);
   const startIso = start.toISOString();
   const endIso = end.toISOString();
