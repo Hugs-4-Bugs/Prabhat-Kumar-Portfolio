@@ -22,6 +22,7 @@ import { hasMeetingIntent, getMeetingIntentReply } from "@/lib/meeting/meeting-i
 import { selectedSuggestedSlotIndex } from "@/lib/meeting/suggested-slot";
 import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
 import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
+import { loadConfirmedMeeting } from "@/lib/meeting/meeting-storage";
 import { extractMeetingFieldsAction } from "@/app/actions";
 
 interface Message {
@@ -220,6 +221,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
       // An explicit request must always open the scheduler. Visitor scoring is
       // only used to decide whether a proactive suggestion is appropriate.
       const wantsMeeting = hasMeetingIntent(currentQuery);
+      const activeMeeting = engine.activeMeeting ?? loadConfirmedMeeting();
       const suggestedSlotIndex = selectedSuggestedSlotIndex(currentQuery, engine.session?.suggestedSlots?.length ?? 0);
 
       const isCollecting = engine.session && engine.session.state === 'collecting';
@@ -230,7 +232,10 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
          meetingContext = "Visitor Intelligence indicates this user might want a meeting. Proactively and politely suggest they can schedule a meeting with Prabhat if they'd like. Keep it natural.";
       }
       
-      if (wantsMeeting && !engine.session) {
+      if (wantsMeeting && activeMeeting) {
+        // A confirmed meeting is shown instead of starting a second request.
+        setIsSchedulingOpen(true);
+      } else if (wantsMeeting && !engine.session) {
         // Open the meeting engine!
         engine.open();
         setIsSchedulingOpen(true);
@@ -271,6 +276,8 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
       const response = suggestedSlotIndex !== null
         ? { success: true, answer: `I’ve applied option ${suggestedSlotIndex + 1} to the meeting form. Please review the updated date and time, then confirm the request to create the meeting.` }
+        : wantsMeeting && activeMeeting
+        ? { success: true, answer: "You already have an active meeting scheduled. You can join it or cancel it before scheduling another one." }
         : wantsMeeting && !engine.session
         ? { success: true, answer: getMeetingIntentReply() }
         : await getAISearchResponse(currentQuery, history, undefined, meetingContext);

@@ -6,8 +6,10 @@
  */
 
 import type { MeetingSession } from "./meeting-session";
+import type { ConfirmedMeeting } from "./meeting-types";
 
 const SESSION_KEY = "quantumai_meeting_session_v4";
+export const CONFIRMED_MEETING_KEY = "quantumai_confirmed_meeting_v1";
 
 export function persistSession(session: MeetingSession): void {
   try {
@@ -33,4 +35,42 @@ export function clearPersistedSession(): void {
   try {
     localStorage.removeItem(SESSION_KEY);
   } catch { /* ignore */ }
+}
+
+function isConfirmedMeeting(value: unknown): value is ConfirmedMeeting {
+  if (!value || typeof value !== "object") return false;
+  const meeting = value as Partial<ConfirmedMeeting>;
+  return meeting.meetingStatus === "confirmed" &&
+    typeof meeting.meetingId === "string" &&
+    typeof meeting.calendarEventId === "string" &&
+    typeof meeting.meetingStart === "string" &&
+    typeof meeting.meetingEnd === "string" &&
+    !Number.isNaN(new Date(meeting.meetingEnd).getTime());
+}
+
+export function persistConfirmedMeeting(meeting: ConfirmedMeeting): void {
+  try {
+    localStorage.setItem(CONFIRMED_MEETING_KEY, JSON.stringify(meeting));
+  } catch { /* Storage unavailable */ }
+}
+
+/** Returns an unexpired meeting, clearing corrupt or elapsed local state. */
+export function loadConfirmedMeeting(): ConfirmedMeeting | null {
+  try {
+    const raw = localStorage.getItem(CONFIRMED_MEETING_KEY);
+    if (!raw) return null;
+    const meeting = JSON.parse(raw) as unknown;
+    if (!isConfirmedMeeting(meeting) || new Date(meeting.meetingEnd).getTime() <= Date.now()) {
+      localStorage.removeItem(CONFIRMED_MEETING_KEY);
+      return null;
+    }
+    return meeting;
+  } catch {
+    try { localStorage.removeItem(CONFIRMED_MEETING_KEY); } catch { /* ignore */ }
+    return null;
+  }
+}
+
+export function clearConfirmedMeeting(): void {
+  try { localStorage.removeItem(CONFIRMED_MEETING_KEY); } catch { /* ignore */ }
 }

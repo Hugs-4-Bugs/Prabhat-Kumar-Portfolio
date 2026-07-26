@@ -31,6 +31,24 @@ export interface MeetingDraft {
   updatedAt: number;
 }
 
+/** A locally remembered Calendar meeting. This deliberately contains no OAuth
+ * credentials and exists only so the same browser cannot create overlapping
+ * requests before its confirmed meeting has ended. */
+export interface ConfirmedMeeting {
+  meetingId: string;
+  meetingStatus: "confirmed";
+  meetingStart: string;
+  meetingEnd: string;
+  meetLink: string;
+  calendarEventId: string;
+  participantName: string;
+  participantEmail: string;
+  participantPhone: string;
+  purpose: string;
+  timezone: string;
+  createdAt: number;
+}
+
 export interface MeetingValidationError {
   field: MeetingFormField;
   message: string;

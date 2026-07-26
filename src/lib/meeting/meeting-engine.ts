@@ -4,7 +4,7 @@
  * Single hook used by MeetingPanel, VoiceAgent, and chat.
  */
 
-import { useCallback, useReducer, useEffect } from "react";
+import { useCallback, useReducer, useEffect, useState } from "react";
 import {
   type MeetingSession,
   extractData,
@@ -20,10 +20,13 @@ import {
   cancelSession,
   getNextVoiceQuestion,
 } from "./meeting-workflow";
-import { loadPersistedSession, clearPersistedSession } from "./meeting-storage";
+import {
+  loadPersistedSession, clearPersistedSession, loadConfirmedMeeting,
+  persistConfirmedMeeting, clearConfirmedMeeting, CONFIRMED_MEETING_KEY,
+} from "./meeting-storage";
 import { persistSession } from "./meeting-storage";
 import { emit, onMeetingEvent } from "./meeting-events";
-import type { MeetingFormData } from "./meeting-types";
+import type { ConfirmedMeeting, MeetingFormData } from "./meeting-types";
 
 interface EngineState {
   session: MeetingSession | null;
@@ -62,6 +65,18 @@ const initial: EngineState = {
 
 export function useMeetingEngine(conversationId?: string) {
   const [state, dispatch] = useReducer(reducer, initial);
+  const [activeMeeting, setActiveMeeting] = useState<ConfirmedMeeting | null>(null);
+
+  useEffect(() => {
+    const restore = () => setActiveMeeting(loadConfirmedMeeting());
+    restore();
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === CONFIRMED_MEETING_KEY) restore();
+    };
+    window.addEventListener("storage", onStorage);
+    const timer = window.setInterval(restore, 60_000);
+    return () => { window.removeEventListener("storage", onStorage); window.clearInterval(timer); };
+  }, []);
 
   useEffect(() => {
     return onMeetingEvent("*", () => {
@@ -75,6 +90,11 @@ export function useMeetingEngine(conversationId?: string) {
   }, []);
 
   const open = useCallback(() => {
+    const confirmed = loadConfirmedMeeting();
+    if (confirmed) {
+      setActiveMeeting(confirmed);
+      return;
+    }
     const existing = loadPersistedSession();
     const session = startSession(conversationId, existing);
     dispatch({ type: "INIT", session });
@@ -170,6 +190,29 @@ export function useMeetingEngine(conversationId?: string) {
     if (result.conflictMessage) {
       dispatch({ type: "SUBMIT_CONFLICT", session: result.session, conflictMessage: result.conflictMessage });
     } else if (result.success) {
+      const meeting = result.meeting;
+      if (!meeting?.eventId || !meeting.startIso || !meeting.endIso) {
+        dispatch({ type: "SUBMIT_ERR", error: "Calendar did not return a complete meeting confirmation." });
+        return;
+      }
+      const form = extractData(validatedSession);
+      const confirmed: ConfirmedMeeting = {
+        meetingId: validatedSession.id,
+        meetingStatus: "confirmed",
+        meetingStart: meeting.startIso,
+        meetingEnd: meeting.endIso,
+        meetLink: meeting.meetLink ?? "",
+        calendarEventId: meeting.eventId,
+        participantName: `${form.firstName ?? ""} ${form.lastName ?? ""}`.trim(),
+        participantEmail: form.email ?? "",
+        participantPhone: `${form.countryCode ?? ""} ${form.phone ?? ""}`.trim(),
+        purpose: form.reasonForMeeting ?? "",
+        timezone: form.timezone ?? "UTC",
+        createdAt: Date.now(),
+      };
+      persistConfirmedMeeting(confirmed);
+      clearPersistedSession();
+      setActiveMeeting(confirmed);
       dispatch({ type: "SUBMIT_OK", session: result.session, meetLink: result.meetLink });
     } else {
       dispatch({ type: "SUBMIT_ERR", error: result.error ?? "Submission failed." });
@@ -182,6 +225,25 @@ export function useMeetingEngine(conversationId?: string) {
     dispatch({ type: "RESET" });
   }, [state.session]);
 
+  const cancelConfirmedMeeting = useCallback(async (reason: string) => {
+    const meeting = activeMeeting ?? loadConfirmedMeeting();
+    if (!meeting || !reason.trim()) return { success: false, error: "A cancellation reason is required." };
+    try {
+      const response = await fetch("/api/meeting/cancel", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meeting, reason: reason.trim() }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) return { success: false, error: result.error ?? "Could not cancel the meeting." };
+      clearConfirmedMeeting();
+      setActiveMeeting(null);
+      dispatch({ type: "RESET" });
+      return { success: true };
+    } catch {
+      return { success: false, error: "Could not reach the cancellation service. Please try again." };
+    }
+  }, [activeMeeting]);
+
   return {
     session: state.session,
     data: state.session ? extractData(state.session) : {} as Partial<MeetingFormData>,
@@ -190,8 +252,10 @@ export function useMeetingEngine(conversationId?: string) {
     submitSuccess: state.submitSuccess,
     meetLink: state.meetLink,
     conflictMessage: state.conflictMessage,
+    activeMeeting,
     open,
     cancel,
+    cancelConfirmedMeeting,
     submit,
     setField,
     setFields,

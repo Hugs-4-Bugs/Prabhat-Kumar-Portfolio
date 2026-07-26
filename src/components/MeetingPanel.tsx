@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, CheckCircle2, Loader2 } from "lucide-react";
 import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
@@ -50,11 +50,15 @@ const inputStyle = { background: "rgba(255,255,255,0.06)", border: "1px solid rg
 // ── MeetingPanel ──────────────────────────────────────────────────────────────
 export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelProps) {
   const engine = useMeetingEngine(conversationId);
+  const [showCancellation, setShowCancellation] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState("");
+  const [cancellationError, setCancellationError] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   // Open / restore session when panel opens
   useEffect(() => {
-    if (isOpen && !engine.session) engine.open();
-  }, [isOpen, engine]);
+    if (isOpen && !engine.session && !engine.activeMeeting) engine.open();
+  }, [isOpen, engine.session, engine.activeMeeting, engine.open]);
 
   // ESC to close
   useEffect(() => {
@@ -85,6 +89,27 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
   const handleClose = () => {
     onClose();
   };
+
+  const handleCancellation = async () => {
+    if (!cancellationReason.trim()) {
+      setCancellationError("Please provide a reason for cancellation.");
+      return;
+    }
+    setCancelling(true);
+    setCancellationError(null);
+    const result = await engine.cancelConfirmedMeeting(cancellationReason);
+    setCancelling(false);
+    if (!result.success) {
+      setCancellationError(result.error ?? "Could not cancel the meeting.");
+      return;
+    }
+    setShowCancellation(false);
+    setCancellationReason("");
+  };
+
+  const confirmedMeeting = engine.activeMeeting;
+  const showConfirmation = engine.submitSuccess || Boolean(confirmedMeeting);
+  const confirmationMeetLink = confirmedMeeting?.meetLink || engine.meetLink;
 
   return (
     <AnimatePresence>
@@ -130,7 +155,7 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
               </div>
               <div className="flex items-center gap-3">
                 {/* Progress badge */}
-                {engine.completionPercent > 0 && !engine.submitSuccess && (
+                {engine.completionPercent > 0 && !showConfirmation && (
                   <span className="text-[10px] tabular-nums text-white/40">
                     {engine.completionPercent}%
                   </span>
@@ -143,7 +168,7 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
             </div>
 
             {/* Success state */}
-            {engine.submitSuccess ? (
+            {showConfirmation ? (
               <div className="flex-grow flex flex-col items-center justify-center gap-4 px-5 py-10">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center"
                   style={{ background: "linear-gradient(135deg,rgba(52,211,153,0.2),rgba(120,219,255,0.15))", border: "1px solid rgba(52,211,153,0.3)" }}>
@@ -155,9 +180,9 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
                     Your meeting has been added to the calendar. Check your email for confirmation.
                   </p>
                 </div>
-                {engine.meetLink && (
+                {confirmationMeetLink && (
                   <a
-                    href={engine.meetLink}
+                    href={confirmationMeetLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
@@ -166,6 +191,10 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
                     <span>🎥</span> Join Google Meet
                   </a>
                 )}
+                <button onClick={() => setShowCancellation(true)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-rose-200 hover:text-white hover:bg-rose-500/10 transition-colors border border-rose-400/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30">
+                  Cancel Meeting
+                </button>
                 <button onClick={handleClose}
                   className="mt-1 px-5 py-2 rounded-xl text-xs font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-colors border border-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30">
                   Close
@@ -281,6 +310,30 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
               </>
             )}
           </motion.div>
+
+          {showCancellation && (
+            <motion.div
+              role="dialog" aria-modal="true" aria-label="Cancel meeting"
+              initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
+              className="fixed z-[1050] inset-x-6 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-full sm:max-w-md bottom-6 sm:bottom-24 rounded-[22px] px-5 py-5"
+              style={{ backdropFilter: "blur(32px) saturate(200%)", background: "linear-gradient(160deg, rgba(16,16,36,0.98), rgba(8,8,22,0.99))", border: "1px solid rgba(255,255,255,0.11)", boxShadow: "0 40px 100px rgba(0,0,0,0.65)" }}
+            >
+              <h3 className="text-sm font-semibold text-white/90">Cancel this meeting?</h3>
+              <p className="mt-1 text-[11px] text-white/45">This removes the event from Google Calendar and notifies both attendees.</p>
+              <label className="block mt-4 text-[11px] font-semibold text-white/55 uppercase tracking-[0.1em]">Reason <span className="text-rose-400">*</span></label>
+              <textarea value={cancellationReason} onChange={(event) => setCancellationReason(event.target.value)} rows={3}
+                placeholder="e.g. Schedule conflict" className={inputCls + " mt-1 resize-none"} style={inputStyle} />
+              {cancellationError && <p role="alert" className="mt-2 text-[11px] text-rose-400">{cancellationError}</p>}
+              <div className="mt-4 flex justify-end gap-2">
+                <button onClick={() => { setShowCancellation(false); setCancellationError(null); }} disabled={cancelling}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-white/75 hover:text-white hover:bg-white/10 border border-white/10">Keep Meeting</button>
+                <button onClick={handleCancellation} disabled={cancelling}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-60" style={{ background: "rgba(239,68,68,0.22)", border: "1px solid rgba(248,113,113,0.35)" }}>
+                  {cancelling ? "Cancelling…" : "Cancel Meeting"}
+                </button>
+              </div>
+            </motion.div>
+          )}
         </>
       )}
     </AnimatePresence>

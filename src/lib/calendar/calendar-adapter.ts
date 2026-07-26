@@ -14,6 +14,7 @@ import { buildAuthedClient } from "./google/google-auth";
 import { checkAvailability, formatAlternativesText } from "./google/availability";
 import type { TimeSlot } from "./google/availability";
 import { createCalendarMeeting, type CalendarMeeting } from "./google/meeting-create";
+import { cancelCalendarEvent } from "./google/meeting-cancel";
 import { zonedDateTimeToUtc, isValidTimezone } from "./google/timezone";
 
 // ── Adapter interface (extendable for Outlook, Zoom, etc.) ──────────────────
@@ -111,6 +112,13 @@ export async function scheduleFromSession(
     console.error("[CalendarAdapter] Event creation failed:", e.message);
     return { success: false, error: "Failed to create the calendar event." };
   }
+}
+
+/** Delete a previously created event. Kept here so token handling remains
+ * server-only and schedule/cancel use the exact same Calendar configuration. */
+export async function cancelScheduledMeeting(eventId: string): Promise<void> {
+  const { refreshToken, calendarId } = getConfig();
+  await cancelCalendarEvent(buildAuthedClient(refreshToken), calendarId, eventId);
 }
 
 // ── Helper ───────────────────────────────────────────────────────────────────

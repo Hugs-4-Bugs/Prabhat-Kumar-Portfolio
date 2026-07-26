@@ -14,6 +14,7 @@ import { getAIAudio, getVoiceAIResponse } from "@/app/actions";
 import { getBrowserStorage } from "@/lib/browser-storage";
 import { getVisitorContextHint } from "@/lib/visitor/visitor-engine";
 import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
+import { loadConfirmedMeeting } from "@/lib/meeting/meeting-storage";
 import { extractMeetingFieldsAction } from "@/app/actions";
 import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
 import { hasMeetingIntent, getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
@@ -939,11 +940,15 @@ export const VoiceAgent = memo(function VoiceAgent({
     try {
       const isCollecting = engine.session && engine.session.state === 'collecting';
       const wantsMeeting = hasMeetingIntent(input);
+      const activeMeeting = engine.activeMeeting ?? loadConfirmedMeeting();
       const suggestedSlotIndex = selectedSuggestedSlotIndex(input, engine.session?.suggestedSlots?.length ?? 0);
       let meetingContext = undefined;
       const isMeetingLikely = profile.meetingProbability > 60 || profile.meetingSignalDetected;
 
-      if (wantsMeeting && !engine.session) {
+      if (wantsMeeting && activeMeeting) {
+        // Keep voice mode conversational, but never create a duplicate booking.
+        setIsSchedulingOpen(true);
+      } else if (wantsMeeting && !engine.session) {
         engine.open();
         setIsSchedulingOpen(true);
       }
@@ -984,6 +989,8 @@ export const VoiceAgent = memo(function VoiceAgent({
 
       const result = suggestedSlotIndex !== null
         ? { success: true, answer: `I’ve applied option ${suggestedSlotIndex + 1}. Please review the updated meeting details on screen and confirm the request when you’re ready.` }
+        : wantsMeeting && activeMeeting
+        ? { success: true, answer: "You already have a scheduled meeting. Would you like to join it or cancel it?" }
         : wantsMeeting && !engine.session
         ? { success: true, answer: getMeetingIntentReply() }
         : await getVoiceAIResponse(

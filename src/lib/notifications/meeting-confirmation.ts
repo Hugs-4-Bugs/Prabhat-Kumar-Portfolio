@@ -15,6 +15,7 @@ import { sendEmail } from "./email-service";
 import { summariseMeetingReason } from "@/lib/meeting/meeting-summary";
 import type { MeetingSession } from "@/lib/meeting/meeting-session";
 import type { CalendarMeeting } from "@/lib/calendar/google/meeting-create";
+import type { ConfirmedMeeting } from "@/lib/meeting/meeting-types";
 
 const OWNER_EMAIL  = process.env.CONTACT_TO_EMAIL ?? "mailtoprabhat72@gmail.com";
 const OWNER_NAME   = "Prabhat Kumar";
@@ -100,4 +101,35 @@ export async function sendMeetingConfirmationEmails(
     visitorDelivered: visitorJob.status === "delivered",
     ownerDelivered:   ownerJob.status === "delivered",
   };
+}
+
+/** Notify both parties only after Calendar has confirmed the deletion. */
+export async function sendMeetingCancellationEmails(
+  meeting: ConfirmedMeeting,
+  reason: string
+): Promise<void> {
+  const from = process.env.RESEND_FROM_EMAIL ?? "QuantumAI <noreply@prabhat.online>";
+  const ownerDetails = [
+    `Meeting ID: ${meeting.meetingId}`,
+    `Calendar Event ID: ${meeting.calendarEventId}`,
+    `When: ${meeting.meetingStart} (${meeting.timezone})`,
+    `Reason: ${reason}`,
+    "Cancelled by: User",
+  ].join("\n");
+  const visitorText = `Your meeting has been cancelled.\n\n${ownerDetails}`;
+  const ownerText = `A meeting was cancelled by ${meeting.participantName} (${meeting.participantEmail}).\n\n${ownerDetails}`;
+  const html = (text: string) => `<div style="font-family:Arial,sans-serif;white-space:pre-line">${text.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</div>`;
+
+  await Promise.all([
+    sendEmail({
+      to: meeting.participantEmail, from, replyTo: OWNER_EMAIL,
+      subject: "Meeting Cancelled", html: html(visitorText), text: visitorText,
+      tags: ["meeting_cancelled", "visitor"],
+    }, "meeting_cancelled"),
+    sendEmail({
+      to: OWNER_EMAIL, from, replyTo: meeting.participantEmail,
+      subject: `Meeting Cancelled — ${meeting.participantName}`, html: html(ownerText), text: ownerText,
+      tags: ["meeting_cancelled", "owner"],
+    }),
+  ]);
 }

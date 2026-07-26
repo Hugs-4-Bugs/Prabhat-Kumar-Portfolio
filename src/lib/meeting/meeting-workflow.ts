@@ -20,6 +20,7 @@ import { validateMeetingForm } from "./meeting-validator";
 import { persistSession, clearPersistedSession } from "./meeting-storage";
 import { emit } from "./meeting-events";
 import type { MeetingFormData } from "./meeting-types";
+import type { CalendarMeeting } from "@/lib/calendar/google/meeting-create";
 
 // ── Adapter extension points (Phase 5 fills these in) ───────────────────────
 
@@ -121,7 +122,7 @@ export function validateSession(session: MeetingSession): {
  */
 export async function requestSubmission(
   session: MeetingSession
-): Promise<{ session: MeetingSession; success: boolean; meetLink?: string; error?: string; conflictMessage?: string }> {
+): Promise<{ session: MeetingSession; success: boolean; meetLink?: string; meeting?: CalendarMeeting; error?: string; conflictMessage?: string }> {
   if (session.state !== "ready") {
     return { session, success: false, error: "Session is not ready for submission." };
   }
@@ -152,7 +153,7 @@ export async function requestSubmission(
       };
       persistSession(confirmed);
       emit(confirmed.id, "draft_saved", { state: "submitted" });
-      return { session: confirmed, success: true, meetLink: json.meeting?.meetLink };
+      return { session: confirmed, success: true, meetLink: json.meeting?.meetLink, meeting: json.meeting as CalendarMeeting };
     }
 
     if (res.status === 409 && json.conflictMessage) {
