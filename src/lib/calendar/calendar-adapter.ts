@@ -14,7 +14,7 @@ import { buildAuthedClient } from "./google/google-auth";
 import { checkAvailability, formatAlternativesText } from "./google/availability";
 import type { TimeSlot } from "./google/availability";
 import { createCalendarMeeting, type CalendarMeeting } from "./google/meeting-create";
-import { buildIsoDateTime, isValidTimezone } from "./google/timezone";
+import { zonedDateTimeToUtc, isValidTimezone } from "./google/timezone";
 
 // ── Adapter interface (extendable for Outlook, Zoom, etc.) ──────────────────
 
@@ -71,11 +71,13 @@ export async function scheduleFromSession(
 
   const auth = buildAuthedClient(config.refreshToken);
 
-  // Build ISO start/end
-  const startIso = `${form.preferredDate}T${form.preferredTime}:00`;
-  const end = new Date(`${form.preferredDate}T${form.preferredTime}:00`);
-  end.setMinutes(end.getMinutes() + 60);
-  const endIso = end.toISOString().slice(0, 19);
+  // Resolve the visitor's selected local time before querying free/busy. A
+  // timezone-less Date string uses the server timezone and can check a
+  // completely different slot from the one later inserted into Google Calendar.
+  const start = zonedDateTimeToUtc(form.preferredDate, form.preferredTime, timezone);
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const startIso = start.toISOString();
+  const endIso = end.toISOString();
 
   // Check availability
   let avail;

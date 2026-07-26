@@ -15,47 +15,65 @@ export function isValidTimezone(tz: string): boolean {
 }
 
 /**
- * Build a full ISO datetime string from a date string, time string, and timezone.
- * e.g. ("2025-09-01", "14:30", "Asia/Kolkata") → "2025-09-01T14:30:00+05:30"
+ * Resolve a wall-clock date/time in an IANA timezone to its UTC instant.
+ *
+ * A bare string such as `2026-07-30T10:00:00` is interpreted in the server's
+ * timezone by Date. That is incorrect for scheduling because the visitor's
+ * selected timezone is authoritative. This conversion keeps availability
+ * checks, conflict detection, and Calendar event creation on the same instant.
  */
-export function buildIsoDateTime(
+export function zonedDateTimeToUtc(
   date: string,   // YYYY-MM-DD
   time: string,   // HH:MM
   timezone: string
-): string {
+): Date {
   if (!isValidTimezone(timezone)) {
     throw new Error(`[Timezone] Invalid timezone: ${timezone}`);
   }
-  // Construct a date in the given timezone
   const [year, month, day] = date.split("-").map(Number);
   const [hour, minute] = time.split(":").map(Number);
-
-  // Use the Temporal-like approach via Date constructor + offset
-  const localDateStr = `${date}T${time}:00`;
-  const dtf = new Intl.DateTimeFormat("en-US", {
+  const target = Date.UTC(year, month - 1, day, hour, minute, 0);
+  const formatter = new Intl.DateTimeFormat("en-US", {
     timeZone: timezone,
-    year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
-    hour12: false,
-    timeZoneName: "longOffset",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
   });
 
-  // Get the offset for this timezone at this moment
-  const localMs = new Date(
-    Date.UTC(year, month - 1, day, hour, minute)
-  ).getTime();
+  // Two passes handle the offset change around daylight-saving transitions.
+  let timestamp = target;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const values = Object.fromEntries(
+      formatter
+        .formatToParts(new Date(timestamp))
+        .filter((part) => part.type !== "literal")
+        .map((part) => [part.type, Number(part.value)])
+    ) as Record<string, number>;
+    const displayedAsUtc = Date.UTC(
+      values.year,
+      values.month - 1,
+      values.day,
+      values.hour,
+      values.minute,
+      values.second
+    );
+    timestamp = target - (displayedAsUtc - timestamp);
+  }
 
-  // Resolve offset by comparing UTC vs. local interpretation
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: timezone,
-    hour: "numeric", minute: "numeric",
-    hour12: false,
-  }).formatToParts(new Date(localMs));
+  return new Date(timestamp);
+}
 
-  void parts; // offset derivation via full ISO below
-
-  // Most reliable: construct an ISO-8601 string and let the Google API handle the tz
-  return `${localDateStr}`;
+/** Backward-compatible ISO helper for calendar consumers. */
+export function buildIsoDateTime(
+  date: string,
+  time: string,
+  timezone: string
+): string {
+  return zonedDateTimeToUtc(date, time, timezone).toISOString();
 }
 
 /** Convert a UTC timestamp to HH:MM in a given timezone */

@@ -7,6 +7,7 @@
 import { google } from "googleapis";
 import type { OAuth2Client } from "google-auth-library";
 import type { MeetingFormData } from "@/lib/meeting/meeting-types";
+import { zonedDateTimeToUtc } from "./timezone";
 
 export interface CalendarMeeting {
   eventId: string;
@@ -28,10 +29,14 @@ export async function createCalendarMeeting(
 ): Promise<CalendarMeeting> {
   const calendar = google.calendar({ version: "v3", auth });
 
-  const startIso = `${form.preferredDate}T${form.preferredTime}:00`;
-  const endDate = new Date(`${form.preferredDate}T${form.preferredTime}:00`);
-  endDate.setMinutes(endDate.getMinutes() + durationMinutes);
-  const endIso = endDate.toISOString().slice(0, 19);
+  const startDate = zonedDateTimeToUtc(
+    form.preferredDate,
+    form.preferredTime,
+    form.timezone
+  );
+  const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
+  const startIso = startDate.toISOString();
+  const endIso = endDate.toISOString();
 
   const guestName = `${form.firstName} ${form.lastName}`.trim();
   const summary   = `Meeting with ${guestName}`;

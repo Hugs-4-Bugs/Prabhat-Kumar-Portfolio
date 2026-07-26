@@ -5,6 +5,7 @@
 
 import { google } from "googleapis";
 import type { OAuth2Client } from "google-auth-library";
+import { zonedDateTimeToUtc } from "./timezone";
 
 export interface TimeSlot {
   start: string; // ISO string
@@ -24,6 +25,23 @@ const WORK_END_HOUR   = 18; // 6 PM
 const DURATION_MS     = 60 * 60 * 1000; // 60 min default
 const ALT_STEP_MS     = 30 * 60 * 1000; // suggest every 30 min
 
+function localDate(instant: Date, timezone: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(instant);
+  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
+function addDays(date: string, days: number): string {
+  const [year, month, day] = date.split("-").map(Number);
+  const result = new Date(Date.UTC(year, month - 1, day + days));
+  return result.toISOString().slice(0, 10);
+}
+
 /**
  * Check if a requested time slot is available.
  * Returns conflict list and up to 3 alternative slots.
@@ -37,11 +55,11 @@ export async function checkAvailability(
 ): Promise<AvailabilityResult> {
   const calendar = google.calendar({ version: "v3", auth });
 
-  // Query free/busy for the day around the requested slot
-  const dayStart = new Date(requestedStart);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart);
-  dayEnd.setDate(dayEnd.getDate() + 1);
+  const requestedStartDate = new Date(requestedStart);
+  const day = localDate(requestedStartDate, timezone);
+  // Query the calendar day in the visitor's timezone, not the server timezone.
+  const dayStart = zonedDateTimeToUtc(day, "00:00", timezone);
+  const dayEnd = zonedDateTimeToUtc(addDays(day, 1), "00:00", timezone);
 
   const fbResp = await calendar.freebusy.query({
     requestBody: {
@@ -70,32 +88,30 @@ export async function checkAvailability(
 
   const available = conflicts.length === 0;
 
-  // Generate alternatives if busy
+  // Generate alternatives in local working hours when the requested slot is busy.
   const alternatives: TimeSlot[] = [];
   if (!available) {
-    const base = new Date(requestedStart);
-    base.setHours(WORK_START_HOUR, 0, 0, 0);
+    for (let dayOffset = 0; dayOffset < 7 && alternatives.length < 3; dayOffset++) {
+      const candidateDay = addDays(day, dayOffset);
+      for (
+        let minuteOfDay = WORK_START_HOUR * 60;
+        minuteOfDay + 60 <= WORK_END_HOUR * 60 && alternatives.length < 3;
+        minuteOfDay += ALT_STEP_MS / 60_000
+      ) {
+        const hours = String(Math.floor(minuteOfDay / 60)).padStart(2, "0");
+        const minutes = String(minuteOfDay % 60).padStart(2, "0");
+        const start = zonedDateTimeToUtc(candidateDay, `${hours}:${minutes}`, timezone);
+        const end = new Date(start.getTime() + DURATION_MS);
+        if (start.getTime() <= reqStart) continue;
 
-    while (alternatives.length < 3) {
-      base.setTime(base.getTime() + ALT_STEP_MS);
-      const end = new Date(base.getTime() + DURATION_MS);
+        const overlap = busy.some((slot) =>
+          start.getTime() < new Date(slot.end).getTime() &&
+          end.getTime() > new Date(slot.start).getTime()
+        );
 
-      if (base.getHours() >= WORK_END_HOUR) {
-        base.setDate(base.getDate() + 1);
-        base.setHours(WORK_START_HOUR, 0, 0, 0);
-      }
-
-      const overlap = busy.some((slot) => {
-        const sStart = new Date(slot.start).getTime();
-        const sEnd   = new Date(slot.end).getTime();
-        return base.getTime() < sEnd && end.getTime() > sStart;
-      });
-
-      if (!overlap && base.getHours() < WORK_END_HOUR) {
-        alternatives.push({
-          start: base.toISOString(),
-          end:   end.toISOString(),
-        });
+        if (!overlap) {
+          alternatives.push({ start: start.toISOString(), end: end.toISOString() });
+        }
       }
     }
   }
