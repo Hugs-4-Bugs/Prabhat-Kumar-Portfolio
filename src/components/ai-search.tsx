@@ -21,7 +21,7 @@ import { MeetingPanel } from "@/components/MeetingPanel";
 import { getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
 import { selectedSuggestedSlotIndex } from "@/lib/meeting/suggested-slot";
 import { classifyDialogueIntent, qualificationMeetingContext, singleNameReply, isCorrectionConfirmation } from "@/lib/meeting/dialogue-routing";
-import { evaluateFitQuestion } from "@/lib/quantumai-knowledge";
+import { processTurn } from "@/lib/quantumai-knowledge";
 import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
 import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
 import { loadConfirmedMeeting } from "@/lib/meeting/meeting-storage";
@@ -244,7 +244,13 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
       // higher priority than a scheduling keyword in the same sentence.
       const isMeetingLikely = profile.meetingProbability > 60 || profile.meetingSignalDetected;
       const dialogueIntent = classifyDialogueIntent(currentQuery, engine.session);
-      const wantsMeeting = dialogueIntent === "scheduling";
+      const groundedTurn = processTurn(currentQuery);
+      const hasGroundedAnswer = groundedTurn.answerSegments.length > 0 &&
+        dialogueIntent !== "form_answer" && dialogueIntent !== "correction";
+      // When a visitor asks a substantive question and also mentions a meeting,
+      // answer the question first. The scheduler remains available without
+      // interrupting the current turn.
+      const wantsMeeting = dialogueIntent === "scheduling" && !hasGroundedAnswer;
       const activeMeeting = engine.activeMeeting ?? loadConfirmedMeeting();
       const suggestedSlotIndex = selectedSuggestedSlotIndex(currentQuery, engine.session?.suggestedSlots?.length ?? 0);
 
@@ -271,9 +277,12 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         }
       }
       
-      let deterministicReply: string | undefined = dialogueIntent === "qualification"
-        ? evaluateFitQuestion(currentQuery) ?? undefined
+      let deterministicReply: string | undefined = hasGroundedAnswer
+        ? groundedTurn.answerSegments.join("\n\n")
         : undefined;
+      if (deterministicReply && groundedTurn.schedulingIntentDetected) {
+        deterministicReply += "\n\nIf you’d like, I can help you schedule time with Prabhat after this.";
+      }
       if ((dialogueIntent === "form_answer" || dialogueIntent === "correction") && engine.session?.state === 'collecting') {
          if (engine.session.pendingCorrection) {
            if (isCorrectionConfirmation(currentQuery)) {

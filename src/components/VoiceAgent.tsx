@@ -20,7 +20,7 @@ import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
 import { getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
 import { selectedSuggestedSlotIndex } from "@/lib/meeting/suggested-slot";
 import { classifyDialogueIntent, qualificationMeetingContext, singleNameReply, isCorrectionConfirmation } from "@/lib/meeting/dialogue-routing";
-import { evaluateFitQuestion } from "@/lib/quantumai-knowledge";
+import { processTurn } from "@/lib/quantumai-knowledge";
 import { MeetingPanel } from "@/components/MeetingPanel";
 
 /* ─── Voice Agent Definitions ─────────────────────────────────────────── */
@@ -958,7 +958,12 @@ export const VoiceAgent = memo(function VoiceAgent({
 
     try {
       const dialogueIntent = classifyDialogueIntent(input, engine.session);
-      const wantsMeeting = dialogueIntent === "scheduling";
+      const groundedTurn = processTurn(input);
+      const hasGroundedAnswer = groundedTurn.answerSegments.length > 0 &&
+        dialogueIntent !== "form_answer" && dialogueIntent !== "correction";
+      // Speak the answer first if a question and a meeting request arrive in
+      // the same utterance; do not unexpectedly switch into form collection.
+      const wantsMeeting = dialogueIntent === "scheduling" && !hasGroundedAnswer;
       const activeMeeting = engine.activeMeeting ?? loadConfirmedMeeting();
       const suggestedSlotIndex = selectedSuggestedSlotIndex(input, engine.session?.suggestedSlots?.length ?? 0);
       let meetingContext = undefined;
@@ -982,9 +987,12 @@ export const VoiceAgent = memo(function VoiceAgent({
          meetingContext = "Visitor Intelligence indicates this user might want a meeting. Proactively and politely suggest they can schedule a meeting with Prabhat if they'd like. Keep it natural.";
       }
       
-      let deterministicReply: string | undefined = dialogueIntent === "qualification"
-        ? evaluateFitQuestion(input) ?? undefined
+      let deterministicReply: string | undefined = hasGroundedAnswer
+        ? groundedTurn.answerSegments.join(" ")
         : undefined;
+      if (deterministicReply && groundedTurn.schedulingIntentDetected) {
+        deterministicReply += " If you’d like, I can help you schedule time with Prabhat after this.";
+      }
       if ((dialogueIntent === "form_answer" || dialogueIntent === "correction") && engine.session?.state === 'collecting') {
          if (engine.session.pendingVoiceName) {
            if (isCorrectionConfirmation(input)) {
