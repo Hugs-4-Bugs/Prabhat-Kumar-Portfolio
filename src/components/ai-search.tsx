@@ -21,6 +21,7 @@ import { MeetingPanel } from "@/components/MeetingPanel";
 import { getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
 import { selectedSuggestedSlotIndex } from "@/lib/meeting/suggested-slot";
 import { classifyDialogueIntent, qualificationMeetingContext, singleNameReply, isCorrectionConfirmation } from "@/lib/meeting/dialogue-routing";
+import { evaluateFitQuestion } from "@/lib/quantumai-knowledge";
 import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
 import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
 import { loadConfirmedMeeting } from "@/lib/meeting/meeting-storage";
@@ -270,8 +271,10 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         }
       }
       
-      let deterministicReply: string | undefined;
-      if (dialogueIntent === "form_answer" && engine.session?.state === 'collecting') {
+      let deterministicReply: string | undefined = dialogueIntent === "qualification"
+        ? evaluateFitQuestion(currentQuery) ?? undefined
+        : undefined;
+      if ((dialogueIntent === "form_answer" || dialogueIntent === "correction") && engine.session?.state === 'collecting') {
          if (engine.session.pendingCorrection) {
            if (isCorrectionConfirmation(currentQuery)) {
              const corrected = engine.resolvePendingCorrection(true);

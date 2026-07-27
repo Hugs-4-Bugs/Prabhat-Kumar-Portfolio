@@ -20,6 +20,7 @@ import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
 import { getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
 import { selectedSuggestedSlotIndex } from "@/lib/meeting/suggested-slot";
 import { classifyDialogueIntent, qualificationMeetingContext, singleNameReply, isCorrectionConfirmation } from "@/lib/meeting/dialogue-routing";
+import { evaluateFitQuestion } from "@/lib/quantumai-knowledge";
 import { MeetingPanel } from "@/components/MeetingPanel";
 
 /* ─── Voice Agent Definitions ─────────────────────────────────────────── */
@@ -981,8 +982,19 @@ export const VoiceAgent = memo(function VoiceAgent({
          meetingContext = "Visitor Intelligence indicates this user might want a meeting. Proactively and politely suggest they can schedule a meeting with Prabhat if they'd like. Keep it natural.";
       }
       
-      let deterministicReply: string | undefined;
-      if (dialogueIntent === "form_answer" && engine.session?.state === 'collecting') {
+      let deterministicReply: string | undefined = dialogueIntent === "qualification"
+        ? evaluateFitQuestion(input) ?? undefined
+        : undefined;
+      if ((dialogueIntent === "form_answer" || dialogueIntent === "correction") && engine.session?.state === 'collecting') {
+         if (engine.session.pendingVoiceName) {
+           if (isCorrectionConfirmation(input)) {
+             engine.confirmVoiceName(true);
+             deterministicReply = "I’ve recorded that name. I’ll continue with the remaining meeting details.";
+           } else {
+             const pending = engine.session.pendingVoiceName;
+             deterministicReply = `I heard '${pending.firstName} ${pending.lastName}'. Is that correct? You can also spell it out if that is easier.`;
+           }
+         }
          if (engine.session.pendingCorrection) {
            if (isCorrectionConfirmation(input)) {
              const corrected = engine.resolvePendingCorrection(true);
@@ -995,10 +1007,16 @@ export const VoiceAgent = memo(function VoiceAgent({
          // Extract fields from user message
          const extraction = deterministicReply ? null : await extractMeetingFieldsAction(input, engine.data);
          if (extraction?.success && extraction.data) {
-           const applied = engine.applyExtractedFields(extraction.data);
-           if (applied.invalidName || applied.contradiction) {
-             deterministicReply = applied.invalidName ?? applied.contradiction;
-           } else if (applied.session) {
+           const firstName = extraction.data.firstName?.trim();
+           const lastName = extraction.data.lastName?.trim();
+           if (firstName && lastName && !engine.session.fields.firstName.value && !engine.session.fields.lastName.value) {
+             engine.stageVoiceName({ firstName, lastName });
+             deterministicReply = `I heard '${firstName} ${lastName}'. Is that correct? You can also spell it out if that is easier.`;
+           }
+           const applied = deterministicReply ? null : engine.applyExtractedFields(extraction.data);
+           if (applied?.invalidName || applied?.contradiction) {
+             deterministicReply = applied?.invalidName ?? applied?.contradiction;
+           } else if (applied?.session) {
              const updatedSession = applied.session;
              const remaining = updatedSession.remainingFields;
              meetingContext = remaining.length > 0

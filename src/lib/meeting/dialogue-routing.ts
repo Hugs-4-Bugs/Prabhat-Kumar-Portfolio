@@ -1,7 +1,8 @@
 import { hasMeetingIntent } from "./meeting-intent";
 import type { MeetingSession } from "./meeting-session";
+import { isFitQuestion } from "@/lib/quantumai-knowledge";
 
-export type DialogueIntent = "qualification" | "scheduling" | "form_answer" | "general";
+export type DialogueIntent = "qualification" | "scheduling" | "form_answer" | "correction" | "general" | "small_talk";
 
 const QUALIFICATION_PATTERNS = [
   /\b(is|would|does|do)\b.*\b(qualified|qualify|fit|good fit|suitable|match)\b/i,
@@ -16,14 +17,16 @@ const QUALIFICATION_PATTERNS = [
  */
 export function classifyDialogueIntent(message: string, session: MeetingSession | null): DialogueIntent {
   const text = message.trim();
-  if (QUALIFICATION_PATTERNS.some((pattern) => pattern.test(text))) return "qualification";
+  if (isFitQuestion(text) || QUALIFICATION_PATTERNS.some((pattern) => pattern.test(text))) return "qualification";
+  if (session?.pendingCorrection) return "correction";
   if (hasMeetingIntent(text)) return "scheduling";
   if (session?.state === "collecting" && isLikelyFormAnswer(text, session)) return "form_answer";
+  if (/^(hi|hello|hey|thanks|thank you)\b/i.test(text)) return "small_talk";
   return "general";
 }
 
 function isLikelyFormAnswer(text: string, session: MeetingSession): boolean {
-  if (session.pendingCorrection) return true;
+  if (session.pendingCorrection || session.pendingVoiceName) return true;
   const current = session.currentStep;
   if (!current || current === "complete") return false;
   const value = text.trim();

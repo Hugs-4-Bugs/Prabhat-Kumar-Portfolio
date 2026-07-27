@@ -204,6 +204,33 @@ export function useMeetingEngine(conversationId?: string) {
     return updated;
   }, [state.session]);
 
+  const stageVoiceName = useCallback((values: Pick<MeetingFormData, "firstName" | "lastName">) => {
+    const session = state.session;
+    if (!session) return null;
+    const updated = { ...session, pendingVoiceName: values, updatedAt: Date.now() };
+    persistSession(updated);
+    dispatch({ type: "UPDATE", session: updated });
+    return updated;
+  }, [state.session]);
+
+  const confirmVoiceName = useCallback((accept: boolean) => {
+    const session = state.session;
+    const candidate = session?.pendingVoiceName;
+    if (!session || !candidate) return null;
+    if (!accept) {
+      const updated = { ...session, pendingVoiceName: undefined, updatedAt: Date.now() };
+      persistSession(updated);
+      dispatch({ type: "UPDATE", session: updated });
+      return updated;
+    }
+    let updated: MeetingSession = { ...session, pendingVoiceName: undefined };
+    updated = wfSetField(updated, "firstName", candidate.firstName);
+    updated = wfSetField(updated, "lastName", candidate.lastName);
+    persistSession(updated);
+    dispatch({ type: "UPDATE", session: updated });
+    return updated;
+  }, [state.session]);
+
   const selectSuggestedSlot = useCallback((index: number) => {
     const session = state.session;
     const slot = session?.suggestedSlots?.[index];
@@ -339,6 +366,8 @@ export function useMeetingEngine(conversationId?: string) {
     setFields,
     applyExtractedFields,
     resolvePendingCorrection,
+    stageVoiceName,
+    confirmVoiceName,
     selectSuggestedSlot,
     confirmField,
     summariseReason,

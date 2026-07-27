@@ -52,6 +52,8 @@ export interface MeetingSession {
   suggestedSlots?: { start: string; end: string }[];
   /** Candidate values awaiting the visitor's explicit correction confirmation. */
   pendingCorrection?: Partial<MeetingFormData>;
+  /** Voice-recognised identity values that need explicit confirmation before use. */
+  pendingVoiceName?: Pick<MeetingFormData, "firstName" | "lastName">;
   createdAt: number;
   updatedAt: number;
 }
