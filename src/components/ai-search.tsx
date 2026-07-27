@@ -18,16 +18,20 @@ import { CapabilityTrigger } from "@/components/CapabilityPanel";
 import { IntentSuggestions } from "@/components/IntentSuggestions";
 import { useIntentEngine } from "@/lib/intent/use-intent-engine";
 import { MeetingPanel } from "@/components/MeetingPanel";
-import { hasMeetingIntent, getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
+import { getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
 import { selectedSuggestedSlotIndex } from "@/lib/meeting/suggested-slot";
+import { classifyDialogueIntent, qualificationMeetingContext, singleNameReply, isCorrectionConfirmation } from "@/lib/meeting/dialogue-routing";
 import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
 import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
 import { loadConfirmedMeeting } from "@/lib/meeting/meeting-storage";
 import { extractMeetingFieldsAction } from "@/app/actions";
 
+type MessageSource = "voice" | "text";
+
 interface Message {
   role: 'user' | 'model';
   content: string;
+  source: MessageSource;
 }
 
 function isStoredConversation(value: unknown): value is Message[] {
@@ -36,7 +40,26 @@ function isStoredConversation(value: unknown): value is Message[] {
       typeof message === 'object' &&
       message !== null &&
       (message.role === 'user' || message.role === 'model') &&
-      typeof message.content === 'string'
+      typeof message.content === 'string' &&
+      (message.source === undefined || message.source === 'voice' || message.source === 'text')
+  );
+}
+
+function normalizeStoredConversation(messages: Message[]): Message[] {
+  // Older saved transcripts predate source metadata. They were all typed chat,
+  // so migrate them once while preserving the message content and order.
+  return messages.map((message) => ({ ...message, source: message.source ?? "text" }));
+}
+
+function VoiceBadge() {
+  return (
+    <span
+      aria-label="Voice Conversation"
+      title="Voice Conversation"
+      className="inline-flex w-fit items-center gap-1 rounded-full border border-white/15 bg-white/[0.08] px-1.5 py-0.5 text-[9px] font-medium tracking-wide text-white/75"
+    >
+      <Mic aria-hidden="true" className="h-2.5 w-2.5" /> Voice
+    </span>
   );
 }
 
@@ -159,7 +182,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         try {
           const parsedConversation: unknown = JSON.parse(savedConversation);
           if (isStoredConversation(parsedConversation)) {
-            setConversation(parsedConversation);
+            setConversation(normalizeStoredConversation(parsedConversation));
           } else {
             storage?.removeItem('ai-search-conversation');
           }
@@ -200,7 +223,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     stopAudio();
     
     
-    const newConversation: Message[] = [...conversation, { role: 'user', content: currentQuery }];
+    const newConversation: Message[] = [...conversation, { role: 'user', content: currentQuery, source: "text" }];
     // const newConversation: Message[] = [...conversation, { role: 'user', content: currentQuery }];
     setConversation(newConversation);
     setQuery("");
@@ -216,19 +239,19 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         return acc;
       }, []);
 
-      // Check scheduling intent BEFORE calling AI so we can inject a natural reply
+      // Classify intent before any scheduling action. Qualification questions are
+      // higher priority than a scheduling keyword in the same sentence.
       const isMeetingLikely = profile.meetingProbability > 60 || profile.meetingSignalDetected;
-      // An explicit request must always open the scheduler. Visitor scoring is
-      // only used to decide whether a proactive suggestion is appropriate.
-      const wantsMeeting = hasMeetingIntent(currentQuery);
+      const dialogueIntent = classifyDialogueIntent(currentQuery, engine.session);
+      const wantsMeeting = dialogueIntent === "scheduling";
       const activeMeeting = engine.activeMeeting ?? loadConfirmedMeeting();
       const suggestedSlotIndex = selectedSuggestedSlotIndex(currentQuery, engine.session?.suggestedSlots?.length ?? 0);
 
-      const isCollecting = engine.session && engine.session.state === 'collecting';
-      
       let meetingContext = undefined;
       
-      if (!engine.session && isMeetingLikely) {
+      if (dialogueIntent === "qualification") {
+        meetingContext = qualificationMeetingContext(engine.session);
+      } else if (!engine.session && isMeetingLikely) {
          meetingContext = "Visitor Intelligence indicates this user might want a meeting. Proactively and politely suggest they can schedule a meeting with Prabhat if they'd like. Keep it natural.";
       }
       
@@ -247,12 +270,25 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         }
       }
       
-      if (engine.session && engine.session.state === 'collecting') {
+      let deterministicReply: string | undefined;
+      if (dialogueIntent === "form_answer" && engine.session?.state === 'collecting') {
+         if (engine.session.pendingCorrection) {
+           if (isCorrectionConfirmation(currentQuery)) {
+             const corrected = engine.resolvePendingCorrection(true);
+             deterministicReply = corrected ? "Thanks, I’ve updated the meeting details with that correction." : undefined;
+           } else {
+             deterministicReply = "I’m still waiting to confirm whether the new detail is a correction. Please say yes to update it, or provide the correct value.";
+           }
+         }
+         deterministicReply ??= singleNameReply(currentQuery, engine.session) ?? undefined;
          // Extract fields from user message
-         const extraction = await extractMeetingFieldsAction(currentQuery, engine.data);
-         if (extraction.success && extraction.data) {
-           const updatedSession = engine.setFields(extraction.data);
-           if (updatedSession) {
+         const extraction = deterministicReply ? null : await extractMeetingFieldsAction(currentQuery, engine.data);
+         if (extraction?.success && extraction.data) {
+           const applied = engine.applyExtractedFields(extraction.data);
+           if (applied.invalidName || applied.contradiction) {
+             deterministicReply = applied.invalidName ?? applied.contradiction;
+           } else if (applied.session) {
+             const updatedSession = applied.session;
              const remaining = updatedSession.remainingFields;
              meetingContext = remaining.length > 0
                ? `The user is scheduling a meeting. A form on screen has been updated with the details they supplied. Ask only for the next missing required detail: ${updatedSession.currentStep}. Keep it natural and ask one question at a time.`
@@ -274,7 +310,9 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
          }
       }
 
-      const response = suggestedSlotIndex !== null
+      const response = deterministicReply
+        ? { success: true, answer: deterministicReply }
+        : suggestedSlotIndex !== null
         ? { success: true, answer: `I’ve applied option ${suggestedSlotIndex + 1} to the meeting form. Please review the updated date and time, then confirm the request to create the meeting.` }
         : wantsMeeting && activeMeeting
         ? { success: true, answer: "You already have an active meeting scheduled. You can join it or cancel it before scheduling another one." }
@@ -285,7 +323,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
       if (response.success && response.answer) {
         console.log('[AISearch] Assistant response received, appending once');
         setConversation(prev => {
-          const updated = [...prev, { role: 'model' as const, content: response.answer as string }];
+          const updated = [...prev, { role: 'model' as const, content: response.answer as string, source: "text" as const }];
           updateIntent(currentQuery, updated);
           analyseVisitor(currentQuery, updated);
           return updated;
@@ -299,7 +337,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         });
         // Keep the user's question visible and add an explicit answer. Removing
         // it makes the chat appear to ignore input when a server action fails.
-        setConversation(prev => [...prev, { role: 'model' as const, content: message }]);
+        setConversation(prev => [...prev, { role: 'model' as const, content: message, source: "text" as const }]);
       }
     });
   }, [stopAudio, toast, conversation]);
@@ -424,11 +462,11 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     onClose();
   }
 
-  const handleAddMessage = (user: string, model: string) => {
+  const handleAddMessage = (user: string, model: string, source: MessageSource) => {
     setConversation(prev => [
       ...prev, 
-      { role: 'user', content: user },
-      { role: 'model', content: model }
+      { role: 'user', content: user, source },
+      { role: 'model', content: model, source }
     ]);
   };
 
@@ -665,6 +703,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                           }}
                                         >
                                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 animate-pulse" />
+                                            {message.source === "voice" && <><VoiceBadge />{" "}</>}
                                             {message.content}
                                         </motion.div>
                                         <motion.div
@@ -746,16 +785,20 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
                                                     0 4px 16px rgba(120, 119, 198, 0.3)
                                                   `
                                                 }}
-                                                dangerouslySetInnerHTML={{ 
+                                            >
+                                                {message.source === "voice" && <VoiceBadge />}
+                                                <div
+                                                  dangerouslySetInnerHTML={{
                                                     __html: message.content
-                                                        .replace(/###\s*(.*)/g, '<h3>$1</h3>')
-                                                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                                                        .replace(/\*(.*)/g, '<li style="list-style-type: disc; margin-left: 20px;">$1</li>')
-                                                        .replace(/\n/g, '<br />')
-                                                        .replace(/<br \/>\s*<li/g, '<li') 
-                                                        .replace(/<\/li><br \/>/g, '</li>')
-                                                }} 
-                                            />
+                                                      .replace(/###\s*(.*)/g, '<h3>$1</h3>')
+                                                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                                      .replace(/\*(.*)/g, '<li style="list-style-type: disc; margin-left: 20px;">$1</li>')
+                                                      .replace(/\n/g, '<br />')
+                                                      .replace(/<br \/>\s*<li/g, '<li')
+                                                      .replace(/<\/li><br \/>/g, '</li>')
+                                                  }}
+                                                />
+                                            </motion.div>
                                         </div>
                                     </motion.div>
                                 )}

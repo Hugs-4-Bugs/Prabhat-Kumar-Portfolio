@@ -28,6 +28,14 @@ import { persistSession } from "./meeting-storage";
 import { emit, onMeetingEvent } from "./meeting-events";
 import type { ConfirmedMeeting, MeetingFormData } from "./meeting-types";
 
+export interface ExtractedFieldApplication {
+  session: MeetingSession | null;
+  invalidName?: string;
+  contradiction?: string;
+}
+
+const normaliseFieldValue = (value: string) => value.trim().toLocaleLowerCase().replace(/\s+/g, " ");
+
 interface EngineState {
   session: MeetingSession | null;
   submitting: boolean;
@@ -125,6 +133,76 @@ export function useMeetingEngine(conversationId?: string) {
     },
     [state.session]
   );
+
+  /**
+   * Apply values inferred from natural conversation, never blindly. Form inputs
+   * can be edited explicitly through setField; AI extraction must reject an
+   * incomplete full name and surface materially different saved values.
+   */
+  const applyExtractedFields = useCallback(
+    (values: Partial<MeetingFormData>, confidence = 100): ExtractedFieldApplication => {
+      const session = state.session;
+      if (!session) return { session: null };
+
+      const first = values.firstName?.trim();
+      const last = values.lastName?.trim();
+      const hasExistingName = Boolean(session.fields.firstName.value || session.fields.lastName.value);
+      if (!hasExistingName && first && !last) {
+        return { session, invalidName: `Got '${first}' — could you give me both first and last name?` };
+      }
+
+      const conflicts: Array<[keyof MeetingFormData, string, string]> = [];
+      for (const [field, rawValue] of Object.entries(values) as [keyof MeetingFormData, string][]) {
+        const value = rawValue?.trim();
+        const previous = session.fields[field]?.value?.trim();
+        if (value && previous && normaliseFieldValue(value) !== normaliseFieldValue(previous)) {
+          conflicts.push([field, previous, value]);
+        }
+      }
+      if (conflicts.length > 0) {
+        const flagged = { ...session, pendingCorrection: values, updatedAt: Date.now() };
+        persistSession(flagged);
+        dispatch({ type: "UPDATE", session: flagged });
+        const nameConflict = conflicts.find(([field]) => field === "firstName" || field === "lastName");
+        if (nameConflict) {
+          const earlierName = `${session.fields.firstName.value} ${session.fields.lastName.value}`.trim();
+          const proposedName = `${values.firstName ?? session.fields.firstName.value} ${values.lastName ?? session.fields.lastName.value}`.trim();
+          return { session: flagged, contradiction: `Earlier you gave the name as '${earlierName}' — is '${proposedName}' a correction, or a different person?` };
+        }
+        const [field, previous, value] = conflicts[0];
+        return { session: flagged, contradiction: `Earlier you gave ${field} as '${previous}' — is '${value}' a correction?` };
+      }
+
+      let updated = session;
+      for (const [field, value] of Object.entries(values) as [keyof MeetingFormData, string][]) {
+        if (typeof value === "string" && value.trim()) updated = wfSetField(updated, field, value, confidence);
+      }
+      dispatch({ type: "UPDATE", session: updated });
+      updated = { ...updated, pendingCorrection: undefined };
+      persistSession(updated);
+      return { session: updated };
+    },
+    [state.session]
+  );
+
+  const resolvePendingCorrection = useCallback((accept: boolean) => {
+    const session = state.session;
+    const candidate = session?.pendingCorrection;
+    if (!session || !candidate) return null;
+    if (!accept) {
+      const updated = { ...session, pendingCorrection: undefined, updatedAt: Date.now() };
+      persistSession(updated);
+      dispatch({ type: "UPDATE", session: updated });
+      return updated;
+    }
+    let updated: MeetingSession = { ...session, pendingCorrection: undefined };
+    for (const [field, value] of Object.entries(candidate) as [keyof MeetingFormData, string][]) {
+      if (typeof value === "string" && value.trim()) updated = wfSetField(updated, field, value);
+    }
+    persistSession(updated);
+    dispatch({ type: "UPDATE", session: updated });
+    return updated;
+  }, [state.session]);
 
   const selectSuggestedSlot = useCallback((index: number) => {
     const session = state.session;
@@ -259,6 +337,8 @@ export function useMeetingEngine(conversationId?: string) {
     submit,
     setField,
     setFields,
+    applyExtractedFields,
+    resolvePendingCorrection,
     selectSuggestedSlot,
     confirmField,
     summariseReason,

@@ -17,8 +17,9 @@ import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
 import { loadConfirmedMeeting } from "@/lib/meeting/meeting-storage";
 import { extractMeetingFieldsAction } from "@/app/actions";
 import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
-import { hasMeetingIntent, getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
+import { getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
 import { selectedSuggestedSlotIndex } from "@/lib/meeting/suggested-slot";
+import { classifyDialogueIntent, qualificationMeetingContext, singleNameReply, isCorrectionConfirmation } from "@/lib/meeting/dialogue-routing";
 import { MeetingPanel } from "@/components/MeetingPanel";
 
 /* ─── Voice Agent Definitions ─────────────────────────────────────────── */
@@ -241,7 +242,7 @@ interface VoiceAgentProps {
   isVisible: boolean;
   onClose: () => void;
   conversationHistory: Array<{ user: string; model: string }>;
-  onAddMessage: (user: string, model: string) => void;
+  onAddMessage: (user: string, model: string, source: "voice") => void;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════ */
@@ -955,8 +956,8 @@ export const VoiceAgent = memo(function VoiceAgent({
     setTranscript(input);
 
     try {
-      const isCollecting = engine.session && engine.session.state === 'collecting';
-      const wantsMeeting = hasMeetingIntent(input);
+      const dialogueIntent = classifyDialogueIntent(input, engine.session);
+      const wantsMeeting = dialogueIntent === "scheduling";
       const activeMeeting = engine.activeMeeting ?? loadConfirmedMeeting();
       const suggestedSlotIndex = selectedSuggestedSlotIndex(input, engine.session?.suggestedSlots?.length ?? 0);
       let meetingContext = undefined;
@@ -974,16 +975,31 @@ export const VoiceAgent = memo(function VoiceAgent({
         if (selected) setIsSchedulingOpen(true);
       }
       
-      if (!isCollecting && isMeetingLikely) {
+      if (dialogueIntent === "qualification") {
+         meetingContext = qualificationMeetingContext(engine.session);
+      } else if (isMeetingLikely && !engine.session) {
          meetingContext = "Visitor Intelligence indicates this user might want a meeting. Proactively and politely suggest they can schedule a meeting with Prabhat if they'd like. Keep it natural.";
       }
       
-      if (isCollecting) {
+      let deterministicReply: string | undefined;
+      if (dialogueIntent === "form_answer" && engine.session?.state === 'collecting') {
+         if (engine.session.pendingCorrection) {
+           if (isCorrectionConfirmation(input)) {
+             const corrected = engine.resolvePendingCorrection(true);
+             deterministicReply = corrected ? "Thanks, I’ve updated the meeting details with that correction." : undefined;
+           } else {
+             deterministicReply = "I’m still waiting to confirm whether the new detail is a correction. Please say yes to update it, or provide the correct value.";
+           }
+         }
+         deterministicReply ??= singleNameReply(input, engine.session) ?? undefined;
          // Extract fields from user message
-         const extraction = await extractMeetingFieldsAction(input, engine.data);
-         if (extraction.success && extraction.data) {
-           const updatedSession = engine.setFields(extraction.data);
-           if (updatedSession) {
+         const extraction = deterministicReply ? null : await extractMeetingFieldsAction(input, engine.data);
+         if (extraction?.success && extraction.data) {
+           const applied = engine.applyExtractedFields(extraction.data);
+           if (applied.invalidName || applied.contradiction) {
+             deterministicReply = applied.invalidName ?? applied.contradiction;
+           } else if (applied.session) {
+             const updatedSession = applied.session;
              const remaining = updatedSession.remainingFields;
              meetingContext = remaining.length > 0
                ? `The meeting form on screen has been updated. Ask only for the next missing required detail: ${updatedSession.currentStep}. For names, email addresses, and phone numbers, repeat the value back for confirmation before moving on. Keep the question short and natural.`
@@ -1004,7 +1020,9 @@ export const VoiceAgent = memo(function VoiceAgent({
          }
       }
 
-      const result = suggestedSlotIndex !== null
+      const result = deterministicReply
+        ? { success: true, answer: deterministicReply }
+        : suggestedSlotIndex !== null
         ? { success: true, answer: `I’ve applied option ${suggestedSlotIndex + 1}. Please review the updated meeting details on screen and confirm the request when you’re ready.` }
         : wantsMeeting && activeMeeting
         ? { success: true, answer: "You already have a scheduled meeting. Would you like to join it or cancel it?" }
@@ -1024,7 +1042,7 @@ export const VoiceAgent = memo(function VoiceAgent({
       if (result.success && result.answer) {
         const answer = result.answer as string;
         setLastAI(answer);
-        onAddMessage(input, answer);
+        onAddMessage(input, answer, "voice");
 
         // Update visitor intelligence asynchronously — no UI impact
         analyseVisitor(input, conversationHistory.flatMap(h => [

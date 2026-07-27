@@ -50,6 +50,8 @@ export interface MeetingSession {
   remainingFields: (keyof MeetingFormData)[];
   invalidFields: (keyof MeetingFormData)[];
   suggestedSlots?: { start: string; end: string }[];
+  /** Candidate values awaiting the visitor's explicit correction confirmation. */
+  pendingCorrection?: Partial<MeetingFormData>;
   createdAt: number;
   updatedAt: number;
 }
@@ -121,12 +123,11 @@ function recompute(session: MeetingSession): MeetingSession {
   const errors = validateMeetingForm(data);
   const invalidFields = errors.map((e) => e.field);
 
-  const completedFields = REQUIRED_FIELDS.filter(
-    (f) => session.fields[f].completed
-  );
-  const remainingFields = REQUIRED_FIELDS.filter(
-    (f) => !session.fields[f].completed
-  );
+  // A value is not a completed conversational slot until it is valid. This
+  // prevents an invalid email/phone or incomplete name from advancing to the
+  // submission recap merely because text was entered.
+  const completedFields = REQUIRED_FIELDS.filter((f) => session.fields[f].valid);
+  const remainingFields = REQUIRED_FIELDS.filter((f) => !session.fields[f].valid);
 
   const completionPercent = Math.round(
     (completedFields.length / REQUIRED_FIELDS.length) * 100
