@@ -224,6 +224,18 @@ function normalizeSpeechTranscript(text: string): string {
   return result;
 }
 
+/** Web Speech can emit a speech-start event for a fan, keyboard, or the
+ * assistant's own audio. Do not treat raw sound as an interruption: wait for a
+ * recognisable phrase, while preserving short intentional commands. */
+function isMeaningfulBargeIn(text: string): boolean {
+  const normalized = text.trim().toLowerCase().replace(/[^a-z\s]/g, "");
+  if (!normalized) return false;
+  if (["stop", "wait", "pause", "cancel", "hey quantum", "excuse me"].includes(normalized)) return true;
+  // Web Speech cannot provide dependable voice-activity confidence. A complete
+  // phrase prevents fan and keyboard noise from acting as a spoken interrupt.
+  return normalized.length >= 10 && normalized.split(/\s+/).length >= 4;
+}
+
 /* ─── Props ────────────────────────────────────────────────────────────── */
 interface VoiceAgentProps {
   isVisible: boolean;
@@ -290,6 +302,7 @@ export const VoiceAgent = memo(function VoiceAgent({
   const restartListeningRef = useRef<() => void>(() => undefined);
   const turnIdRef = useRef(0);
   const playbackIdRef = useRef(0);
+  const bargeInReadyAtRef = useRef(0);
 
   /* keep refs in sync */
   useEffect(() => {
@@ -517,12 +530,6 @@ export const VoiceAgent = memo(function VoiceAgent({
         handleUserSpeech(normalizeSpeechTranscript(spoken));
       };
 
-      // onspeechstart fires the moment the browser detects voice audio —
-      // this is the earliest possible signal that the user is speaking.
-      (rec as any).onspeechstart = () => {
-        if (stateRef.current === "speaking") interrupt();
-      };
-
       // Keep this recognition alive after interruption. Starting a second
       // recognizer here used to lose the user's opening words and caused races.
       rec.onresult = (event) => {
@@ -534,12 +541,14 @@ export const VoiceAgent = memo(function VoiceAgent({
             interim += event.results[i][0].transcript;
           }
         }
-        if (finalTranscript || interim) {
+        // Background noise frequently fires interim speech events. Interrupt
+        // only after a meaningful final phrase has been recognised.
+        if (Date.now() >= bargeInReadyAtRef.current && finalTranscript && isMeaningfulBargeIn(finalTranscript)) {
           interrupt();
           setTranscript(`${finalTranscript} ${interim}`.trim());
           setVoiceState("listening");
         }
-        if (event.results[event.results.length - 1].isFinal) {
+        if (Date.now() >= bargeInReadyAtRef.current && event.results[event.results.length - 1].isFinal && isMeaningfulBargeIn(finalTranscript)) {
           clearSilenceTimer();
           silenceTimer = setTimeout(commitSpeech, 900);
           pendingTimeoutsRef.current.push(silenceTimer);
@@ -547,7 +556,7 @@ export const VoiceAgent = memo(function VoiceAgent({
       };
 
       (rec as any).onspeechend = () => {
-        if (!speechHandled && finalTranscript.trim()) {
+        if (!speechHandled && Date.now() >= bargeInReadyAtRef.current && isMeaningfulBargeIn(finalTranscript)) {
           clearSilenceTimer();
           silenceTimer = setTimeout(commitSpeech, 350);
           pendingTimeoutsRef.current.push(silenceTimer);
@@ -566,7 +575,7 @@ export const VoiceAgent = memo(function VoiceAgent({
         if (bargeInRecognitionRef.current === rec) {
           bargeInRecognitionRef.current = null;
         }
-        if (!speechHandled && finalTranscript.trim() && interrupted) {
+        if (!speechHandled && Date.now() >= bargeInReadyAtRef.current && isMeaningfulBargeIn(finalTranscript) && interrupted) {
           commitSpeech();
           return;
         }
@@ -719,6 +728,8 @@ export const VoiceAgent = memo(function VoiceAgent({
       utterance.onstart = () => {
         if (isMounted.current && sessionActiveRef.current && playbackId === playbackIdRef.current) {
           setVoiceState("speaking");
+          // Ignore the initial echo / fan burst as playback begins.
+          bargeInReadyAtRef.current = Date.now() + 700;
           // Start background listening for barge-in detection
           startBargeInListening();
         }
@@ -727,8 +738,14 @@ export const VoiceAgent = memo(function VoiceAgent({
       utterance.onend = () => {
         index++;
         if (isMounted.current && sessionActiveRef.current && playbackId === playbackIdRef.current) {
-          stopBargeInListening();
-          setTimeout(speakNext, 120);
+          if (index >= sentences.length) {
+            stopBargeInListening();
+            onEnd?.();
+          } else {
+            // Keep one recognizer alive across sentence boundaries so an
+            // interruption isn't lost during an artificial stop/start gap.
+            setTimeout(speakNext, 70);
+          }
         }
       };
       

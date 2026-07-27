@@ -94,5 +94,20 @@ const askPrabhatAIFlow = ai.defineFlow(
 );
 
 export async function askPrabhatAI(input: AskPrabhatAIInput): Promise<AskPrabhatAIOutput> {
-  return askPrabhatAIFlow(input);
+  try {
+    return await askPrabhatAIFlow(input);
+  } catch (structuredOutputError) {
+    // Gemini can return useful text which fails Genkit's structured-output
+    // parser. Voice mode already uses plain text, so retain that reliable path
+    // for the chat assistant instead of dropping the response.
+    console.warn("[QuantumAI] Structured chat response failed; using text fallback.", structuredOutputError);
+    const history = input.history
+      ?.map((turn) => `User: ${turn.user}\nQuantumAI: ${turn.model}`)
+      .join("\n\n") ?? "";
+    const { text } = await ai.generate({
+      prompt: `You are QuantumAI, the assistant for Prabhat Kumar's portfolio. Answer helpfully in the user's language. Use the supplied context where relevant and never invent facts.\n\nPortfolio context:\n${JSON.stringify(prabhatData)}\n\nConversation:\n${history || "No earlier messages."}\n\nUser: ${input.question}`,
+    });
+    if (!text?.trim()) throw structuredOutputError;
+    return { answer: text.trim() };
+  }
 }

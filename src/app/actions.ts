@@ -419,8 +419,20 @@ export async function getAISearchResponse(
   try {
     const response = await askPrabhatAI({ question, history, visitorContext, meetingContext });
     return { success: true, answer: response.answer };
-  } catch (error) {
-    console.error("Error getting AI search response:", error);
+  } catch (primaryError) {
+    // Structured prompt output can fail independently of the model request
+    // (for example during a provider/model schema change). Voice mode already
+    // uses direct generation, so retain a small, safe fallback for text chat.
+    console.error("[QuantumAI] Structured chat request failed:", primaryError);
+    try {
+      const context = JSON.stringify(prabhatData);
+      const { text } = await ai.generate({
+        prompt: `You are QuantumAI, the helpful assistant for Prabhat Kumar's portfolio. Answer in the user's language, accurately and concisely.\n\nPortfolio context: ${context}\n\nQuestion: ${question}`,
+      });
+      if (text?.trim()) return { success: true, answer: text };
+    } catch (fallbackError) {
+      console.error("[QuantumAI] Direct chat fallback failed:", fallbackError);
+    }
     return { success: false, message: "QuantumAI could not reach its AI service. Please try again in a moment." };
   }
 }
