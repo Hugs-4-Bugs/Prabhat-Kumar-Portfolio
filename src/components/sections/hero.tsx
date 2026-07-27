@@ -726,7 +726,7 @@ export function Hero() {
               : "rgba(30, 41, 59, 0.9)",
           }}
         >
-          <Balancer>
+          {/* <Balancer>
             I architect and build AI systems that solve real operational problems.
             <span
               className="font-semibold"
@@ -737,7 +737,32 @@ export function Hero() {
               {" "}From autonomous lead generation to trading bots to production
               infrastructure, I engineer solutions that scale, perform, and prove ROI.
             </span>
-          </Balancer>
+          </Balancer> */}
+        
+        <Balancer>
+  I architect and build AI systems that solve real operational problems.
+  <span
+    className="font-semibold"
+    style={{
+      color: isDark ? "#60a5fa" : "#2563eb",
+    }}
+  >
+    {" "}
+    From autonomous lead generation to trading bots to production
+    infrastructure, I engineer solutions that scale, perform, and prove ROI.
+  </span>
+  <span
+    className="font-medium"
+    style={{
+      color: isDark ? "#cbd5e1" : "#475569",
+    }}
+  >
+    {" "}
+    Alongside AI systems, I specialize in building production-grade Spring Boot
+    backends, reducing backend downtime, optimizing SQL performance, and solving
+    complex backend challenges.
+  </span>
+</Balancer>
         </motion.p>
 
         {/* Buttons Container */}
