@@ -291,12 +291,15 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
           return updated;
         });
       } else {
+        const message = ('message' in response ? response.message : undefined) || "QuantumAI could not answer right now. Please try again.";
         toast({
           title: "AI Search Error",
-          description: ('message' in response ? response.message : undefined) || "An error occurred.",
+          description: message,
           variant: "destructive",
         });
-        setConversation(prev => prev.slice(0, -1));
+        // Keep the user's question visible and add an explicit answer. Removing
+        // it makes the chat appear to ignore input when a server action fails.
+        setConversation(prev => [...prev, { role: 'model' as const, content: message }]);
       }
     });
   }, [stopAudio, toast, conversation]);

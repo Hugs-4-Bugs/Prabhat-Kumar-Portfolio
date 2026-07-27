@@ -410,12 +410,18 @@ export async function getAISearchResponse(
   if (!question.trim()) {
     return { success: false, message: "Please enter a question." };
   }
+  // Avoid a misleading silent failure when a deployment was created without
+  // the server-only Gemini key. The browser must never receive the key itself.
+  if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
+    console.error("[QuantumAI] Missing Gemini API key in this deployment.");
+    return { success: false, message: "QuantumAI is temporarily unavailable because its AI service is not configured." };
+  }
   try {
     const response = await askPrabhatAI({ question, history, visitorContext, meetingContext });
     return { success: true, answer: response.answer };
   } catch (error) {
     console.error("Error getting AI search response:", error);
-    return { success: false, message: "Sorry, I couldn't get a response from the AI." };
+    return { success: false, message: "QuantumAI could not reach its AI service. Please try again in a moment." };
   }
 }
 
