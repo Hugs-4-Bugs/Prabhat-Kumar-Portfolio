@@ -18,6 +18,13 @@ export interface CalendarMeeting {
   summary: string;
 }
 
+export class CalendarMeetingCreationError extends Error {
+  constructor(public readonly bookingCode: "CALENDAR_EVENT_CREATE_FAILED" | "MEET_CREATE_FAILED", message: string) {
+    super(message);
+    this.name = "CalendarMeetingCreationError";
+  }
+}
+
 /**
  * Create a Google Calendar event with a Google Meet conferencing link.
  */
@@ -80,14 +87,45 @@ export async function createCalendarMeeting(
     },
   });
 
-  const eventData = event.data;
+  const createdEventId = event.data.id;
+  if (!createdEventId) {
+    throw new CalendarMeetingCreationError("CALENDAR_EVENT_CREATE_FAILED", "Google Calendar did not return an event ID.");
+  }
+
+  // Read the event back from Google before reporting success. This protects
+  // the booking UI from treating a partially returned insert response as a
+  // confirmed calendar event.
+  let eventData;
+  try {
+    const verifiedEvent = await calendar.events.get({
+      calendarId,
+      eventId: createdEventId,
+    });
+    eventData = verifiedEvent.data;
+  } catch (verificationError) {
+    try {
+      await calendar.events.delete({ calendarId, eventId: createdEventId, sendUpdates: "all" });
+    } catch (cleanupError) {
+      console.error("[CalendarMeeting] Failed to remove an unverifiable event:", cleanupError);
+    }
+    throw new CalendarMeetingCreationError("CALENDAR_EVENT_CREATE_FAILED", `Google Calendar event verification failed: ${verificationError instanceof Error ? verificationError.message : "unknown error"}`);
+  }
   const meetLink =
     eventData.conferenceData?.entryPoints?.find(
-      (ep) => ep.entryPointType === "video"
+      (ep: { entryPointType?: string | null; uri?: string | null }) => ep.entryPointType === "video"
     )?.uri ?? "";
 
+  if (!meetLink) {
+    try {
+      await calendar.events.delete({ calendarId, eventId: createdEventId, sendUpdates: "all" });
+    } catch (cleanupError) {
+      console.error("[CalendarMeeting] Failed to remove event without a Meet link:", cleanupError);
+    }
+    throw new CalendarMeetingCreationError("MEET_CREATE_FAILED", "Google Calendar created the event without a Google Meet link.");
+  }
+
   return {
-    eventId:  eventData.id ?? "",
+    eventId: createdEventId,
     meetLink,
     htmlLink: eventData.htmlLink ?? "",
     startIso,

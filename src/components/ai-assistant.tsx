@@ -16,6 +16,7 @@ import { getAIResponse, getAIAudio } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { getBrowserStorage } from '@/lib/browser-storage';
+import { getAssistantContext, recordAssistantUserTurn } from '@/lib/assistant/intelligence-store';
 
 import listeningAnimation from '@/lib/listening-animation.json';
 
@@ -160,7 +161,8 @@ export function AIAssistant({ isSearchOpen }: AIAssistantProps) {
         return acc;
       }, []);
 
-      const response = await getAIResponse(query, history);
+      recordAssistantUserTurn(query);
+      const response = await getAIResponse(query, history, getAssistantContext(query));
       setIsAITyping(false);
 
       if (response.success && response.answer) {

@@ -197,6 +197,7 @@ export function isProjectQuestion(message: string): boolean {
   const text = message.toLowerCase();
   return (
     names.some((n) => text.includes(n)) ||
+    /^projects?\??$/i.test(message.trim()) ||
     /\b(project|built|built by|tell me about|what (is|are)|show me).*(app|saas|tool|extension|bot|plugin|platform)\b/i.test(
       message
     )
@@ -204,7 +205,7 @@ export function isProjectQuestion(message: string): boolean {
 }
 
 export function isSiteQuestion(message: string): boolean {
-  return /\b(this site|this website|prabhat\.online|quantumai|this assistant|this bot|who (built|made) you|how (do|does) (you|this) work)\b/i.test(
+  return /\b(who are you|what are you|this site|this website|prabhat\.online|quantumai|this assistant|this bot|who (built|made) you|how (do|does) (you|this) work)\b/i.test(
     message
   );
 }
@@ -306,6 +307,9 @@ export function answerSkillQuestion(message: string): string | null {
 export function answerSiteQuestion(message: string): string | null {
   if (!isSiteQuestion(message)) return null;
   const s = quantumAiKnowledge.siteInfo;
+  if (/\bwho are you|what are you\b/i.test(message)) {
+    return `I'm ${s.assistantName}, Prabhat Kumar's portfolio assistant. I can answer questions about his experience, skills, and projects, or help prepare a meeting request.`;
+  }
   return `This is ${s.assistantName}, running on Prabhat's portfolio site (${s.domain}). ${s.assistantPurpose}`;
 }
 
@@ -316,7 +320,7 @@ export function handleOutOfScope(message: string): string | null {
 // ---- new detectors ----
 
 function isBackgroundQuestion(message: string): boolean {
-  return /\b(who is|about him|his background|his experience|how many years|where is he|based in|current role|what does he do|full[- ]time|open to|available for|freelance|hire him)\b/i.test(message);
+  return /\b(who is|about him|his background|his experience|work experience|work history|professional experience|netcore|how many years|where is he|based in|current role|what does he do|full[- ]time|open to|available for|freelance|hire him)\b/i.test(message);
 }
 
 function answerBackgroundQuestion(message: string): string | null {
@@ -332,6 +336,9 @@ function answerBackgroundQuestion(message: string): string | null {
   }
   if (/full[- ]time|open to|available for|freelance|hire him/.test(text)) {
     return `He's currently full-time at ${currentRole.company}, and separately runs ${quantumAiKnowledge.venture.name} on the side taking on select freelance/agency work. I don't have confirmed details on availability terms for a specific offer — that's worth asking him directly, and I can flag it.`;
+  }
+  if (/netcore|work experience|work history|professional experience|work experience/.test(text)) {
+    return `Prabhat has been a Java Software Developer at Netcore Cloud since January 2023. His documented work there includes Java, Spring Boot, Hibernate, microservices, REST APIs, MySQL, and AWS; before that, he completed a Java Software Engineer internship at CodeSpeedy Technology.`;
   }
   return `${identity.tagline}. Currently ${currentRole.title} at ${currentRole.company} (since ${currentRole.since}), based in ${identity.location}.`;
 }

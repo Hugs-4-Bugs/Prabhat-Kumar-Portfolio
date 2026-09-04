@@ -99,6 +99,63 @@ Google Calendar OAuth setup is development-only: obtain the refresh token from a
 protected development environment, then add it to Vercel as
 `GOOGLE_CALENDAR_REFRESH_TOKEN`. The OAuth setup route is disabled in production.
 
+### Calendar authorization recovery
+
+Calendar booking requires `GOOGLE_OAUTH_CLIENT_ID`,
+`GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`,
+`GOOGLE_CALENDAR_REFRESH_TOKEN`, and `GOOGLE_CALENDAR_ID` in every Vercel
+environment that serves booking. The app requests only the Calendar event and
+free/busy scopes required to create, cancel, verify, and check meetings.
+
+When an availability check reports that authorization must be renewed, do not
+replace it with a dummy token. In a protected local development environment,
+set `GOOGLE_OAUTH_SETUP_TOKEN`, start the app, and visit
+`/api/auth/google?setup_token=…`. The callback verifies the newly issued token
+with a read-only Calendar and free/busy check before updating the local
+`.env.local` file. Restart the local app, then copy that new value into
+Vercel's `GOOGLE_CALENDAR_REFRESH_TOKEN` secret and redeploy. Never put this
+token in browser code, source control, or application logs.
+
+The owner-only development diagnostic route
+`/api/auth/google/diagnostic?setup_token=…` reports only configuration flags
+and connection status; it does not return credentials or write Calendar data.
+If the Google OAuth consent screen is in **Testing**, Google can expire refresh
+tokens after seven days. Use a production-published or appropriate internal
+OAuth consent configuration for a production booking service.
+
+### Production Calendar verification
+
+The runtime reads **only** `GOOGLE_OAUTH_CLIENT_ID`,
+`GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_CALENDAR_REFRESH_TOKEN`, and
+`GOOGLE_CALENDAR_ID`; it does not read `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET`, or `GOOGLE_REFRESH_TOKEN`. Ensure the first four are
+set for the **Production** target in Vercel and redeploy after changing them.
+
+For an owner-only live diagnostic, set a separate high-entropy
+`GOOGLE_CALENDAR_DIAGNOSTIC_TOKEN` Production secret. It never reaches the
+browser and does not affect normal booking. After deployment:
+
+```bash
+# Read-only: verifies environment presence, token refresh, Calendar access,
+# required scopes, and FreeBusy. It never exposes credentials or writes data.
+curl -sS https://www.prabhat.online/api/internal/calendar-diagnostic \
+  -H "Authorization: Bearer $GOOGLE_CALENDAR_DIAGNOSTIC_TOKEN"
+
+# Write probe: creates a five-minute diagnostic event with Google Meet,
+# retrieves it, then deletes it without sending invitations.
+curl -sS -X POST https://www.prabhat.online/api/internal/calendar-diagnostic \
+  -H "Authorization: Bearer $GOOGLE_CALENDAR_DIAGNOSTIC_TOKEN" \
+  -H "Content-Type: application/json" \
+  --data '{"confirmWrite":true}'
+```
+
+The response reports only booleans, configuration sources, and safe Google
+error codes such as `INVALID_REFRESH_TOKEN` with HTTP/Google status metadata.
+It does not test email delivery or database persistence: this project currently
+has no server-side meeting database, and the diagnostic intentionally does not
+send email. A normal successful booking returns separate `emailDelivery`
+statuses after its real Calendar event and Meet link are verified.
+
 ## 🙏 Acknowledgements
 
 - **ShadCN/UI** for the fantastic component library.

@@ -1,15 +1,34 @@
 /**
  * Google OAuth — Phase 5
  * All token handling is server-side. Tokens never reach the client.
- * Minimum scopes: calendar.events + calendar.readonly
+ * Minimum scopes: event management plus free/busy availability.
  */
 
 import { google } from "googleapis";
 
 const SCOPES = [
   "https://www.googleapis.com/auth/calendar.events",
-  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/calendar.events.freebusy",
 ];
+
+export function getCalendarScopes(): readonly string[] {
+  return SCOPES;
+}
+
+export function getCalendarConfigStatus() {
+  const calendarId = process.env.GOOGLE_CALENDAR_ID;
+  return {
+    clientIdConfigured: Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID),
+    clientSecretConfigured: Boolean(process.env.GOOGLE_OAUTH_CLIENT_SECRET),
+    redirectUriConfigured: Boolean(process.env.GOOGLE_OAUTH_REDIRECT_URI),
+    refreshTokenConfigured: Boolean(process.env.GOOGLE_CALENDAR_REFRESH_TOKEN),
+    calendarIdConfigured: Boolean(calendarId),
+    calendarIdSource: calendarId ? "GOOGLE_CALENDAR_ID" : "default:primary",
+    refreshTokenSource: "GOOGLE_CALENDAR_REFRESH_TOKEN",
+    clientIdSource: "GOOGLE_OAUTH_CLIENT_ID",
+    clientSecretSource: "GOOGLE_OAUTH_CLIENT_SECRET",
+  };
+}
 
 /** Build an OAuth2 client from env vars */
 export function getOAuth2Client() {

@@ -25,6 +25,19 @@ export function classifyDialogueIntent(message: string, session: MeetingSession 
   return "general";
 }
 
+/**
+ * A meeting can be filled out of order in natural conversation. Keep direct
+ * portfolio questions out of extraction, but allow declarative statements to
+ * contribute any details they contain (for example, an email, project brief,
+ * or preferred date shared before a name).
+ */
+export function isMeetingDataStatement(message: string): boolean {
+  const text = message.trim();
+  if (!text || /\?$/.test(text)) return false;
+  if (/\b(who|what|when|where|why|how|can you|could you|do you|is he|is prabhat)\b/i.test(text)) return false;
+  return /@|\b\d{5,}\b|\b(today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\b\d{1,2}(?::\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)\b|\b(ist|india|asia\/kolkata|timezone|time zone)\b|\b(my name is|i am|i'm|my company|founder|working at|project is about|build(?:ing)? a)\b/i.test(text);
+}
+
 function isLikelyFormAnswer(text: string, session: MeetingSession): boolean {
   if (session.pendingCorrection || session.pendingVoiceName) return true;
   const current = session.currentStep;

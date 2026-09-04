@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
         conflictMessage: scheduleResult.conflictMessage,
         alternatives: scheduleResult.alternatives,
         error: scheduleResult.error,
+        failure: scheduleResult.failure,
       },
       { status: scheduleResult.conflictMessage ? 409 : 500 }
     );

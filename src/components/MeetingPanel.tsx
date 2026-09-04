@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Calendar, CheckCircle2, Loader2 } from "lucide-react";
 import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
-import { isMeetingFormValid } from "@/lib/meeting/meeting-validator";
+import { validateMeetingForm } from "@/lib/meeting/meeting-validator";
 import type { MeetingFormData } from "@/lib/meeting/meeting-types";
 
 interface MeetingPanelProps {
@@ -47,6 +47,17 @@ function Field({
 const inputCls = "w-full rounded-xl px-3 py-2 text-xs sm:text-sm text-white/90 placeholder-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 transition-colors";
 const inputStyle = { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" };
 
+function localDateInputValue(timezone: string): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONES.includes(timezone) ? timezone : "UTC",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
 // ── MeetingPanel ──────────────────────────────────────────────────────────────
 export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelProps) {
   const engine = useMeetingEngine(conversationId);
@@ -69,8 +80,10 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
   }, [isOpen, onClose]);
 
   const data = engine.data;
-  const isValid = isMeetingFormValid(data);
-  const today = new Date().toISOString().split("T")[0];
+  const validationErrors = validateMeetingForm(data);
+  const fieldError = (field: keyof MeetingFormData) => validationErrors.find((error) => error.field === field)?.message;
+  const isValid = validationErrors.length === 0;
+  const today = localDateInputValue(data.timezone ?? "UTC");
 
   function inp(field: keyof MeetingFormData) {
     return {
@@ -218,16 +231,16 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Field label="First Name" required>
+                    <Field label="First Name" required error={fieldError("firstName")}>
                       <input className={inputCls} style={inputStyle} placeholder="John" {...inp("firstName")} />
                     </Field>
-                    <Field label="Last Name" required>
+                    <Field label="Last Name" required error={fieldError("lastName")}>
                       <input className={inputCls} style={inputStyle} placeholder="Smith" {...inp("lastName")} />
                     </Field>
-                    <Field label="Email" required>
+                    <Field label="Email" required error={fieldError("email")}>
                       <input className={inputCls} style={inputStyle} type="email" placeholder="john@company.com" {...inp("email")} />
                     </Field>
-                    <Field label="Phone" required>
+                    <Field label="Phone" required error={fieldError("phone") ?? fieldError("countryCode")}>
                       <div className="flex flex-col min-[380px]:flex-row gap-2">
                         <select
                           className="rounded-xl px-2 py-2 text-xs text-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 transition-colors flex-shrink-0 w-full min-[380px]:w-28"
@@ -252,19 +265,19 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
                       <input className={inputCls} style={inputStyle} placeholder="e.g. CTO, Founder (optional)" {...inp("role")} />
                     </Field>
                     <div className="sm:col-span-2">
-                      <Field label="Reason for Meeting" required>
+                      <Field label="Reason for Meeting" required error={fieldError("reasonForMeeting")}>
                         <textarea className={inputCls + " resize-none"} style={inputStyle} rows={3}
                           placeholder="Briefly describe what you'd like to discuss..." {...inp("reasonForMeeting")} />
                       </Field>
                     </div>
-                    <Field label="Preferred Date" required>
+                    <Field label="Preferred Date" required error={fieldError("preferredDate")}>
                       <input className={inputCls} style={inputStyle} type="date" min={today} {...inp("preferredDate")} />
                     </Field>
-                    <Field label="Preferred Time" required>
+                    <Field label="Preferred Time" required error={fieldError("preferredTime")}>
                       <input className={inputCls} style={inputStyle} type="time" {...inp("preferredTime")} />
                     </Field>
                     <div className="sm:col-span-2">
-                      <Field label="Timezone" required>
+                      <Field label="Timezone" required error={fieldError("timezone")}>
                         <select className={inputCls} style={inputStyle}
                           value={data.timezone ?? ""}
                           onChange={(e) => engine.setField("timezone", e.target.value)}>
@@ -290,7 +303,7 @@ export function MeetingPanel({ isOpen, onClose, conversationId }: MeetingPanelPr
                   </button>
                   <button
                     onClick={handleSubmit}
-                    disabled={engine.submitting}
+                    disabled={!isValid || engine.submitting}
                     className="px-4 py-2 rounded-xl text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 flex items-center gap-1.5 disabled:opacity-60"
                     style={{
                       background: isValid

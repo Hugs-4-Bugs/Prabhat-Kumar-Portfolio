@@ -9,8 +9,13 @@
  */
 
 import { createHmac, timingSafeEqual } from "crypto";
+import { readFile, rename, writeFile } from "fs/promises";
+import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthUrl, exchangeCode } from "@/lib/calendar/google/google-auth";
+import { verifyCalendarConnection } from "@/lib/calendar/google/diagnostics";
+
+export const runtime = "nodejs";
 
 function secureEqual(left: string, right: string): boolean {
   const leftBuffer = Buffer.from(left);
@@ -20,6 +25,33 @@ function secureEqual(left: string, right: string): boolean {
 
 function expectedState(secret: string): string {
   return createHmac("sha256", secret).update("prabhat-online-google-oauth-setup").digest("hex");
+}
+
+async function persistDevelopmentRefreshToken(refreshToken: string): Promise<void> {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Development-only OAuth persistence is unavailable in production.");
+  }
+  if (!refreshToken || /[\r\n]/.test(refreshToken)) {
+    throw new Error("Google returned an invalid refresh token.");
+  }
+
+  const envPath = path.join(process.cwd(), ".env.local");
+  let content = "";
+  try {
+    content = await readFile(envPath, "utf8");
+  } catch (error: any) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+
+  const entry = `GOOGLE_CALENDAR_REFRESH_TOKEN=${refreshToken}`;
+  const pattern = /^GOOGLE_CALENDAR_REFRESH_TOKEN=.*$/m;
+  const nextContent = pattern.test(content)
+    ? content.replace(pattern, entry)
+    : `${content}${content && !content.endsWith("\n") ? "\n" : ""}${entry}\n`;
+  const temporaryPath = `${envPath}.${process.pid}.tmp`;
+  await writeFile(temporaryPath, nextContent, { encoding: "utf8", mode: 0o600 });
+  await rename(temporaryPath, envPath);
+  process.env.GOOGLE_CALENDAR_REFRESH_TOKEN = refreshToken;
 }
 
 export async function GET(req: NextRequest) {
@@ -56,14 +88,21 @@ export async function GET(req: NextRequest) {
 
   try {
     const tokens = await exchangeCode(code);
-    // This route cannot securely persist secrets. It is development-only and
-    // the token is intentionally never exposed to a browser response.
-    console.log("[CalendarAuth] OAuth completed. Store this refresh token in the configured secret manager:", tokens.refreshToken);
-    return NextResponse.json({
-      message: "Calendar authorization completed. Store the refresh token from the protected server log in your secret manager.",
-    });
-  } catch {
-    console.error("[CalendarAuth] Token exchange failed.");
-    return NextResponse.json({ error: "OAuth token exchange failed." }, { status: 400 });
+    const diagnostic = await verifyCalendarConnection(tokens.refreshToken);
+    await persistDevelopmentRefreshToken(tokens.refreshToken);
+    console.info("[CalendarAuth] OAuth completed and calendar access verified.");
+    return NextResponse.json(
+      {
+        message: "Calendar authorization completed and verified. The refresh token was saved to local development configuration. Add the same newly issued token to Vercel's GOOGLE_CALENDAR_REFRESH_TOKEN before deploying.",
+        diagnostic,
+      },
+      { headers: { "Cache-Control": "no-store" } }
+    );
+  } catch (error: any) {
+    console.error("[CalendarAuth] OAuth renewal failed:", error?.message ?? "unknown error");
+    return NextResponse.json(
+      { error: "OAuth renewal or calendar verification failed. The existing refresh token was not changed." },
+      { status: 400, headers: { "Cache-Control": "no-store" } }
+    );
   }
 }

@@ -13,19 +13,21 @@ import listeningAnimation from "@/lib/listening-animation.json";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { getBrowserStorage } from "@/lib/browser-storage";
-import { VoiceAgent } from "@/components/VoiceAgent";
+import { LiveVoiceAgent } from "@/components/LiveVoiceAgent";
 import { CapabilityTrigger } from "@/components/CapabilityPanel";
 import { IntentSuggestions } from "@/components/IntentSuggestions";
 import { useIntentEngine } from "@/lib/intent/use-intent-engine";
 import { MeetingPanel } from "@/components/MeetingPanel";
 import { getMeetingIntentReply } from "@/lib/meeting/meeting-intent";
 import { selectedSuggestedSlotIndex } from "@/lib/meeting/suggested-slot";
-import { classifyDialogueIntent, qualificationMeetingContext, singleNameReply, isCorrectionConfirmation } from "@/lib/meeting/dialogue-routing";
+import { classifyDialogueIntent, qualificationMeetingContext, singleNameReply, isCorrectionConfirmation, isMeetingDataStatement } from "@/lib/meeting/dialogue-routing";
 import { processTurn } from "@/lib/quantumai-knowledge";
 import { useVisitorIntelligence } from "@/lib/visitor/use-visitor-intelligence";
 import { useMeetingEngine } from "@/lib/meeting/meeting-engine";
 import { loadConfirmedMeeting } from "@/lib/meeting/meeting-storage";
+import { getNextQuestion } from "@/lib/meeting/meeting-session";
 import { extractMeetingFieldsAction } from "@/app/actions";
+import { describeAssistantMemory, forgetAssistantMemory, getAssistantContext, recordAssistantUserTurn } from "@/lib/assistant/intelligence-store";
 
 type MessageSource = "voice" | "text";
 
@@ -147,14 +149,20 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
   
   const recognitionRef = useRef<any>(null);
   const activeRecognitionRef = useRef<any>(null);
+  const shouldContinueRecognitionRef = useRef(false);
+  const recognitionRestartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const interimRef = useRef('');
   const finalRef = useRef('');
+  const typedDraftRef = useRef('');
   const overlayRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   // Phase 7: accumulates form field values extracted from conversation
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { suggestions, updateIntent } = useIntentEngine();
+  const { analyse: analyseVisitor, reset: resetVisitorProfile, profile } = useVisitorIntelligence();
+  const engine = useMeetingEngine();
 
   useEffect(() => {
     audioRef.current = new Audio();
@@ -230,6 +238,12 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     setQuery("");
 
     startTransition(async () => {
+      const trimmedQuery = currentQuery.trim();
+      const memoryQuery = trimmedQuery.match(/^\s*(?:what do you remember|what do you know about me)\s*\??$/i);
+      const forgetQuery = trimmedQuery.match(/^\s*(?:forget|delete|remove)\s+(?:my\s+)?(.+?)\s*\??$/i);
+      const intelligenceContext = memoryQuery || forgetQuery
+        ? ""
+        : (recordAssistantUserTurn(trimmedQuery), getAssistantContext(trimmedQuery));
       const history = conversation.reduce((acc: Array<{ user: string; model: string }>, message, index) => {
         if (message.role === 'user' && conversation[index + 1]?.role === 'model') {
           acc.push({
@@ -245,7 +259,8 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
       const isMeetingLikely = profile.meetingProbability > 60 || profile.meetingSignalDetected;
       const dialogueIntent = classifyDialogueIntent(currentQuery, engine.session);
       const groundedTurn = processTurn(currentQuery);
-      const hasGroundedAnswer = groundedTurn.answerSegments.length > 0 &&
+      const isFollowUpGreeting = conversation.length > 0 && /^(hi|hello|hey|good (morning|afternoon|evening))\b/i.test(currentQuery.trim());
+      const hasGroundedAnswer = !isFollowUpGreeting && groundedTurn.answerSegments.length > 0 &&
         dialogueIntent !== "form_answer" && dialogueIntent !== "correction";
       // When a visitor asks a substantive question and also mentions a meeting,
       // answer the question first. The scheduler remains available without
@@ -283,8 +298,12 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
       if (deterministicReply && groundedTurn.schedulingIntentDetected) {
         deterministicReply += "\n\nIf you’d like, I can help you schedule time with Prabhat after this.";
       }
-      if ((dialogueIntent === "form_answer" || dialogueIntent === "correction") && engine.session?.state === 'collecting') {
-         if (engine.session.pendingCorrection) {
+      const meetingSession = engine.session;
+      const shouldProcessMeetingData = meetingSession?.state === "collecting" &&
+        (dialogueIntent === "form_answer" || dialogueIntent === "correction" || isMeetingDataStatement(currentQuery));
+
+      if (shouldProcessMeetingData && meetingSession) {
+         if (meetingSession.pendingCorrection) {
            if (isCorrectionConfirmation(currentQuery)) {
              const corrected = engine.resolvePendingCorrection(true);
              deterministicReply = corrected ? "Thanks, I’ve updated the meeting details with that correction." : undefined;
@@ -292,45 +311,47 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
              deterministicReply = "I’m still waiting to confirm whether the new detail is a correction. Please say yes to update it, or provide the correct value.";
            }
          }
-         deterministicReply ??= singleNameReply(currentQuery, engine.session) ?? undefined;
+         deterministicReply ??= singleNameReply(currentQuery, meetingSession) ?? undefined;
          // Extract fields from user message
          const extraction = deterministicReply ? null : await extractMeetingFieldsAction(currentQuery, engine.data);
          if (extraction?.success && extraction.data) {
            const applied = engine.applyExtractedFields(extraction.data);
-           if (applied.invalidName || applied.contradiction) {
-             deterministicReply = applied.invalidName ?? applied.contradiction;
-           } else if (applied.session) {
-             const updatedSession = applied.session;
-             const remaining = updatedSession.remainingFields;
-             meetingContext = remaining.length > 0
-               ? `The user is scheduling a meeting. A form on screen has been updated with the details they supplied. Ask only for the next missing required detail: ${updatedSession.currentStep}. Keep it natural and ask one question at a time.`
-               : "All required meeting details are filled in the on-screen form. Ask the user to review the details and confirm the request when ready.";
-           }
-         }
+          if (applied.invalidName || applied.contradiction) {
+            deterministicReply = applied.invalidName ?? applied.contradiction;
+          } else if (applied.session) {
+            const updatedSession = applied.session;
+            const remaining = updatedSession.remainingFields;
+            deterministicReply = remaining.length > 0
+              ? `I've saved the details you shared. ${getNextQuestion(updatedSession) ?? "What would you like to add next?"}`
+              : "All required details are now filled in. Please review the meeting form and select Save Request. I will only confirm the meeting after the calendar check succeeds.";
+          }
+        }
          
          // Build a prompt injection so QuantumAI asks for the next missing field!
          const remaining = engine.getRemainingFields();
-         if (!meetingContext && remaining.length > 0) {
-           const nextMsg = engine.nextQuestion();
-           meetingContext = `The user is currently scheduling a meeting. You must ask the user for their missing information ONE BY ONE.
-           Missing fields remaining: ${remaining.join(", ")}.
-           Next question you must ask: "${nextMsg}".
-           Acknowledge their answer briefly, then ask the next question.`;
-         } else if (!meetingContext) {
-           meetingContext = `The user just provided the last piece of information for the meeting schedule! 
-           All required fields collected. Tell the user you have compiled their meeting request and please review the meeting panel on the screen to confirm submission.`;
-         }
+        if (!meetingContext && remaining.length > 0) {
+          const nextMsg = engine.nextQuestion();
+          deterministicReply ??= nextMsg ?? "Please share the remaining meeting details.";
+        } else if (!meetingContext) {
+          deterministicReply ??= "All required details are in the form. Please review them and select Save Request; calendar availability is checked only then.";
+        }
       }
 
       const response = deterministicReply
         ? { success: true, answer: deterministicReply }
+        : memoryQuery
+        ? { success: true, answer: describeAssistantMemory() }
+        : forgetQuery
+        ? { success: true, answer: forgetAssistantMemory(forgetQuery[1]) }
         : suggestedSlotIndex !== null
         ? { success: true, answer: `I’ve applied option ${suggestedSlotIndex + 1} to the meeting form. Please review the updated date and time, then confirm the request to create the meeting.` }
         : wantsMeeting && activeMeeting
         ? { success: true, answer: "You already have an active meeting scheduled. You can join it or cancel it before scheduling another one." }
+        : wantsMeeting && engine.session
+        ? { success: true, answer: `The meeting request is still being completed. ${engine.nextQuestion() ?? "Review the form and select Save Request to check availability."}` }
         : wantsMeeting && !engine.session
         ? { success: true, answer: getMeetingIntentReply() }
-        : await getAISearchResponse(currentQuery, history, undefined, meetingContext);
+        : await getAISearchResponse(currentQuery, history, intelligenceContext, meetingContext);
 
       if (response.success && response.answer) {
         console.log('[AISearch] Assistant response received, appending once');
@@ -352,7 +373,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
         setConversation(prev => [...prev, { role: 'model' as const, content: message, source: "text" as const }]);
       }
     });
-  }, [stopAudio, toast, conversation]);
+  }, [analyseVisitor, conversation, engine, profile.meetingProbability, profile.meetingSignalDetected, stopAudio, toast, updateIntent]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -363,6 +384,11 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     }
     // Store the constructor, not an instance — we create a fresh instance each time
     recognitionRef.current = SR;
+    return () => {
+      shouldContinueRecognitionRef.current = false;
+      if (recognitionRestartTimerRef.current) clearTimeout(recognitionRestartTimerRef.current);
+      try { activeRecognitionRef.current?.stop(); } catch { /* recognition already stopped */ }
+    };
   }, []);
 
   const toggleListening = () => {
@@ -371,6 +397,8 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
     if (isListening) {
       console.log('[SR] Microphone stopped by user');
+      shouldContinueRecognitionRef.current = false;
+      if (recognitionRestartTimerRef.current) clearTimeout(recognitionRestartTimerRef.current);
       activeRecognitionRef.current?.stop();
       activeRecognitionRef.current = null;
       setIsListening(false);
@@ -379,29 +407,16 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
     console.log('[SR] Microphone clicked — starting recognition');
     stopAudio();
-    setQuery('');
+    typedDraftRef.current = query.trim();
     interimRef.current = '';
     finalRef.current = '';
+    shouldContinueRecognitionRef.current = true;
 
     const rec = new SR();
-    rec.continuous = false;
+    rec.continuous = true;
     rec.interimResults = true;
     // en-US has the best acoustic model coverage for technical and conversational speech
     rec.lang = 'en-US';
-
-    // Short hold after final result before committing — lets the user finish a thought
-    // without being cut off by a brief natural pause mid-sentence
-    const HOLD_MS = 600;
-    let holdTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const clearHold = () => {
-      if (holdTimer !== null) { clearTimeout(holdTimer); holdTimer = null; }
-    };
-
-    const commitAndStop = () => {
-      clearHold();
-      try { rec.stop(); } catch { /* ignore */ }
-    };
 
     rec.onstart = () => {
       console.log('[SR] Recognition started');
@@ -413,46 +428,51 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
         if (result.isFinal) {
-          finalRef.current += result[0].transcript;
+          finalRef.current = `${finalRef.current} ${result[0].transcript}`.trim();
         } else {
           interim += result[0].transcript;
         }
       }
-      const display = (finalRef.current + ' ' + interim).trim();
+      const display = [typedDraftRef.current, finalRef.current, interim].filter(Boolean).join(' ').trim();
       console.log(`[SR] Interim transcript: "${display}"`);
       setQuery(display);
 
-      // After a final result, wait briefly before stopping — the user may
-      // still be forming the rest of their sentence
-      if (event.results[event.results.length - 1].isFinal) {
-        clearHold();
-        holdTimer = setTimeout(commitAndStop, HOLD_MS);
-      }
     };
 
     rec.onerror = (event: any) => {
-      clearHold();
       console.error('[SR] Recognition error:', event.error);
       if (event.error === 'no-speech' || event.error === 'aborted') {
-        setIsListening(false);
-        activeRecognitionRef.current = null;
         return;
       }
+      shouldContinueRecognitionRef.current = false;
       toast({ title: 'Voice Error', description: `Could not recognize speech: ${event.error}`, variant: 'destructive' });
       setIsListening(false);
       activeRecognitionRef.current = null;
     };
 
     rec.onend = () => {
-      clearHold();
       console.log('[SR] Recognition ended');
-      const committed = normalizeSpeechTranscript(finalRef.current.trim());
+      const dictatedText = normalizeSpeechTranscript(finalRef.current.trim());
+      const committed = [typedDraftRef.current, dictatedText].filter(Boolean).join(' ').trim();
       if (committed) {
         console.log(`[SR] Final transcript committed: "${committed}"`);
         setQuery(committed);
       }
-      setIsListening(false);
       activeRecognitionRef.current = null;
+      if (shouldContinueRecognitionRef.current) {
+        recognitionRestartTimerRef.current = setTimeout(() => {
+          if (!shouldContinueRecognitionRef.current) return;
+          try {
+            rec.start();
+            activeRecognitionRef.current = rec;
+          } catch {
+            shouldContinueRecognitionRef.current = false;
+            setIsListening(false);
+          }
+        }, 250);
+        return;
+      }
+      setIsListening(false);
     };
 
     try {
@@ -466,6 +486,10 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    shouldContinueRecognitionRef.current = false;
+    if (recognitionRestartTimerRef.current) clearTimeout(recognitionRestartTimerRef.current);
+    try { activeRecognitionRef.current?.stop(); } catch { /* recognition already stopped */ }
+    setIsListening(false);
     handleSubmit(query);
   };
 
@@ -514,13 +538,6 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     el.style.height = `${next}px`;
     el.style.overflowY = el.scrollHeight > MAX_TEXTAREA_HEIGHT ? "auto" : "hidden";
   }, [query]);
-
-  // ── Phase 2: Intent engine (pure local, zero API calls) ──────────────
-  const { suggestions, updateIntent } = useIntentEngine();
-
-  // ── Phase 7: Visitor Intelligence (session-only, async, zero API calls) ─
-  const { analyse: analyseVisitor, reset: resetVisitorProfile, profile } = useVisitorIntelligence();
-  const engine = useMeetingEngine();
 
   return (
     <>
@@ -1059,7 +1076,7 @@ export function AISearch({ isVisible, onClose }: AISearchProps) {
     </AnimatePresence>
 
     {/* Voice Agent Modal — rendered outside AnimatePresence so it manages its own presence */}
-    <VoiceAgent 
+    <LiveVoiceAgent
       isVisible={isVoiceMode}
       onClose={() => setIsVoiceMode(false)}
       conversationHistory={conversation.reduce((acc: Array<{ user: string; model: string }>, message, index) => {
