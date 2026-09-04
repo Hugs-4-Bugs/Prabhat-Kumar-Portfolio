@@ -104,8 +104,11 @@ protected development environment, then add it to Vercel as
 Calendar booking requires `GOOGLE_OAUTH_CLIENT_ID`,
 `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_OAUTH_REDIRECT_URI`,
 `GOOGLE_CALENDAR_REFRESH_TOKEN`, and `GOOGLE_CALENDAR_ID` in every Vercel
-environment that serves booking. The app requests only the Calendar event and
-free/busy scopes required to create, cancel, verify, and check meetings.
+environment that serves booking. `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+are supported only as compatibility aliases; prefer the `GOOGLE_OAUTH_*` names
+and make sure any aliases are not pointing at a different OAuth client. The app
+requests only the Calendar event and free/busy scopes required to create,
+cancel, verify, and check meetings.
 
 When an availability check reports that authorization must be renewed, do not
 replace it with a dummy token. In a protected local development environment,
@@ -125,11 +128,13 @@ OAuth consent configuration for a production booking service.
 
 ### Production Calendar verification
 
-The runtime reads **only** `GOOGLE_OAUTH_CLIENT_ID`,
+The runtime reads `GOOGLE_OAUTH_CLIENT_ID`,
 `GOOGLE_OAUTH_CLIENT_SECRET`, `GOOGLE_CALENDAR_REFRESH_TOKEN`, and
-`GOOGLE_CALENDAR_ID`; it does not read `GOOGLE_CLIENT_ID`,
-`GOOGLE_CLIENT_SECRET`, or `GOOGLE_REFRESH_TOKEN`. Ensure the first four are
-set for the **Production** target in Vercel and redeploy after changing them.
+`GOOGLE_CALENDAR_ID`. It can also try `GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET` as aliases when they are configured, but it never reads
+`GOOGLE_REFRESH_TOKEN`. Ensure the OAuth client values in Vercel **Production**
+match the exact OAuth client used to generate the refresh token, then redeploy
+after changing them.
 
 For an owner-only live diagnostic, set a separate high-entropy
 `GOOGLE_CALENDAR_DIAGNOSTIC_TOKEN` Production secret. It never reaches the

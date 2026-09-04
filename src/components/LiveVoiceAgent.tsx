@@ -17,10 +17,10 @@ const LIVE_MODEL = "gemini-3.1-flash-live-preview";
 const LIVE_URL = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained";
 
 const VOICES = [
-  { id: "quantum", name: "Quantum AI", tagline: "Deep & Calm", color: "#4A90D9", accent: "#7C5CFC", geminiVoice: "Charon" },
-  { id: "nova", name: "Nova", tagline: "Warm & Friendly", color: "#E879B7", accent: "#8B5CF6", geminiVoice: "Aoede" },
-  { id: "sage", name: "Sage", tagline: "Thoughtful & Wise", color: "#A78BFA", accent: "#22D3EE", geminiVoice: "Kore" },
-  { id: "aria", name: "Aria", tagline: "Energetic & Bright", color: "#F59E0B", accent: "#FB7185", geminiVoice: "Fenrir" },
+  { id: "quantum", name: "Quantum AI", tagline: "Deep & Calm", color: "#4A90D9", accent: "#7C5CFC", geminiVoice: "Charon", visual: "neural" },
+  { id: "nova", name: "Nova", tagline: "Warm & Friendly", color: "#E879B7", accent: "#8B5CF6", geminiVoice: "Aoede", visual: "supernova" },
+  { id: "sage", name: "Sage", tagline: "Thoughtful & Wise", color: "#A78BFA", accent: "#22D3EE", geminiVoice: "Kore", visual: "neural" },
+  { id: "aria", name: "Aria", tagline: "Energetic & Bright", color: "#F59E0B", accent: "#FB7185", geminiVoice: "Fenrir", visual: "supernova" },
 ] as const;
 type Voice = (typeof VOICES)[number];
 type VoiceState = "idle" | "connecting" | "listening" | "thinking" | "speaking" | "interrupted" | "error" | "closing";
@@ -380,47 +380,80 @@ export const LiveVoiceAgent = memo(function LiveVoiceAgent({
 
 function VoiceSignalCore({ voice, state, compact = false }: { voice: Voice; state: VoiceState; compact?: boolean }) {
   const style = { "--voice-primary": voice.color, "--voice-accent": voice.accent } as CSSProperties;
-  return <div className={`voice-signal voice-signal--${state} ${compact ? "voice-signal--compact" : ""}`} style={style} aria-hidden="true">
+  const variantClass = voice.visual === "supernova" ? "voice-signal--supernova" : "voice-signal--neural";
+  return <div className={`voice-signal ${variantClass} voice-signal--${state} ${compact ? "voice-signal--compact" : ""}`} style={style} aria-hidden="true">
+    <div className="voice-signal__field" />
+    <div className="voice-signal__corona voice-signal__corona--one" />
+    <div className="voice-signal__corona voice-signal__corona--two" />
+    <div className="voice-signal__ribbon voice-signal__ribbon--one" />
+    <div className="voice-signal__ribbon voice-signal__ribbon--two" />
     <div className="voice-signal__halo voice-signal__halo--one" />
     <div className="voice-signal__halo voice-signal__halo--two" />
     <div className="voice-signal__orbit voice-signal__orbit--outer"><span /></div>
     <div className="voice-signal__orbit voice-signal__orbit--inner"><span /></div>
     <div className="voice-signal__scan" />
-    <div className="voice-signal__particles">{Array.from({ length: 8 }, (_, index) => <i key={index} style={{ "--particle": index } as CSSProperties} />)}</div>
-    <div className="voice-signal__core"><div className="voice-signal__gloss" /><div className="voice-signal__equalizer">{Array.from({ length: 5 }, (_, index) => <i key={index} />)}</div></div>
+    <div className="voice-signal__burst">{Array.from({ length: 18 }, (_, index) => <i key={index} style={{ "--spark": index } as CSSProperties} />)}</div>
+    <div className="voice-signal__particles">{Array.from({ length: 12 }, (_, index) => <i key={index} style={{ "--particle": index } as CSSProperties} />)}</div>
+    <div className="voice-signal__core"><div className="voice-signal__mesh" /><div className="voice-signal__gloss" /><div className="voice-signal__equalizer">{Array.from({ length: 5 }, (_, index) => <i key={index} />)}</div></div>
   </div>;
 }
 
 function VoiceSignalStyles() {
   return <style jsx global>{`
-    .voice-signal { --voice-primary:#4A90D9; --voice-accent:#7C5CFC; position:relative; display:grid; place-items:center; width:12.75rem; height:12.75rem; isolation:isolate; }
+    .voice-signal { --voice-primary:#4A90D9; --voice-accent:#7C5CFC; position:relative; display:grid; place-items:center; width:12.75rem; height:12.75rem; isolation:isolate; contain:layout paint; transform:translateZ(0); }
     .voice-signal--compact { width:6.5rem; height:6.5rem; }
-    .voice-signal__core { position:relative; z-index:3; width:72%; height:72%; border-radius:50%; overflow:hidden; background:radial-gradient(circle at 31% 25%, color-mix(in srgb, var(--voice-primary) 92%, white), var(--voice-primary) 43%, var(--voice-accent) 115%); box-shadow:0 0 32px color-mix(in srgb, var(--voice-primary) 45%, transparent), 0 0 88px color-mix(in srgb, var(--voice-accent) 26%, transparent), inset -22px -28px 38px rgba(7,8,24,.4), inset 10px 10px 20px rgba(255,255,255,.14); animation:voice-core-breathe 4s ease-in-out infinite; }
-    .voice-signal__gloss { position:absolute; inset:0; background:radial-gradient(ellipse at 32% 22%, rgba(255,255,255,.48), transparent 28%), linear-gradient(135deg, rgba(255,255,255,.16), transparent 45%); mix-blend-mode:screen; }
-    .voice-signal__halo { position:absolute; border-radius:50%; border:1px solid color-mix(in srgb, var(--voice-primary) 45%, transparent); opacity:.45; }
-    .voice-signal__halo--one { inset:4%; box-shadow:0 0 32px color-mix(in srgb, var(--voice-primary) 32%, transparent); animation:voice-halo 3.6s ease-out infinite; }
+    .voice-signal__field, .voice-signal__corona, .voice-signal__ribbon, .voice-signal__halo, .voice-signal__orbit, .voice-signal__scan, .voice-signal__burst, .voice-signal__particles { position:absolute; inset:0; pointer-events:none; }
+    .voice-signal__field { z-index:0; border-radius:50%; background:radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--voice-primary) 22%, transparent), transparent 62%); filter:blur(14px); opacity:.62; animation:voice-field-drift 9s ease-in-out infinite; }
+    .voice-signal__core { position:relative; z-index:5; width:72%; height:72%; border-radius:50%; overflow:hidden; background:radial-gradient(circle at 28% 22%, rgba(255,255,255,.82), rgba(255,255,255,.18) 16%, transparent 27%), radial-gradient(circle at 38% 35%, color-mix(in srgb, var(--voice-primary) 92%, white), var(--voice-primary) 42%, color-mix(in srgb, var(--voice-accent) 82%, black) 112%); box-shadow:0 0 34px color-mix(in srgb, var(--voice-primary) 48%, transparent), 0 0 92px color-mix(in srgb, var(--voice-accent) 28%, transparent), inset -24px -30px 42px rgba(5,7,20,.43), inset 12px 12px 22px rgba(255,255,255,.15); animation:voice-core-breathe 4s ease-in-out infinite; }
+    .voice-signal__mesh { position:absolute; inset:-35%; opacity:.26; background:repeating-conic-gradient(from 28deg, rgba(255,255,255,.22) 0 4deg, transparent 4deg 14deg); mix-blend-mode:overlay; animation:voice-mesh-turn 18s linear infinite; }
+    .voice-signal__gloss { position:absolute; inset:0; background:radial-gradient(ellipse at 32% 22%, rgba(255,255,255,.52), transparent 28%), linear-gradient(135deg, rgba(255,255,255,.16), transparent 48%); mix-blend-mode:screen; }
+    .voice-signal__halo { z-index:2; border-radius:50%; border:1px solid color-mix(in srgb, var(--voice-primary) 44%, transparent); opacity:.45; }
+    .voice-signal__halo--one { inset:5%; box-shadow:0 0 32px color-mix(in srgb, var(--voice-primary) 34%, transparent); animation:voice-halo 3.6s ease-out infinite; }
     .voice-signal__halo--two { inset:-11%; border-color:color-mix(in srgb, var(--voice-accent) 34%, transparent); animation:voice-halo 3.6s 1.2s ease-out infinite; }
-    .voice-signal__orbit { position:absolute; z-index:2; border-radius:50%; border:1px solid color-mix(in srgb, var(--voice-primary) 32%, transparent); animation:voice-orbit 9s linear infinite; }
+    .voice-signal__orbit { z-index:3; border-radius:50%; border:1px solid color-mix(in srgb, var(--voice-primary) 32%, transparent); animation:voice-orbit 9s linear infinite; }
     .voice-signal__orbit span { position:absolute; width:.38rem; height:.38rem; border-radius:99px; background:var(--voice-accent); box-shadow:0 0 13px var(--voice-accent); top:10%; left:49%; }
-    .voice-signal__orbit--outer { width:98%; height:77%; transform:rotate(-25deg); }
-    .voice-signal__orbit--inner { width:78%; height:106%; transform:rotate(38deg); animation-direction:reverse; animation-duration:7s; }
-    .voice-signal__scan { position:absolute; z-index:4; width:78%; height:2px; opacity:0; background:linear-gradient(90deg, transparent, var(--voice-accent), transparent); box-shadow:0 0 14px var(--voice-accent); }
-    .voice-signal__particles { position:absolute; inset:0; z-index:1; }
-    .voice-signal__particles i { --angle:calc(var(--particle) * 45deg); position:absolute; top:50%; left:50%; width:.22rem; height:.22rem; border-radius:50%; background:var(--voice-primary); opacity:0; transform:rotate(var(--angle)) translateY(-6.1rem); box-shadow:0 0 10px var(--voice-primary); }
+    .voice-signal__orbit--outer { width:98%; height:77%; inset:11% 1%; transform:rotate(-25deg); }
+    .voice-signal__orbit--inner { width:78%; height:106%; inset:-3% 11%; transform:rotate(38deg); animation-direction:reverse; animation-duration:7s; }
+    .voice-signal__scan { z-index:6; inset:auto; width:78%; height:2px; opacity:0; background:linear-gradient(90deg, transparent, var(--voice-accent), white, var(--voice-primary), transparent); box-shadow:0 0 14px var(--voice-accent); }
+    .voice-signal__particles { z-index:1; }
+    .voice-signal__particles i { --angle:calc(var(--particle) * 30deg); position:absolute; top:50%; left:50%; width:.22rem; height:.22rem; border-radius:50%; background:var(--voice-primary); opacity:0; transform:rotate(var(--angle)) translateY(-6.1rem); box-shadow:0 0 10px var(--voice-primary); }
     .voice-signal__equalizer { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:4%; opacity:0; transition:opacity .25s ease; }
-    .voice-signal__equalizer i { display:block; width:5%; height:14%; border-radius:99px; background:rgba(255,255,255,.78); transform:scaleY(.45); }
-    .voice-signal--listening .voice-signal__core, .voice-signal--interrupted .voice-signal__core { animation:voice-listen .9s ease-in-out infinite; }
-    .voice-signal--listening .voice-signal__halo, .voice-signal--interrupted .voice-signal__halo { animation-duration:1.8s; }
-    .voice-signal--thinking .voice-signal__scan { opacity:.95; animation:voice-scan 1.5s ease-in-out infinite; }
-    .voice-signal--thinking .voice-signal__core { animation:voice-think 1.35s ease-in-out infinite; }
-    .voice-signal--thinking .voice-signal__particles i { animation:voice-particle 1.8s calc(var(--particle) * -0.19s) ease-in-out infinite; }
-    .voice-signal--speaking .voice-signal__core { animation:voice-speak .52s ease-in-out infinite alternate; }
-    .voice-signal--speaking .voice-signal__equalizer { opacity:1; }
-    .voice-signal--speaking .voice-signal__equalizer i { animation:voice-equalize .54s ease-in-out infinite alternate; }
+    .voice-signal__equalizer i { display:block; width:5%; height:14%; border-radius:99px; background:rgba(255,255,255,.82); transform:scaleY(.45); }
+    .voice-signal__corona, .voice-signal__ribbon, .voice-signal__burst { opacity:0; }
+    .voice-signal--supernova .voice-signal__field { opacity:.78; filter:blur(18px); background:radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--voice-primary) 38%, transparent), color-mix(in srgb, var(--voice-accent) 20%, transparent) 36%, transparent 70%); }
+    .voice-signal--supernova .voice-signal__core { width:70%; height:70%; background:radial-gradient(circle at 30% 22%, rgba(255,255,255,.88), rgba(255,255,255,.22) 15%, transparent 27%), radial-gradient(circle at 43% 42%, color-mix(in srgb, var(--voice-primary) 90%, white), var(--voice-primary) 36%, var(--voice-accent) 74%, rgba(8,9,24,.92) 122%); box-shadow:0 0 42px color-mix(in srgb, var(--voice-primary) 58%, transparent), 0 0 118px color-mix(in srgb, var(--voice-accent) 38%, transparent), inset -22px -32px 46px rgba(2,3,13,.45), inset 16px 13px 24px rgba(255,255,255,.18); }
+    .voice-signal--supernova .voice-signal__corona { z-index:2; inset:5%; border-radius:50%; background:conic-gradient(from 90deg, transparent, color-mix(in srgb, var(--voice-primary) 42%, transparent), transparent 21%, color-mix(in srgb, var(--voice-accent) 48%, transparent), transparent 58%, color-mix(in srgb, white 34%, transparent), transparent); filter:blur(.5px); mask:radial-gradient(circle, transparent 49%, #000 51%, #000 58%, transparent 61%); animation:voice-corona-turn 5.8s linear infinite; opacity:.82; }
+    .voice-signal--supernova .voice-signal__corona--two { inset:-3%; animation-duration:8.5s; animation-direction:reverse; opacity:.5; mask:radial-gradient(circle, transparent 55%, #000 57%, #000 61%, transparent 64%); }
+    .voice-signal--supernova .voice-signal__ribbon { z-index:4; inset:8%; border-radius:50%; border:1px solid color-mix(in srgb, var(--voice-primary) 42%, transparent); transform:rotateX(68deg) rotateZ(20deg); box-shadow:0 0 22px color-mix(in srgb, var(--voice-primary) 26%, transparent); animation:voice-ribbon-one 4.8s ease-in-out infinite; opacity:.75; }
+    .voice-signal--supernova .voice-signal__ribbon--two { border-color:color-mix(in srgb, var(--voice-accent) 46%, transparent); transform:rotateX(64deg) rotateZ(108deg); animation:voice-ribbon-two 5.4s ease-in-out infinite; opacity:.62; }
+    .voice-signal--supernova .voice-signal__burst i { --angle:calc(var(--spark) * 20deg); position:absolute; top:50%; left:50%; width:1px; height:23%; transform-origin:50% 0; transform:rotate(var(--angle)) translateY(-58%); background:linear-gradient(180deg, rgba(255,255,255,.85), color-mix(in srgb, var(--voice-primary) 58%, transparent), transparent); filter:drop-shadow(0 0 8px var(--voice-primary)); opacity:.35; }
+    .voice-signal--supernova.voice-signal--listening .voice-signal__core, .voice-signal--supernova.voice-signal--interrupted .voice-signal__core { animation:supernova-listen .86s ease-in-out infinite; }
+    .voice-signal--supernova.voice-signal--listening .voice-signal__halo, .voice-signal--supernova.voice-signal--interrupted .voice-signal__halo { animation-duration:1.45s; }
+    .voice-signal--supernova.voice-signal--listening .voice-signal__particles i, .voice-signal--supernova.voice-signal--interrupted .voice-signal__particles i { animation:supernova-particle 1.35s calc(var(--particle) * -0.09s) ease-in-out infinite; }
+    .voice-signal--supernova.voice-signal--thinking .voice-signal__scan { opacity:.98; animation:supernova-scan 1.05s ease-in-out infinite; }
+    .voice-signal--supernova.voice-signal--thinking .voice-signal__core { animation:supernova-think 1.12s ease-in-out infinite; }
+    .voice-signal--supernova.voice-signal--thinking .voice-signal__burst { animation:supernova-burst-turn 4s linear infinite; opacity:.7; }
+    .voice-signal--supernova.voice-signal--thinking .voice-signal__burst i { animation:supernova-ray 1.55s calc(var(--spark) * -0.04s) ease-in-out infinite; }
+    .voice-signal--supernova.voice-signal--speaking .voice-signal__core { animation:supernova-speak .46s cubic-bezier(.2,.8,.2,1) infinite alternate; }
+    .voice-signal--supernova.voice-signal--speaking .voice-signal__equalizer { opacity:1; }
+    .voice-signal--supernova.voice-signal--speaking .voice-signal__equalizer i { animation:voice-equalize .48s ease-in-out infinite alternate; }
+    .voice-signal--supernova.voice-signal--speaking .voice-signal__corona { animation-duration:2.5s; opacity:.95; }
+    .voice-signal--supernova.voice-signal--speaking .voice-signal__burst { opacity:.82; animation:supernova-burst-turn 2.9s linear infinite; }
+    .voice-signal--neural.voice-signal--listening .voice-signal__core, .voice-signal--neural.voice-signal--interrupted .voice-signal__core { animation:voice-listen .9s ease-in-out infinite; }
+    .voice-signal--neural.voice-signal--listening .voice-signal__halo, .voice-signal--neural.voice-signal--interrupted .voice-signal__halo { animation-duration:1.8s; }
+    .voice-signal--neural.voice-signal--thinking .voice-signal__scan { opacity:.95; animation:voice-scan 1.5s ease-in-out infinite; }
+    .voice-signal--neural.voice-signal--thinking .voice-signal__core { animation:voice-think 1.35s ease-in-out infinite; }
+    .voice-signal--neural.voice-signal--thinking .voice-signal__particles i { animation:voice-particle 1.8s calc(var(--particle) * -0.19s) ease-in-out infinite; }
+    .voice-signal--neural.voice-signal--speaking .voice-signal__core { animation:voice-speak .52s ease-in-out infinite alternate; }
+    .voice-signal--neural.voice-signal--speaking .voice-signal__equalizer { opacity:1; }
+    .voice-signal--neural.voice-signal--speaking .voice-signal__equalizer i { animation:voice-equalize .54s ease-in-out infinite alternate; }
     .voice-signal--speaking .voice-signal__equalizer i:nth-child(2) { animation-delay:-.42s; } .voice-signal--speaking .voice-signal__equalizer i:nth-child(3) { animation-delay:-.17s; } .voice-signal--speaking .voice-signal__equalizer i:nth-child(4) { animation-delay:-.31s; } .voice-signal--speaking .voice-signal__equalizer i:nth-child(5) { animation-delay:-.08s; }
     .voice-signal--connecting .voice-signal__orbit { animation-duration:1.5s; } .voice-signal--connecting .voice-signal__scan { opacity:.7; animation:voice-scan .9s linear infinite; }
-    .voice-signal--error .voice-signal__core { filter:saturate(.28) brightness(.64); animation:none; } .voice-signal--error .voice-signal__orbit { animation:none; opacity:.25; }
+    .voice-signal--closing .voice-signal__core { animation:voice-closing .7s ease-in-out infinite alternate; }
+    .voice-signal--error .voice-signal__core { filter:saturate(.28) brightness(.64); animation:none; } .voice-signal--error .voice-signal__orbit, .voice-signal--error .voice-signal__corona, .voice-signal--error .voice-signal__ribbon, .voice-signal--error .voice-signal__burst { animation:none; opacity:.18; }
     @keyframes voice-core-breathe { 0%,100% { transform:scale(1); } 50% { transform:scale(1.035); } }
+    @keyframes voice-field-drift { 0%,100% { transform:scale(.95); opacity:.48; } 50% { transform:scale(1.08); opacity:.78; } }
+    @keyframes voice-mesh-turn { to { transform:rotate(360deg); } }
     @keyframes voice-halo { 0% { transform:scale(.79); opacity:0; } 30% { opacity:.62; } 100% { transform:scale(1.2); opacity:0; } }
     @keyframes voice-orbit { to { transform:rotate(360deg); } }
     @keyframes voice-listen { 0%,100% { transform:scale(1); filter:brightness(1); } 50% { transform:scale(1.075); filter:brightness(1.19); } }
@@ -429,6 +462,17 @@ function VoiceSignalStyles() {
     @keyframes voice-particle { 0%,100% { opacity:0; transform:rotate(var(--angle)) translateY(-4rem) scale(.35); } 50% { opacity:.9; transform:rotate(var(--angle)) translateY(-6.45rem) scale(1); } }
     @keyframes voice-speak { from { transform:scale(.97); filter:brightness(1); } to { transform:scale(1.09); filter:brightness(1.22); } }
     @keyframes voice-equalize { from { transform:scaleY(.35); } to { transform:scaleY(2.4); } }
+    @keyframes voice-closing { from { transform:scale(.95); opacity:.7; } to { transform:scale(1.02); opacity:.95; } }
+    @keyframes voice-corona-turn { to { transform:rotate(360deg); } }
+    @keyframes voice-ribbon-one { 0%,100% { transform:rotateX(68deg) rotateZ(20deg) scale(.95); } 50% { transform:rotateX(64deg) rotateZ(198deg) scale(1.05); } }
+    @keyframes voice-ribbon-two { 0%,100% { transform:rotateX(64deg) rotateZ(108deg) scale(1.03); } 50% { transform:rotateX(70deg) rotateZ(-82deg) scale(.95); } }
+    @keyframes supernova-listen { 0%,100% { transform:scale(1); filter:brightness(1) saturate(1.08); } 45% { transform:scale(1.1); filter:brightness(1.25) saturate(1.2); } 68% { transform:scale(1.035); } }
+    @keyframes supernova-think { 0%,100% { transform:scale(.98) rotate(0deg); filter:brightness(1) hue-rotate(0deg); } 50% { transform:scale(1.075) rotate(2deg); filter:brightness(1.24) hue-rotate(18deg); } }
+    @keyframes supernova-speak { from { transform:scale(.96); filter:brightness(1.03) saturate(1.1); } to { transform:scale(1.13); filter:brightness(1.34) saturate(1.3); } }
+    @keyframes supernova-scan { 0% { transform:translateY(-4.3rem) scaleX(.45); opacity:0; } 35%,70% { opacity:1; } 100% { transform:translateY(4.3rem) scaleX(1.18); opacity:0; } }
+    @keyframes supernova-burst-turn { to { transform:rotate(360deg); } }
+    @keyframes supernova-ray { 0%,100% { opacity:.14; height:18%; } 45% { opacity:.72; height:32%; } }
+    @keyframes supernova-particle { 0%,100% { opacity:0; transform:rotate(var(--angle)) translateY(-4.6rem) scale(.35); } 48% { opacity:1; transform:rotate(var(--angle)) translateY(-6.85rem) scale(1.1); } }
     @media (prefers-reduced-motion:reduce) { .voice-signal *, .voice-signal { animation:none !important; } }
   `}</style>;
 }

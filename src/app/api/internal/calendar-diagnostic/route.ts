@@ -5,7 +5,7 @@ import {
   verifyCalendarConnection,
   verifyCalendarWriteAccess,
 } from "@/lib/calendar/google/diagnostics";
-import { getCalendarConfigStatus, getCalendarScopes } from "@/lib/calendar/google/google-auth";
+import { getCalendarConfigStatus, getCalendarRefreshToken, getCalendarScopes } from "@/lib/calendar/google/google-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,6 +26,9 @@ function safeEnvironmentStatus() {
   return {
     "GOOGLE_OAUTH_CLIENT_ID configured": Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID),
     "GOOGLE_OAUTH_CLIENT_SECRET configured": Boolean(process.env.GOOGLE_OAUTH_CLIENT_SECRET),
+    "GOOGLE_CLIENT_ID configured": Boolean(process.env.GOOGLE_CLIENT_ID),
+    "GOOGLE_CLIENT_SECRET configured": Boolean(process.env.GOOGLE_CLIENT_SECRET),
+    "GOOGLE_OAUTH_REDIRECT_URI configured": Boolean(process.env.GOOGLE_OAUTH_REDIRECT_URI),
     "GOOGLE_CALENDAR_REFRESH_TOKEN configured": Boolean(process.env.GOOGLE_CALENDAR_REFRESH_TOKEN),
     "GOOGLE_CALENDAR_ID configured": Boolean(process.env.GOOGLE_CALENDAR_ID),
     "GOOGLE_CALENDAR_DIAGNOSTIC_TOKEN configured": Boolean(process.env.GOOGLE_CALENDAR_DIAGNOSTIC_TOKEN),
@@ -61,8 +64,8 @@ function failureResponse(error: unknown) {
 }
 
 async function runDiagnostic(write: boolean) {
-  const refreshToken = process.env.GOOGLE_CALENDAR_REFRESH_TOKEN;
-  const calendarId = process.env.GOOGLE_CALENDAR_ID ?? "primary";
+  const refreshToken = getCalendarRefreshToken();
+  const calendarId = process.env.GOOGLE_CALENDAR_ID?.trim() || "primary";
   if (!refreshToken) throw new CalendarDiagnosticError("AUTH_REQUIRED");
   const diagnostic = write
     ? await verifyCalendarWriteAccess(refreshToken, calendarId)

@@ -10,7 +10,7 @@
 
 import type { MeetingSession } from "@/lib/meeting/meeting-session";
 import type { MeetingFormData } from "@/lib/meeting/meeting-types";
-import { buildAuthedClient } from "./google/google-auth";
+import { buildVerifiedAuthedClient, getCalendarRefreshToken } from "./google/google-auth";
 import { checkAvailability, formatAlternativesText } from "./google/availability";
 import type { TimeSlot } from "./google/availability";
 import { CalendarMeetingCreationError, createCalendarMeeting, type CalendarMeeting } from "./google/meeting-create";
@@ -91,8 +91,8 @@ function calendarFailureMessage(failure: NonNullable<ScheduleResult["failure"]>)
 // ── Environment helpers ──────────────────────────────────────────────────────
 
 function getConfig() {
-  const refreshToken = process.env.GOOGLE_CALENDAR_REFRESH_TOKEN;
-  const calendarId   = process.env.GOOGLE_CALENDAR_ID ?? "primary";
+  const refreshToken = getCalendarRefreshToken();
+  const calendarId   = process.env.GOOGLE_CALENDAR_ID?.trim() || "primary";
   if (!refreshToken) {
     throw new Error(
       "[CalendarAdapter] GOOGLE_CALENDAR_REFRESH_TOKEN is not set. " +
@@ -140,7 +140,12 @@ export async function scheduleFromSession(
 
   let auth;
   try {
-    auth = buildAuthedClient(config.refreshToken);
+    const verified = await buildVerifiedAuthedClient(config.refreshToken);
+    auth = verified.auth;
+    console.info("[CalendarAdapter] OAuth client verified for scheduling", {
+      oauthClientSource: verified.clientSource,
+      calendarIdConfigured: Boolean(process.env.GOOGLE_CALENDAR_ID),
+    });
   } catch (e: any) {
     console.error("[CalendarAdapter] OAuth client setup failed:", e.message);
     return {
@@ -206,7 +211,8 @@ export async function scheduleFromSession(
  * server-only and schedule/cancel use the exact same Calendar configuration. */
 export async function cancelScheduledMeeting(eventId: string): Promise<void> {
   const { refreshToken, calendarId } = getConfig();
-  await cancelCalendarEvent(buildAuthedClient(refreshToken), calendarId, eventId);
+  const verified = await buildVerifiedAuthedClient(refreshToken);
+  await cancelCalendarEvent(verified.auth, calendarId, eventId);
 }
 
 // ── Helper ───────────────────────────────────────────────────────────────────

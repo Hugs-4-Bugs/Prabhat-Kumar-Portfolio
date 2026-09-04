@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import { buildAuthedClient, getCalendarConfigStatus, getCalendarScopes } from "./google-auth";
+import { buildVerifiedAuthedClient, getCalendarConfigStatus, getCalendarScopes } from "./google-auth";
 
 export type CalendarDiagnosticCode =
   | "AUTH_REQUIRED"
@@ -29,6 +29,7 @@ export interface CalendarConnectionDiagnostic {
   accessTokenRefreshed: boolean;
   calendarAccessible: boolean;
   freeBusyAccessible: boolean;
+  oauthClientSource: string;
 }
 
 export interface CalendarWriteDiagnostic extends CalendarConnectionDiagnostic {
@@ -78,15 +79,15 @@ export async function verifyCalendarConnection(
   refreshToken: string,
   calendarId = process.env.GOOGLE_CALENDAR_ID ?? "primary"
 ): Promise<CalendarConnectionDiagnostic> {
-  const auth = buildAuthedClient(requireRefreshToken(refreshToken));
+  let verified;
   try {
-    const accessToken = await auth.getAccessToken();
-    if (!accessToken.token) throw new CalendarDiagnosticError("AUTH_REFRESH_FAILED");
+    verified = await buildVerifiedAuthedClient(requireRefreshToken(refreshToken));
   } catch (error) {
     if (error instanceof CalendarDiagnosticError) throw error;
     throw classifyError("AUTH", error);
   }
 
+  const auth = verified.auth;
   const calendar = google.calendar({ version: "v3", auth });
   const now = new Date();
   const later = new Date(now.getTime() + 60 * 60 * 1000);
@@ -113,6 +114,7 @@ export async function verifyCalendarConnection(
     accessTokenRefreshed: true,
     calendarAccessible: true,
     freeBusyAccessible: true,
+    oauthClientSource: verified.clientSource,
   };
 }
 
@@ -125,7 +127,8 @@ export async function verifyCalendarWriteAccess(
   calendarId = process.env.GOOGLE_CALENDAR_ID ?? "primary"
 ): Promise<CalendarWriteDiagnostic> {
   const connection = await verifyCalendarConnection(refreshToken, calendarId);
-  const auth = buildAuthedClient(requireRefreshToken(refreshToken));
+  const verified = await buildVerifiedAuthedClient(requireRefreshToken(refreshToken));
+  const auth = verified.auth;
   const calendar = google.calendar({ version: "v3", auth });
   const start = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   start.setUTCMinutes(0, 0, 0);
