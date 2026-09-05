@@ -80,8 +80,10 @@ To get this project running locally, follow these steps:
 
 3.  **Set up environment variables:**
     Copy `.env.example` to `.env.local` and populate the services you use.
-    `GEMINI_API_KEY` is required for AI features; Resend, ElevenLabs, and Google
-    Calendar variables are required only for their corresponding integrations.
+    `GEMINI_API_KEY` is required for AI features and live voice token
+    generation. `GOOGLE_API_KEY` is accepted as a server-side fallback for the
+    live voice token route. Resend, ElevenLabs, and Google Calendar variables
+    are required only for their corresponding integrations.
 
 4.  **Run the development server:**
     ```bash

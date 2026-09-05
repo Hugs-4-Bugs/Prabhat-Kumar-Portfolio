@@ -196,8 +196,15 @@ export const LiveVoiceAgent = memo(function LiveVoiceAgent({
       streamRef.current = mediaStream;
       if (tokenResult.status === "rejected") throw tokenResult.reason;
       const tokenResponse = tokenResult.value;
-      const tokenPayload = await tokenResponse.json() as { token?: string; error?: string };
-      if (!tokenResponse.ok || !tokenPayload.token) throw new Error(tokenPayload.error || "Voice token failed.");
+      const tokenPayload = await tokenResponse.json().catch(() => ({})) as { token?: string; error?: string; code?: string };
+      if (!tokenResponse.ok || !tokenPayload.token) {
+        const fallback = tokenResponse.status === 503
+          ? "Voice is not configured in production. Add GEMINI_API_KEY in Vercel and redeploy."
+          : tokenResponse.status === 429
+            ? "Voice service is temporarily rate-limited. Please try again shortly."
+            : "Voice could not start because the live token request failed.";
+        throw new Error(tokenPayload.error || fallback);
+      }
       const outputContext = new AudioContext({ sampleRate: 24_000 });
       outputContextRef.current = outputContext;
       await outputContext.resume();
